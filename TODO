@@ -8,3 +8,4 @@
 - [ ] Login / Room ID initial page
 - [ ] Gameloop
 - [ ] Store game states using immutable.js
+- [ ] Handle keyboard events

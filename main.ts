@@ -1,3 +1,4 @@
+
 enum EventType {
   PLAYER_JOINED,
   GAME_STARTED,
@@ -31,11 +32,54 @@ type Player = {
 type GameState = {
   tick: number;
   players: Player[];
-  events: GameEvent[];
 }
 
 type StateHistory = GameState[];
 
+type KeyHandler = (event: KeyboardEvent) => void;
+
+// when a key is pressed, the correct event should be created and broadcasted 
+// for the chat, as well as render the correct tick for the current player
+const handleKeyPress: KeyHandler = (event: KeyboardEvent) => {
+  // on key press, we should add an event here? and broadcast for the server
+  // we should add here first to keep animation smooth for the player
+  // smth like chat.broadcast() and the event
+  // and also compute the state
+  const newTick = getTick() + 1;
+  const evPress = {
+    type: EventType.PRESS,
+    player: getPlayer(),
+    key: event.key,
+    tick: newTick 
+  } 
+  setTick(newTick);
+  let state = getState();
+  let computedState = computeState(state, evPress);
+  console.log(computedState);
+  setState(computedState);
+  draw(computedState);
+
+  const evTick: GameEvent = {
+    type: EventType.TICK,
+    tick: newTick + 1
+  } 
+  draw(computeState(state, evTick));
+}
+
+const handleKeyRelease: KeyHandler = (event: KeyboardEvent) => {
+  const evRelease = {
+    type: EventType.RELEASE,
+    player: getPlayer(),
+    key: event.key,
+    tick: getTick() + 1
+  }
+  console.log(evRelease)
+}
+
+const addKeyboardListeners = (): void => {
+  document.addEventListener("keydown", handleKeyPress);
+  document.addEventListener("keyup", handleKeyRelease);
+}
 
 function draw(state: GameState): void {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -81,15 +125,10 @@ function addPlayer(newPlayer: Player, players: Player[]): Player[] {
   return [...players, newPlayer];
 }
 
-function addEvent(event: GameEvent, events: GameEvent[]): GameEvent[] {
-  return [...events, event];
-}
-
-function newGameState(tick: number, players: Player[], events: GameEvent[]): GameState {
+function newGameState(tick: number, players: Player[]): GameState {
     return {
       tick: tick,
       players: players,
-      events: events
     }
 }
 
@@ -108,7 +147,6 @@ function playerPressed(key: string, player: Player, pressed: boolean): Player {
   }
 }
 
-
 function movePlayers(players: Player[]): Player[] {
   const movePlayer = (player: Player): Player => {
     const newPosition = {
@@ -122,28 +160,26 @@ function movePlayers(players: Player[]): Player[] {
 
 function computeState(state: GameState, event: GameEvent): GameState {
   const tick = state.tick + 1;
-  const events = addEvent(event, state.events);
   const statePlayers = movePlayers(state.players);
-  console.log(statePlayers);
 
   switch (event.type) {
     case EventType.TICK:
-      return newGameState(tick, statePlayers, events);
+      return newGameState(tick, statePlayers);
 
     case EventType.PLAYER_JOINED:
-      return newGameState(tick, addPlayer(event.player, statePlayers), events);
+      return newGameState(tick, addPlayer(event.player, statePlayers));
 
     case EventType.GAME_STARTED: 
-      return newGameState(tick, statePlayers, events);
+      return newGameState(tick, statePlayers);
 
     case EventType.PRESS:
       const playerPress = playerPressed(event.key, event.player, true);
-      return newGameState(tick, newPlayerList(playerPress, statePlayers), events);
+      return newGameState(tick, newPlayerList(playerPress, statePlayers));
 
     case EventType.RELEASE:
       const player = playerPressed(event.key, event.player, false);
       const players = newPlayerList(player, statePlayers);
-      return newGameState(tick, players, events);
+      return newGameState(tick, players);
 
     default:
       const _exhaustiveCheck: never = event;
@@ -161,12 +197,8 @@ function getPlayerColor(id: string): string {
   return '#' + '00000'.substring(0, 6 - c.length) + c;
 }
 
-// (0, 0) is top left for the canvas
-function main() {
-  const events: GameEvent[] = [
-    { type: EventType.TICK, tick: 1 },
-
-    { type: EventType.PRESS, player: {
+function getPlayer() {
+  return {
       id: "player1",
       name: "Alice",
       position: { x: 10, y: 10 },
@@ -174,17 +206,20 @@ function main() {
       a: false,
       s: false,
       d: false
-    }, key: "d", tick: 2 },
+  }
+}
 
-    { type: EventType.TICK, tick: 3 },
+var tick = 0;
+function getTick() {
+  return tick;
+}
 
-    { type: EventType.TICK, tick: 4 },
+function setTick(tick: number) {
+  tick = tick; 
+}
 
-    { type: EventType.TICK, tick: 5 }
-  ];
-    
-  const initialState: GameState = {
-    tick: 0,
+var state: GameState =  {
+    tick: getTick(),
     players: [
       {
         id: "player1",
@@ -195,17 +230,23 @@ function main() {
         s: false,
         d: false
       }
-    ],
-    events: []
+    ]
   };
+function getState() {
+  return state;
+}
 
-  let state = initialState;
+function setState(newState: GameState) {
+  state = newState;
+}
+
+
+// (0, 0) is top left for the canvas
+function main() {
+  addKeyboardListeners();
+  // player list com from the chat when we read the join event
+  // every time a join event is received, a player is added to the list.
   draw(state);
-  // Process each event
-  for (const event of events) {
-    state = computeState(state, event);
-    draw(state);
-  }
 }
 
 window.onload = main;
