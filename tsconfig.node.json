@@ -1,7 +1,8 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
+    "module": "NodeNext",
+    "outDir": "dist/src/node",
     "lib": ["ESNext"]
   },
   "include": ["src/node/**/*"],
