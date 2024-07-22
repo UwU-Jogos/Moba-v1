@@ -1,5 +1,5 @@
 //import WebSocket = require('isomorphic-ws')
-import WebSocket  from "isomorphic-ws";
+import WebSocket from "isomorphic-ws";
 // import WebSocket from "ws"
 import lib from "./lib"
 
@@ -8,7 +8,7 @@ function clone<T>(obj: T): T {
 }
 
 export default function client({ url = "ws://server.uwu.games" }: { url?: string } = {}) {
-  const ws = new WebSocket(url)
+  const ws = new WebSocket("ws://localhost:7171");
   const watching: { [room: string]: boolean } = {}
 
   function ws_send(buffer: Uint8Array) {
