@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script src="main.js"></script>
+  <script src="dist/bundle.js"></script>
   <title>Canvas Drawing</title>
 </head>
 <body>
@@ -11,7 +11,15 @@
     id="canvas"
     width="512"
     height="512"
-    style="border: 1px solid black;">
+    style="border: 1px solid black; display: none">
   </canvas>
+  <div id="formDiv">
+    <form onsubmit="event.preventDefault(); enterRoom();">
+      <label for="roomId">Room ID:</label>
+      <input type="text" id="roomId" name="roomId" required>
+      <input type="submit" value="Enter Room">
+    </form>
+  </div>
+  <div>
 </body>
 </html>
