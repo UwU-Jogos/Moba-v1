@@ -1,11 +1,8 @@
 // Importações
 import client from "./src/browser/client.js";
-import readline from "readline";
 
-// Configuração do cliente
 const uwuchat = client({ url: "ws://localhost:7171" });
 
-// Definindo tipos para o estado do jogo e dados dos jogadores
 interface Position {
   x: number;
   y: number;
@@ -28,14 +25,10 @@ interface PostData {
   cmd: "left" | "right";
 }
 
-// Lógica do Servidor
-// -------------------
-
 const roller = uwuchat.roller({
   room: 0x2000,
   user: 0x4,
 
-  // Estado inicial
   on_init: (time: number, user: number, data: any): State => {
     return {
       players: {},
@@ -43,93 +36,88 @@ const roller = uwuchat.roller({
     };
   },
 
-  // Quando um post é feito
   on_post: (state: State, time: number, user: number, data: PostData): State => {
-    // Se o jogador não existe, cria-o
     if (state.players[user] === undefined) {
       state.players[user] = {
         name: String(user),
-        pos: { x: 16, y: 0 },
+        pos: { x: 256, y: 256 },
       };
-
-    // Caso contrário, move-o
     } else {
       if (data.cmd === "left") {
-        state.players[user].pos.x -= 2;
+        state.players[user].pos.x -= 16;
       }
       if (data.cmd === "right") {
-        state.players[user].pos.x += 2;
+        state.players[user].pos.x += 16;
       }
     }
 
     return state;
   },
-
   on_pass(state, time, delta) {
-    return state
+    
   },
-
-  // Quando um tick acontece
   on_tick: [6, (state: State): State => {
-    // Move o boss
-    state.tick.pos.x = (state.tick.pos.x + 1) % 32;
+    state.tick.pos.x = (state.tick.pos.x + 16) % 512;
+    state.tick.pos.y = (state.tick.pos.y + 16) % 512;
 
-    // Para cada jogador
     for (const player_id in state.players) {
       const player = state.players[player_id];
 
-      // Move o jogador para dentro do mapa
-      if (player.pos.x >= 31) { player.pos.x = 31; }
+      if (player.pos.x >= 512) { player.pos.x = 512; }
       if (player.pos.x < 0) { player.pos.x = 0; }
+      if (player.pos.y >= 512) { player.pos.y = 512; }
+      if (player.pos.y < 0) { player.pos.y = 0; }
 
-      // Mata o jogador se o boss estiver sobre ele
-      if (player.pos.x === state.tick.pos.x) {
-        player.pos.x = 0;
+      if (player.pos.x === state.tick.pos.x && player.pos.y === state.tick.pos.y) {
+        player.pos.x = 256;
+        player.pos.y = 256;
       }
     }
+    
 
     return state;
   }]
 });
 
-// Entrada do Cliente
-// -------------------
+const canvas = document.getElementById("gameCanvas") as HTMLCanvasElement;
+const ctx = canvas.getContext("2d");
 
-readline.emitKeypressEvents(process.stdin);
-process.stdin.setRawMode(true);
+if (!ctx) {
+  throw new Error("Failed to get canvas rendering context");
+}
 
-process.stdin.on("keypress", (str: string, key: readline.Key) => {
-  if (key.name === "a") {
-    roller.post({ cmd: "left" });
+function draw(state: State) {
+  if (!ctx) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  for (let y = 0; y < 512; y += 16) {
+    for (let x = 0; x < 512; x += 16) {
+      ctx.strokeStyle = "black";
+      ctx.strokeRect(x, y, 16, 16);
+    }
   }
-
-  if (key.name === "d") {
-    roller.post({ cmd: "right" });
-  }
-
-  if (key.sequence === "\u0003") {
-    process.exit();
-  }
-});
-
-// Renderização do Cliente
-// -----------------------
-
-function draw(state: State): string {
-  const map: string[] = Array(32).fill("_");
 
   if (state) {
     for (const player_id in state.players) {
       const player = state.players[player_id];
-      map[player.pos.x] = player.name;
+      ctx.fillStyle = "blue";
+      ctx.fillRect(player.pos.x, player.pos.y, 16, 16);
     }
-    map[state.tick.pos.x] = state.tick.name;
+    ctx.fillStyle = "red";
+    ctx.fillRect(state.tick.pos.x, state.tick.pos.y, 16, 16);
   }
-
-  return map.join("");
 }
 
 setInterval(() => {
-  console.clear();
-  console.log(draw(roller.get_state()));
+  draw(roller.get_state());
 }, 1000 / 30);
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "a") {
+    roller.post({ cmd: "left" });
+  }
+  if (event.key === "d") {
+    roller.post({ cmd: "right" });
+  }
+});
