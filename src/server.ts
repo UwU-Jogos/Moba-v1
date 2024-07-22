@@ -1,6 +1,6 @@
-import ws from "ws"
-import fs from "fs"
-import path  from "path"
+import *  as ws from "ws"
+import * as fs from "fs"
+import * as path  from "path"
 import lib from "./lib.js"
 
 const port: number = Number(process.argv[2] || "7171")
