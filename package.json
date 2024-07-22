@@ -1,0 +1,19 @@
+{
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "src/server.js"
+  },
+  "dependencies": {
+    "bson": "^6.8.0",
+    "fs-extra": "^11.2.0",
+    "isomorphic-ws": "^5.0.0",
+    "ws": "7.5.9"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.3",
+    "@types/node": "^20.8.10",
+    "@types/ws": "8.5.8"
+  }
+}

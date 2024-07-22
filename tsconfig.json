@@ -1,7 +1,42 @@
 
+// {
+//   "compilerOptions": {
+//     "target": "es2016",
+//     "lib": ["es2016", "dom"],
+//     "module": "nodenext"
+//   }
+// }
+// {
+//   "compilerOptions": {
+//     "target": "es6",
+//     "module": "nodenext",
+//     "strict": true,
+//     "esModuleInterop": true,
+//     "skipLibCheck": true,
+//     "forceConsistentCasingInFileNames": true,
+//     "resolveJsonModule": true,
+//     "outDir": "./dist",
+//     "baseUrl": "./",
+//     "paths": {
+//       "*": ["node_modules/*"]
+//     }
+//   },
+//   "include": ["src/**/*.ts"],
+//   "exclude": ["node_modules"]
+// }
 {
   "compilerOptions": {
-    "target": "es2016",
-    "lib": ["es2016", "dom"]
-  }
+    // "module": "es6",
+    "module": "nodenext",
+    "target": "es6",
+    "outDir": "./dist",
+    "lib": ["es2016", "dom"],
+    "strict": true,
+    "esModuleInterop": true,
+    // "resolveJsonModule": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"]
 }
