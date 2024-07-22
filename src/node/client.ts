@@ -1,6 +1,5 @@
-import WebSocket = require('isomorphic-ws')
-// import * as WebSocket  from "isomorphic-ws";
-// import WebSocket from "ws"
+
+import WebSocket  from "ws"
 import lib from "./lib.js"
 
 function clone<T>(obj: T): T {

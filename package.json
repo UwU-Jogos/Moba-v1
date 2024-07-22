@@ -6,7 +6,6 @@
     "start": "src/server.js"
   },
   "dependencies": {
-    "bson": "^6.8.0",
     "fs-extra": "^11.2.0",
     "isomorphic-ws": "^5.0.0",
     "ws": "7.5.9"
