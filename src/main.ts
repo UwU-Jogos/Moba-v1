@@ -37,7 +37,6 @@ type GameState = {
 }
 
 type StateHistory = List<GameState>;
-const initialHistory: StateHistory = List();
 
 // ----------- KeyBoard Events Handling ------------------
 type KeyHandler = (roller: any, event: KeyboardEvent) => void;
