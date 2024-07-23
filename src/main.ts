@@ -168,8 +168,6 @@ function playerPressed(key: string, player: Player, pressed: boolean): Player {
   }
 }
 
-
-
 function movePlayers(players: List<Player>): List<Player> {
   const canvasX = 1;
   const canvasY = 1;
@@ -270,7 +268,7 @@ function enterRoom() {
     const canvasWidth = rect.width;
     const canvasHeight = rect.height;
 
-    const uwuchat = client({ url: "ws//127.0.0.1:7171" });
+    const uwuchat = client({ url: "ws://server.uwu.games" });
 
     let roller = uwuchat.roller({
       room: roomId,
