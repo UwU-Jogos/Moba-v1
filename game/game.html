@@ -14,12 +14,25 @@
       border: 1px solid black;
       background-color: #f0f0f0;
       display: block;
+
+    }
+
+    #tickDisplay {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      padding: 5px;
+      border-radius: 3px;
     }
   </style>
 </head>
 
 <body>
-  <canvas id="gameCanvas" width="512" height="512"></canvas>
-  <script type="module" src="../../dist/game/game.js"></script>
+  <canvas id="gameCanvas" width="720" height="640"></canvas>
+  <div id="tickDisplay">Tick: 0</div>
+  <script type="module"  src="../dist/game/game.js"></script>
 </body>
+
 </html>

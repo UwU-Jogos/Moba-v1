@@ -51,7 +51,8 @@ const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
 const tickDisplay = document.getElementById('tickDisplay') as HTMLDivElement;
 const ctx = canvas.getContext('2d');
 const ballRadius = 8;
-const ballSpeed = 4;
+const ballSpeed = 6;
+const tickRate = 24;
 
 
 // const stateHistory: State[] = [state];
@@ -94,21 +95,21 @@ const roller = uwuchat.roller({
         state.players[user].pos.y += ballSpeed;
       }
     }
-
+    
     return state;
   },
-
+  
   // Quando um tick acontece
-  on_tick: [60, (state: State): State => {
+  on_tick: [tickRate, (state: State): State => {
     state.tick = (state.tick + 1)
-
+    
     for (const player_id in state.players) {
       const player = state.players[player_id];
-
+      
       player.pos.x = Math.max(ballRadius, Math.min(canvas.width - ballRadius, player.pos.x));
       player.pos.y = Math.max(ballRadius, Math.min(canvas.height - ballRadius, player.pos.y));
     }
-
+    
     return state;
   }]
 });
@@ -130,9 +131,11 @@ function handleKeyDown(event: KeyboardEvent): void {
 }
 
 function handleKeyUp(event: KeyboardEvent): void {
-  keyState[event.key] = false;
-  console.log(`Key "${event.key}" released.`);
-  console.log(keyState);
+  if (["w", "a", "s", "d"].includes(event.key)) {
+    keyState[event.key] = false;
+    console.log(`Key "${event.key}" released.`);
+    console.log(keyState);
+  }  
 }
 
 function addKeyboardListeners(): void {
@@ -143,7 +146,6 @@ function addKeyboardListeners(): void {
 function compute_state(state: State, event: PostData): State {
   const newPlayers = { ...state.players };
   Object.keys(newPlayers).forEach(playerId => {
-    // const player = newPlayers[parseInt(playerId)];
     const player = newPlayers[parseInt(playerId)];
     // Atualizar a posição do jogador com base no comando
     switch (event.cmd) {
@@ -176,7 +178,7 @@ function compute_state(state: State, event: PostData): State {
   return {
     ...state,
     players: newPlayers,
-    tick: state.tick + 1
+    tick: state.tick
   };
 }
 
@@ -198,7 +200,6 @@ function draw(state: State): void {
     const player = players[parseInt(playerId)];
     ctx.beginPath();
     ctx.arc(player.pos.x, player.pos.y, ballRadius, 0, Math.PI * 2);
-    // ctx.fillStyle = `hsl(${Math.random() * 360}, 100%, 50%)`; // Cor da bola
     ctx.fillStyle = getPlayerColor(playerId); // Cor da bola
     
     ctx.fill();
@@ -207,29 +208,29 @@ function draw(state: State): void {
     ctx.font = '12px Arial';
     ctx.fillText(playerId, player.pos.x - 20, player.pos.y - 15);
     
-    ctx.fillStyle = 'black';
-    ctx.font = '14px Arial';
-    ctx.fillText(`Tick: ${state.tick}`, 10, 20);
   });
 }
 
-// function updateTickDisplay(): void {
-//   if (state) {
-//     if (tickDisplay) {
-//       tickDisplay.textContent = `Tick: ${state.tick}`;
-//     }
-//   }
-// }
+function updateTickDisplay(state: State): void {
+  if (state) {
+    if (tickDisplay) {
+      tickDisplay.textContent = `Tick: ${state.tick}`;
+    }
+  }
+}
 
 function gameLoop(): void {
   // Atualizar o estado do jogo e adicionar ao histórico
+setInterval(function render() {
   state = roller.get_state();
   if (state) {
     state = compute_state(state, { cmd: 'noop' });
     draw(state);
-    // updateTickDisplay();
+    updateTickDisplay(state);
   }
-  requestAnimationFrame(gameLoop); // Schedule the next frame
+}, 1000 / tickRate);
+
+  // requestAnimationFrame(gameLoop); // Schedule the next frame
   // stateHistory.push(state);
 }
 
@@ -241,4 +242,4 @@ function main(): void {
   addKeyboardListeners();
   gameLoop();
 }
-main();
+window.onload = main;
