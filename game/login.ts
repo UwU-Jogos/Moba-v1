@@ -14,7 +14,7 @@ document.getElementById('connectBtn')?.addEventListener('click', () => {
   
   if (roomId && playerName) {
       // Redirecionar para a tela do jogo com os parâmetros de URL
-      window.location.href = `src/game/game.html?roomId=${encodeURIComponent(roomId)}&playerName=${encodeURIComponent(playerName)}`;
+      window.location.href = `/game/game.html?roomId=${encodeURIComponent(roomId)}&playerName=${encodeURIComponent(playerName)}`;
   } else {
       alert('Por favor, insira o ID da sala e o nome do personagem.');
   }

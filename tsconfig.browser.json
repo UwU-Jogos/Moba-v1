@@ -4,6 +4,6 @@
     "module": "ESNext",
     "lib": ["DOM", "ESNext"]
   },
-  "include": ["src/browser/**/*", "*.ts","src/game/**/*"],
+  "include": ["src/browser/**/*", "*.ts","game/**/*"],
   "exclude": ["src/node/*"]
 }

@@ -1,5 +1,5 @@
 // Importações
-import client from "../browser/client.js";
+import client from "../src/client.js";
 
 interface Position {
   x: number;
