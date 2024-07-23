@@ -1,5 +1,3 @@
-import { BSON } from "bson"
-
 const WATCH: number = 0
 const UNWATCH: number = 1
 const POST: number = 2
@@ -88,16 +86,6 @@ function check_hex(bits: number | null, hex: string): string | null {
   }
 }
 
-const utf8_encoder = new TextEncoder()
-function string_to_bytes(str: string): Uint8Array {
-  return utf8_encoder.encode(str)
-}
-
-const utf8_decoder = new TextDecoder()
-function bytes_to_string(buf: Uint8Array): string {
-  return utf8_decoder.decode(buf)
-}
-
 function string_to_hex(str: string): string {
   return bytes_to_hex(string_to_bytes(str))
 }
@@ -109,13 +97,26 @@ function hex_to_string(hex: string): string {
 function states_new(): null {
   return null
 }
+function string_to_bytes(str: string): Uint8Array {
+  const encoder = new TextEncoder();
+  return encoder.encode(str);
+}
+
+function bytes_to_string(bytes: Uint8Array): string {
+  const decoder = new TextDecoder();
+  return decoder.decode(bytes);
+}
 
 function json_to_hex(json: Record<string, any>): string {
-  return bytes_to_hex(BSON.serialize(json))
+  const jsonString = JSON.stringify(json);
+  const bytes = string_to_bytes(jsonString);
+  return Array.from(bytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
 function hex_to_json(hex: string): Record<string, any> {
-  return BSON.deserialize(hex_to_bytes(hex))
+  const bytes = new Uint8Array(hex.match(/.{1,2}/g)!.map(byte => parseInt(byte, 16)));
+  const jsonString = bytes_to_string(bytes);
+  return JSON.parse(jsonString);
 }
 
 function states_push(states: null | { bit: number; current: any; older: null | any }, new_state: any): { bit: number; current: any; older: null | any } {
