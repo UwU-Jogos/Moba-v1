@@ -1,4 +1,5 @@
 import client from "./client";
+import { List, Map, Record } from "immutable";
 
 enum EventType {
   PLAYER_JOINED,
@@ -15,6 +16,25 @@ type GameEvent =
   | { type: EventType.PRESS; player: number; key: string; tick: number; }
   | { type: EventType.RELEASE; player: number; key: string; tick: number; }
 
+const PositionRecord = Record({
+  x: 0,
+  y: 0
+});
+
+type PositionRecord = ReturnType<typeof PositionRecord>;
+
+const PlayerRecord = Record({
+  id: 0,
+  name: "",
+  position: PositionRecord(),
+  w: false,
+  a: false,
+  s: false,
+  d: false
+});
+
+type PlayerRecord = ReturnType<typeof PlayerRecord>;
+
 type Position = {
   x: number;
   y: number;
@@ -30,6 +50,24 @@ type Player = {
   d: boolean;
 }
 
+
+// option would be a great refactor here, i dont want to return a default 
+function getPlayerById(playerId: number, players: Player[]): Player {
+  let p = players.find(player => player.id === playerId);
+  if (!p) {
+    return {
+      id: 0,
+      name: "",
+      position: { x: 0, y: 0 },
+      w: false,
+      a: false,
+      s: false,
+      d: false
+    }
+  }
+  return p;
+}
+
 type GameState = {
   tick: number;
   players: Player[];
@@ -39,14 +77,30 @@ type StateHistory = GameState[];
 
 type KeyHandler = (roller: any, event: KeyboardEvent) => void;
 
+let thisPlayerId = 0x0;
 function thisPlayer() {
-  return 0x2;
+  return thisPlayerId;
+}
+function setThisPlayer(p: number) {
+  thisPlayerId = p;
+}
+
+
+function newPlayer(pid: number, name: string): Player {
+  return {
+      id: pid,
+      name: name,
+      position: { x: 0, y: 0 },
+      w: false,
+      a: false,
+      s: false,
+      d: false
+    }
 }
 
 // when a key is pressed, the correct event should be created and broadcasted 
 // for the chat, as well as render the correct tick for the current player
 const handleKeyPress: KeyHandler = (roller: any, event: KeyboardEvent) => {
-  // should post a game event
   const pressEvent: GameEvent = {
     type: EventType.PRESS,
     player: thisPlayer(),
@@ -55,6 +109,7 @@ const handleKeyPress: KeyHandler = (roller: any, event: KeyboardEvent) => {
   }
   roller.post(pressEvent);
 }
+
 
 const handleKeyRelease: KeyHandler = (roller: any, event: KeyboardEvent) => {
   const releaseEvent: GameEvent = {
@@ -67,8 +122,8 @@ const handleKeyRelease: KeyHandler = (roller: any, event: KeyboardEvent) => {
 }
 
 const addKeyboardListeners = (roller: any): void => {
-  document.addEventListener("keydown", (event) => handleKeyPress(event, roller));
-  document.addEventListener("keyup", (event) => handleKeyRelease(event, roller));
+  document.addEventListener("keydown", (event) => handleKeyPress(roller, event));
+  document.addEventListener("keyup", (event) => handleKeyRelease(roller, event));
 }
 
 function draw(state: GameState): void {
@@ -122,10 +177,10 @@ function newGameState(tick: number, players: Player[]): GameState {
     }
 }
 
-function initialGameState(): GameState {
+function initialGameState(p: Player): GameState {
   return {
     tick: 0,
-    players: []
+    players: [p]
   }
 }
 
@@ -156,8 +211,8 @@ function movePlayers(players: Player[]): Player[] {
 }
 
 function computeState(state: GameState, event: GameEvent): GameState {
-  const tick = state.tick + 1;
-  const statePlayers = movePlayers(state.players);
+  const tick = state.tick;
+  const statePlayers = state.players;
 
   switch (event.type) {
     case EventType.TICK:
@@ -170,21 +225,21 @@ function computeState(state: GameState, event: GameEvent): GameState {
       return newGameState(tick, statePlayers);
 
     case EventType.PRESS:
-      const playerPress = playerPressed(event.key, event.player, true);
-      return newGameState(tick, newPlayerList(playerPress, statePlayers));
+      let p = getPlayerById(event.player, statePlayers);
+      const playerPress = playerPressed(event.key, p, true);
+      return newGameState(tick, movePlayers(newPlayerList(playerPress, statePlayers)));
 
     case EventType.RELEASE:
-      const player = playerPressed(event.key, event.player, false);
-      const players = newPlayerList(player, statePlayers);
+      let pl = getPlayerById(event.player, statePlayers);
+      const player = playerPressed(event.key, pl, false);
+      const players = movePlayers(newPlayerList(player, statePlayers));
       return newGameState(tick, players);
 
     default:
-      const _exhaustiveCheck: never = event;
-      throw new Error(`Unhandled event type: ${_exhaustiveCheck}`);
+      return state;
   }
 }
 
-// just ignore
 function getPlayerColor(id: string): string {
   let hash = 0;
   for (let i = 0; i < id.length; i++) {
@@ -194,68 +249,86 @@ function getPlayerColor(id: string): string {
   return '#' + '00000'.substring(0, 6 - c.length) + c;
 }
 
-function buildEvent(data: any): GameEvent {
-  return {
-    type: EventType.TICK, 
-    tick: data.tick
-  } 
-}
-
 function enterRoom() {
+    const roomId: number = Number((document.getElementById('roomId') as HTMLInputElement).value);
+    const nickname: string = (document.getElementById('nickname') as HTMLInputElement).value;
+    let thisPlayerId = generateHexId();
+    const activePlayer = newPlayer(thisPlayerId, nickname);
+
+    const formDiv = document.getElementById('formDiv');
+    const canvas = document.getElementById('canvas') as HTMLCanvasElement | null;
+
+    if (formDiv && canvas) {
+        formDiv.style.display = 'none';
+        canvas.style.display = 'block';
+    } 
+
+    // next feat: do clamping on the canvas
+    const rect = canvas?.getBoundingClientRect() || { left: 10, top: 10, height: 500, width: 500 };
+    const canvasX = rect.left;
+    const canvasY = rect.top;
+    const canvasWidth = rect.width;
+    const canvasHeight = rect.height;
+
     const uwuchat = client({ url: "ws//127.0.0.1:7171" });
 
     let roller = uwuchat.roller({
-      room: 0x600,
-      user: 0x2,
+      room: roomId,
+      user: thisPlayerId,
 
-      on_init: (time, user, data) => {
-        return initialGameState();
+      on_init: (time, user, data) => { 
+        const joinedEv: GameEvent = {
+          type: EventType.PLAYER_JOINED,
+          player: activePlayer,
+          tick: 0
+        }
+        roller.post(joinedEv);
+        return initialGameState(activePlayer);
       },
 
       // when a post is made, compute state
       on_post: (state, time, user, data) => {
-        // how to pass the tick?
-        return computeState(state, 0);
+        let newState = computeState(state, data);
+        return newState;
       },
 
-      on_tick: [20, (state) => {
-        // clamp player position to be in the map
-        // in theory here we should also compute state
+      on_tick: [30, (state) => {
         return state;
       }],
 
       on_pass: (state, time, delta) => {
         return state;
       }
-    });
+    }); 
 
-    const roomId = (document.getElementById('roomId') as HTMLInputElement).value;
-    console.log(`ENTERED ROOM: ${roomId}`);
-
-    const formDiv = document.getElementById('formDiv');
-    const canvas = document.getElementById('canvas');
-
-    if (formDiv && canvas) {
-        formDiv.style.display = 'none';
-        canvas.style.display = 'block';
+    const initEvent: GameEvent = {
+      type: EventType.GAME_STARTED,
+      tick: 0
     }
 
-    console.log(roller);
-    console.log(roller.get_state());
-    roller.post({ savio: "o sabio" });
-    console.log(roller.get_ping());
-    console.log(roller.get_time());
+    const joined: GameEvent = {
+      type: EventType.PLAYER_JOINED,
+      player: activePlayer,
+      tick: 0
+    }
 
-    (window as any).roller = roller;
-    main(roller);
+    roller.post(joined);
+
+    setThisPlayer(thisPlayerId); 
+    main(roller, activePlayer);
 }
 
-// (0, 0) is top left for the canvas
-function main(roller: any) {
+function generateHexId(): number {
+  const timestamp = new Date().getTime();
+  const randomPart = Math.floor(Math.random() * 16777216); // 16777216 is 0xFFFFFF in decimal
+  return Number(`${timestamp}${randomPart}`);
+}
+
+function main(roller: any, activePlayer: Player) {
   addKeyboardListeners(roller);
-  
   setInterval(function render() {
-    draw(roller.get_state());
+    let state = roller.get_state();
+    draw(state);
   }, 1000 / 30);
 }
 
