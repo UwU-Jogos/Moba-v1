@@ -206,7 +206,7 @@ function draw(state: State): void {
     ctx.closePath();
     ctx.fillStyle = 'red';
     ctx.font = '12px Arial';
-    ctx.fillText(playerId, player.pos.x - 20, player.pos.y - 15);
+    ctx.fillText(player.name, player.pos.x - 20, player.pos.y - 15);
     
   });
 }
