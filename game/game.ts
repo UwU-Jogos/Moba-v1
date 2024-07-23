@@ -52,7 +52,7 @@ const tickDisplay = document.getElementById('tickDisplay') as HTMLDivElement;
 const ctx = canvas.getContext('2d');
 const ballRadius = 8;
 const ballSpeed = 6;
-const tickRate = 24;
+const tickRate = 120;
 
 
 // const stateHistory: State[] = [state];

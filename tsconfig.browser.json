@@ -1,9 +1,0 @@
-{
-  "extends": "./tsconfig.json",
-  "compilerOptions": {
-    "module": "ESNext",
-    "lib": ["DOM", "ESNext"]
-  },
-  "include": ["src/browser/**/*", "*.ts","game/**/*"],
-  "exclude": ["src/node/*"]
-}
