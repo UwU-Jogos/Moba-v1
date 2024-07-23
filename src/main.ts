@@ -168,11 +168,36 @@ function playerPressed(key: string, player: Player, pressed: boolean): Player {
   }
 }
 
+
+
 function movePlayers(players: List<Player>): List<Player> {
+  const canvasX = 1;
+  const canvasY = 1;
+  const canvasWidth = 1024;
+  const canvasHeight = 800;
+  const playerRadius = 10;
+
+  const clamp = (value: number, min: number, max: number): number =>
+    Math.min(Math.max(value, min), max);
+
   const movePlayer = (player: Player): Player => {
+    const speed = 2;
+    const velocity = {
+      x: (player.d ? speed : 0) - (player.a ? speed : 0),
+      y: (player.s ? speed : 0) - (player.w ? speed : 0),
+    };
+
     const newPosition = {
-      x: player.position.x + (player.d ? 3 : 0) - (player.a ? 3 : 0),
-      y: player.position.y + (player.s ? 3 : 0) - (player.w ? 3 : 0),
+      x: clamp(
+        player.position.x + velocity.x,
+        canvasX + playerRadius,
+        canvasX + canvasWidth - playerRadius
+      ),
+      y: clamp(
+        player.position.y + velocity.y,
+        canvasY + playerRadius,
+        canvasY + canvasHeight - playerRadius
+      ),
     };
     return { ...player, position: newPosition };
   }
@@ -185,7 +210,7 @@ function computeState(state: GameState, event: GameEvent): GameState {
 
   switch (event.type) {
     case EventType.TICK:
-      return newGameState(tick + 1, statePlayers);
+      return newGameState(tick + 1, movePlayers(statePlayers));
 
     case EventType.PLAYER_JOINED:
       return newGameState(tick, addPlayer(event.player, statePlayers));
@@ -199,7 +224,7 @@ function computeState(state: GameState, event: GameEvent): GameState {
         return state;
       }
       const playerPress = playerPressed(event.key, p, true);
-      return newGameState(tick, movePlayers(newPlayerList(playerPress, statePlayers)));
+      return newGameState(tick, newPlayerList(playerPress, statePlayers));
 
     case EventType.RELEASE:
       let pl = getPlayerById(event.player, statePlayers);
@@ -207,7 +232,7 @@ function computeState(state: GameState, event: GameEvent): GameState {
         return state;
       }
       const player = playerPressed(event.key, pl, false);
-      const players = movePlayers(newPlayerList(player, statePlayers));
+      const players = newPlayerList(player, statePlayers);
       return newGameState(tick, players);
 
     default:
@@ -267,8 +292,8 @@ function enterRoom() {
         return newState;
       },
 
-      on_tick: [30, (state) => {
-        return state;
+      on_tick: [60, (state) => {
+        return computeState(state, { type: EventType.TICK, tick: state.tick });
       }],
 
       on_pass: (state, time, delta) => {
@@ -298,7 +323,7 @@ function main(roller: any) {
   setInterval(function render() {
     let state = roller.get_state();
     draw(state);
-  }, 1000 / 30);
+  }, 1000 / 60);
 }
 
 (window as any).enterRoom = enterRoom
