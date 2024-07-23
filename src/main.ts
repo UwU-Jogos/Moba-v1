@@ -1,5 +1,5 @@
 import client from "./client";
-import { List, Map, Record } from "immutable";
+import { List } from "immutable";
 
 enum EventType {
   PLAYER_JOINED,
@@ -16,25 +16,6 @@ type GameEvent =
   | { type: EventType.PRESS; player: number; key: string; tick: number; }
   | { type: EventType.RELEASE; player: number; key: string; tick: number; }
 
-const PositionRecord = Record({
-  x: 0,
-  y: 0
-});
-
-type PositionRecord = ReturnType<typeof PositionRecord>;
-
-const PlayerRecord = Record({
-  id: 0,
-  name: "",
-  position: PositionRecord(),
-  w: false,
-  a: false,
-  s: false,
-  d: false
-});
-
-type PlayerRecord = ReturnType<typeof PlayerRecord>;
-
 type Position = {
   x: number;
   y: number;
@@ -50,56 +31,17 @@ type Player = {
   d: boolean;
 }
 
-
-// option would be a great refactor here, i dont want to return a default 
-function getPlayerById(playerId: number, players: Player[]): Player {
-  let p = players.find(player => player.id === playerId);
-  if (!p) {
-    return {
-      id: 0,
-      name: "",
-      position: { x: 0, y: 0 },
-      w: false,
-      a: false,
-      s: false,
-      d: false
-    }
-  }
-  return p;
-}
-
 type GameState = {
   tick: number;
-  players: Player[];
+  players: List<Player>;
 }
 
-type StateHistory = GameState[];
+type StateHistory = List<GameState>;
+const initialHistory: StateHistory = List();
 
+// ----------- KeyBoard Events Handling ------------------
 type KeyHandler = (roller: any, event: KeyboardEvent) => void;
 
-let thisPlayerId = 0x0;
-function thisPlayer() {
-  return thisPlayerId;
-}
-function setThisPlayer(p: number) {
-  thisPlayerId = p;
-}
-
-
-function newPlayer(pid: number, name: string): Player {
-  return {
-      id: pid,
-      name: name,
-      position: { x: 0, y: 0 },
-      w: false,
-      a: false,
-      s: false,
-      d: false
-    }
-}
-
-// when a key is pressed, the correct event should be created and broadcasted 
-// for the chat, as well as render the correct tick for the current player
 const handleKeyPress: KeyHandler = (roller: any, event: KeyboardEvent) => {
   const pressEvent: GameEvent = {
     type: EventType.PRESS,
@@ -125,6 +67,34 @@ const addKeyboardListeners = (roller: any): void => {
   document.addEventListener("keydown", (event) => handleKeyPress(roller, event));
   document.addEventListener("keyup", (event) => handleKeyRelease(roller, event));
 }
+
+// ---------------- Local Player Handling -----------------
+let thisPlayerId = 0x0;
+
+function thisPlayer() {
+  return thisPlayerId;
+}
+function setThisPlayer(p: number) {
+  thisPlayerId = p;
+}
+
+function newPlayer(pid: number, name: string): Player {
+  return {
+      id: pid,
+      name: name,
+      position: { x: 50, y: 50 },
+      w: false,
+      a: false,
+      s: false,
+      d: false
+    }
+}
+
+function getPlayerById(playerId: number, players: List<Player>): Player | undefined {
+  return players.find(player => player.id === playerId);
+}
+// -------------------------------------------------------
+
 
 function draw(state: GameState): void {
   const canvas = document.getElementById("canvas") as HTMLCanvasElement;
@@ -153,24 +123,24 @@ function draw(state: GameState): void {
     ctx.fillText(player.name, player.position.x - 20, player.position.y - 15);
   };
 
-  state.players.map(drawPlayer);
+  state.players.forEach(drawPlayer);
 
   ctx.fillStyle = 'black';
   ctx.font = '14px Arial';
   ctx.fillText(`Tick: ${state.tick}`, 10, 20);
 }
 
-function newPlayerList(updatedPlayer: Player, players: Player[]): Player[] {
+function newPlayerList(updatedPlayer: Player, players: List<Player>): List<Player> {
   return players.map(player =>
     player.id === updatedPlayer.id ? updatedPlayer : player 
   );
 }
 
-function addPlayer(newPlayer: Player, players: Player[]): Player[] {
-  return [...players, newPlayer];
+function addPlayer(newPlayer: Player, players: List<Player>): List<Player> {
+  return players.push(newPlayer);
 }
 
-function newGameState(tick: number, players: Player[]): GameState {
+function newGameState(tick: number, players: List<Player>): GameState {
     return {
       tick: tick,
       players: players,
@@ -180,7 +150,7 @@ function newGameState(tick: number, players: Player[]): GameState {
 function initialGameState(p: Player): GameState {
   return {
     tick: 0,
-    players: [p]
+    players: List([p])
   }
 }
 
@@ -199,7 +169,7 @@ function playerPressed(key: string, player: Player, pressed: boolean): Player {
   }
 }
 
-function movePlayers(players: Player[]): Player[] {
+function movePlayers(players: List<Player>): List<Player> {
   const movePlayer = (player: Player): Player => {
     const newPosition = {
       x: player.position.x + (player.d ? 3 : 0) - (player.a ? 3 : 0),
@@ -216,7 +186,7 @@ function computeState(state: GameState, event: GameEvent): GameState {
 
   switch (event.type) {
     case EventType.TICK:
-      return newGameState(tick, statePlayers);
+      return newGameState(tick + 1, statePlayers);
 
     case EventType.PLAYER_JOINED:
       return newGameState(tick, addPlayer(event.player, statePlayers));
@@ -226,11 +196,17 @@ function computeState(state: GameState, event: GameEvent): GameState {
 
     case EventType.PRESS:
       let p = getPlayerById(event.player, statePlayers);
+      if(!p) {
+        return state;
+      }
       const playerPress = playerPressed(event.key, p, true);
       return newGameState(tick, movePlayers(newPlayerList(playerPress, statePlayers)));
 
     case EventType.RELEASE:
       let pl = getPlayerById(event.player, statePlayers);
+      if(!pl) {
+        return state;
+      }
       const player = playerPressed(event.key, pl, false);
       const players = movePlayers(newPlayerList(player, statePlayers));
       return newGameState(tick, players);
@@ -301,11 +277,6 @@ function enterRoom() {
       }
     }); 
 
-    const initEvent: GameEvent = {
-      type: EventType.GAME_STARTED,
-      tick: 0
-    }
-
     const joined: GameEvent = {
       type: EventType.PLAYER_JOINED,
       player: activePlayer,
@@ -313,9 +284,8 @@ function enterRoom() {
     }
 
     roller.post(joined);
-
     setThisPlayer(thisPlayerId); 
-    main(roller, activePlayer);
+    main(roller);
 }
 
 function generateHexId(): number {
@@ -324,7 +294,7 @@ function generateHexId(): number {
   return Number(`${timestamp}${randomPart}`);
 }
 
-function main(roller: any, activePlayer: Player) {
+function main(roller: any) {
   addKeyboardListeners(roller);
   setInterval(function render() {
     let state = roller.get_state();
