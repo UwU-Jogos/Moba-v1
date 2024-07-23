@@ -43,7 +43,8 @@ if (!roomId || !playerName) {
   throw new Error('ID da sala ou nome do personagem não fornecidos.');
 }
 
-const uwuchat = client({ url: "ws://localhost:7171" });
+// const uwuchat = client({ url: "ws://localhost:7171" });
+const uwuchat = client({ url: "ws://server.uwu.games" });
 
 const keyState: { [key: string]: boolean } = {};
 const canvas = document.getElementById('gameCanvas') as HTMLCanvasElement;
