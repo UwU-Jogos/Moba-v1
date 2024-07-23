@@ -2,10 +2,9 @@
 - [x] Define simple types (GameState, GameEvent, Position etc)
 - [x] Create the canvas
 - [x] A draw function for the canvas
-- [ ] Integration with UwU chat 
-- [ ] Get the server messages to compute
-- [ ] Handle server event with a past tick (kinda "rollback" logic)
-- [ ] Login / Room ID initial page
-- [ ] Gameloop
-- [ ] Store game states using immutable.js
-- [ ] Handle keyboard events
+- [x] Integration with UwU chat 
+- [x] Get the server messages to compute
+- [x] Handle server event with a past tick (kinda "rollback" logic)
+- [x] Login / Room ID initial page
+- [x] Gameloop
+- [x] Handle keyboard events
