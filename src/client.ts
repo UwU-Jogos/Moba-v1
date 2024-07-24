@@ -69,7 +69,7 @@ class UwUChat2Client {
   }
 
   public time(): number{
-    return (Date.now() + this.server_time_offset), this.server_time_offset;
+    return Date.now() + this.server_time_offset;
   }
   public get_ping(): number{
     return this.server_time_offset;

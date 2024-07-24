@@ -1,49 +1,12 @@
-// import UwUChat2Client from "./client";
-// import lib from "./lib";
-// import { List } from "immutable";
-
-// const client = new UwUChat2Client.default();
-// const output = document.getElementById('output');
-// const serverTimeDisplay = document.getElementById('serverTime');
-// const testRoom = 1; // Use room ID 1 for testing
-
-// client.init('ws://localhost:8080').then(() => {
-//     console.log('Connected to server');
-
-//     // Listen for messages in the test room
-//     client.recv(testRoom, (msg) => {
-//         const text = new TextDecoder().decode(msg);
-//         console.log(text);
-//     });
-
-//     // Handle keypress events
-//     document.addEventListener('keypress', (event) => {
-//         const key = event.key;
-//         const keyBuffer = new TextEncoder().encode(key);
-//         client.send(testRoom, keyBuffer);
-//     });
-
-//     // Update server time display
-//     function updateServerTime() {
-//         const serverTime = new Date(client.time());
-//         console.log(`Server Time: ${serverTime.toISOString()}`);
-//         requestAnimationFrame(updateServerTime);
-//     }
-//     updateServerTime();
-
-// }).catch(console.error);
-
-
-
 import UwUChat2Client from './client';
 import lib from "./lib";
 
-const COMMAND_MESSAGE = 0
-const SET_NICK = 1
+const COMMAND_MESSAGE = 0;
+const SET_NICK = 1;
 
 type GameMessage =
   | { tag: 0, user: number, time: number, key: Uint8Array }
-  | { tag: 1, user: number, name: string }
+  | { tag: 1, user: number, name: string };
 
 const enum KeyEventType {
   PRESS = 1,
@@ -51,9 +14,9 @@ const enum KeyEventType {
 }
 
 type KeyEvent = {
-  key: number,
-  event: KeyEventType
-}
+  key: number;
+  event: KeyEventType;
+};
 
 type Position = {
   x: number;
@@ -68,11 +31,11 @@ type Player = {
   a: boolean;
   s: boolean;
   d: boolean;
-}
+};
 
-// type GameState = {
-//   players: List<Player>;
-// }
+type GameState = {
+  players: { [key: number]: Player };
+};
 
 const client = new UwUChat2Client();
 const loginScreen = document.getElementById('login-screen') as HTMLDivElement;
@@ -81,11 +44,12 @@ const ctx = gameCanvas.getContext('2d')!;
 const usernameInput = document.getElementById('username') as HTMLInputElement;
 const roomInput = document.getElementById('room') as HTMLInputElement;
 const loginButton = document.getElementById('login-button') as HTMLButtonElement;
+
 let username = '';
 let room = 0;
-let playerId = 0 // Math.floor(Math.random() * 1000000);
+let playerId = 0; // Math.floor(Math.random() * 1000000);
 let pressedKeys = new Set<number>();
-let players: { [key: number]: { name: string; keys: Set<number>; x: number; y: number} } = {};
+let gameState: GameState = { players: {} };
 
 const PLAYER_RADIUS = 10;
 const MOVE_SPEED = 2;
@@ -116,6 +80,7 @@ function generateColor(playerId: number): string {
   const color = '#' + ('000000' + hash.toString(16)).slice(-6);
   return color;
 }
+
 loginButton.onclick = async () => {
   username = usernameInput.value;
   playerId = encodeUsername(username);
@@ -123,17 +88,20 @@ loginButton.onclick = async () => {
   if (username && room) {
     await client.init('ws://server.uwu.games');
     client.recv(room, handleGameMessage);
-    client.send(room, lib.encode({ tag: 1, user: playerId, name: username }));
+    client.send(room, lib.encode({ tag: SET_NICK, user: playerId, name: username }));
 
     loginScreen.style.display = 'none';
     gameCanvas.style.display = 'block';
 
     // Initialize the player's position and color
-    players[playerId] = {
+    gameState.players[playerId] = {
+      id: playerId,
       name: username,
-      keys: new Set<number>(),
-      x: gameCanvas.width / 2,
-      y: gameCanvas.height / 2,
+      position: { x: gameCanvas.width / 2, y: gameCanvas.height / 2 },
+      w: false,
+      a: false,
+      s: false,
+      d: false,
     };
 
     draw();
@@ -156,7 +124,7 @@ document.addEventListener('keyup', (event) => {
 
 function sendKeyEvent(key: number, event: KeyEventType) {
   const keyEvent = lib.encodeKey({ key, event });
-  client.send(room, lib.encode({ tag: 0, user: playerId, time: client.time(), key: keyEvent }));
+  client.send(room, lib.encode({ tag: COMMAND_MESSAGE, user: playerId, time: client.time(), key: keyEvent }));
 }
 
 function handleGameMessage(msg: Uint8Array) {
@@ -164,46 +132,71 @@ function handleGameMessage(msg: Uint8Array) {
   computeState(decoded);
 }
 
-function computeState(event: { tag: 0; user: number; time: number; key: Uint8Array; } | { tag: 1; user: number; name: string; }) {
-  if (event.tag === 0) {
-    if (!players[event.user]) {
-      players[event.user] = { name: '', keys: new Set<number>(), x: gameCanvas.width / 2, y: gameCanvas.height / 2 };
+function computeState(event: GameMessage) {
+  if (event.tag === COMMAND_MESSAGE) {
+    if (!gameState.players[event.user]) {
+      gameState.players[event.user] = {
+        id: event.user,
+        name: '',
+        position: { x: gameCanvas.width / 2, y: gameCanvas.height / 2 },
+        w: false,
+        a: false,
+        s: false,
+        d: false,
+      };
     }
     const keyEvent = lib.decodeKey(event.key);
     if (keyEvent.event === KeyEventType.PRESS) {
-      players[event.user].keys.add(keyEvent.key);
+      const player = gameState.players[event.user];
+      if ((keyEvent.key === 87) || (keyEvent.key === 38)) player.w = true;
+      if ((keyEvent.key === 83) || (keyEvent.key === 40)) player.s = true;
+      if ((keyEvent.key === 65) || (keyEvent.key === 37)) player.a = true;
+      if ((keyEvent.key === 68) || (keyEvent.key === 39)) player.d = true;
+
     } else if (keyEvent.event === KeyEventType.RELEASE) {
-      players[event.user].keys.delete(keyEvent.key);
+      const player = gameState.players[event.user];
+      if ((keyEvent.key === 87) || (keyEvent.key === 38)) player.w = false;
+      if ((keyEvent.key === 83) || (keyEvent.key === 40)) player.s = false;
+      if ((keyEvent.key === 65) || (keyEvent.key === 37)) player.a = false;
+      if ((keyEvent.key === 68) || (keyEvent.key === 39)) player.d = false;
     }
-  } else if (event.tag === 1) {
-    if (!players[event.user]) {
-      players[event.user] = { name: event.name, keys: new Set<number>(), x: gameCanvas.width / 2, y: gameCanvas.height / 2 };
+  } else if (event.tag === SET_NICK) {
+    if (!gameState.players[event.user]) {
+      gameState.players[event.user] = {
+        id: event.user,
+        name: event.name,
+        position: { x: gameCanvas.width / 2, y: gameCanvas.height / 2 },
+        w: false,
+        a: false,
+        s: false,
+        d: false,
+      };
     } else {
-      players[event.user].name = event.name;
+      gameState.players[event.user].name = event.name;
     }
   }
 }
 
 function updatePlayerPositions() {
-  for (const userId in players) {
-    const player = players[userId];
+  for (const userId in gameState.players) {
+    const player = gameState.players[userId];
 
-    if (player.keys.has(87) || player.keys.has(38)) { // 'w' or 'ArrowUp'
-      player.y -= MOVE_SPEED;
+    if (player.w) {
+      player.position.y -= MOVE_SPEED;
     }
-    if (player.keys.has(83) || player.keys.has(40)) { // 's' or 'ArrowDown'
-      player.y += MOVE_SPEED;
+    if (player.s) {
+      player.position.y += MOVE_SPEED;
     }
-    if (player.keys.has(65) || player.keys.has(37)) { // 'a' or 'ArrowLeft'
-      player.x -= MOVE_SPEED;
+    if (player.a) {
+      player.position.x -= MOVE_SPEED;
     }
-    if (player.keys.has(68) || player.keys.has(39)) { // 'd' or 'ArrowRight'
-      player.x += MOVE_SPEED;
+    if (player.d) {
+      player.position.x += MOVE_SPEED;
     }
 
     // Ensure players stay within bounds
-    player.x = Math.max(PLAYER_RADIUS, Math.min(gameCanvas.width - PLAYER_RADIUS, player.x));
-    player.y = Math.max(PLAYER_RADIUS, Math.min(gameCanvas.height - PLAYER_RADIUS, player.y));
+    player.position.x = Math.max(PLAYER_RADIUS, Math.min(gameCanvas.width - PLAYER_RADIUS, player.position.x));
+    player.position.y = Math.max(PLAYER_RADIUS, Math.min(gameCanvas.height - PLAYER_RADIUS, player.position.y));
   }
 }
 
@@ -217,20 +210,19 @@ function draw() {
   updatePlayerPositions();
 
   let yOffset = 70;
-  for (const userId in players) {
-    const player = players[userId];
+  for (const userId in gameState.players) {
+    const player = gameState.players[userId];
     if (parseInt(userId) !== playerId) {
-      ctx.fillText(`Player ${players[userId].name} Keys: ${Array.from(players[userId].keys).join(', ')}`, 10, yOffset);
-      ctx.fillStyle = generateColor(encodeUsername(players[userId].name)); 
+      ctx.fillText(`Player ${player.name} Keys: ${[player.w ? 'W' : '', player.a ? 'A' : '', player.s ? 'S' : '', player.d ? 'D' : ''].join(', ')}`, 10, yOffset);
+      ctx.fillStyle = generateColor(player.id);
       yOffset += 20;
     }
-    ctx.fillStyle = generateColor(parseInt(userId));
+    ctx.fillStyle = generateColor(player.id);
     ctx.beginPath();
-    ctx.arc(player.x, player.y, PLAYER_RADIUS, 0, Math.PI * 2);
+    ctx.arc(player.position.x, player.position.y, PLAYER_RADIUS, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillText(player.name, player.x - PLAYER_RADIUS, player.y - PLAYER_RADIUS - 5);
+    ctx.fillText(player.name, player.position.x - PLAYER_RADIUS, player.position.y - PLAYER_RADIUS - 5);
   }
 
   requestAnimationFrame(draw);
-
 }
