@@ -2,7 +2,7 @@ const path = require('path');
 const webpack = require('webpack');
 
 module.exports = {
-  entry: './src/main.ts',
+  entry: './src/game.ts',
   module: {
     rules: [
       {
@@ -19,7 +19,7 @@ module.exports = {
     }
   },
   output: {
-    filename: 'bundle.js',
+    filename: 'game.js',
     path: path.resolve(__dirname, 'dist'),
   },
 };
