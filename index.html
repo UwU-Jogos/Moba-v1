@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -24,5 +24,31 @@
     </form>
   </div>
   <div>
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UwUChat2Client Game</title>
+    <style>
+        #game-canvas {
+            display: none;
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <div id="login-screen">
+        <input type="text" id="username" placeholder="Enter username">
+        <input type="number" id="room" placeholder="Enter room number">
+        <button id="login-button">Login</button>
+    </div>
+    <canvas id="game-canvas" width="512" height="512"></canvas>
+
+    <script src="dist/game.js" type="module"></script>
 </body>
 </html>
