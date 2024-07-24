@@ -1,8 +1,9 @@
 import UwUChat2Client from "./client";
+import lib from "./lib";
 import { List } from "immutable";
 
-const COMMAND_MESSAGE = 0;
-const SET_NICK = 1;
+const COMMAND_MESSAGE = 0
+const SET_NICK = 1
 
 type GameMessage = 
   | { tag: 0, user: number, time: number, key: Uint8Array } 
@@ -16,97 +17,6 @@ const enum KeyEventType {
 type KeyEvent = {
   key: number,
   event: KeyEventType
-}
-
-function encodeKey(keyEv: KeyEvent): Uint8Array {
-  if (keyEv.key > 127) {
-    throw new Error("Invalid key code. Must be 7 bits or less.");
-  }
-  const mergedByte = (keyEv.key << 1) | keyEv.event;
-  return new Uint8Array([mergedByte]);
-}
-
-function decodeKey(encodedKey: Uint8Array): KeyEvent {
-  if (encodedKey.length !== 1) {
-    throw new Error("Invalid encoded key length.");
-  }
-  
-  const mergedByte = encodedKey[0];
-  return {
-    key: mergedByte >> 1,
-    event: mergedByte & 1 as KeyEventType
-  };
-}
-
-function encode(message: GameMessage): Uint8Array {
-  const result = new Uint8Array(12);
-  const view = new DataView(result.buffer);
-
-  // Set tag
-  result[0] = message.tag;
-
-  // Set user (u32)
-  view.setUint32(1, message.user, true);
-
-  if (message.tag === 0) {
-    // Set time (u48)
-    view.setUint32(5, message.time & 0xFFFFFFFF, true);
-    view.setUint16(9, (message.time >> 32) & 0xFFFF, true);
-
-    // Set key (u8)
-    result[11] = message.key[0];
-  } else if (message.tag === 1) {
-    // Set name (7 bytes)
-    const encoder = new TextEncoder();
-    const nameBytes = encoder.encode(message.name);
-    const nameBytesToCopy = Math.min(nameBytes.length, 7);
-    result.set(nameBytes.subarray(0, nameBytesToCopy), 5);
-
-    // If name is shorter than 7 bytes, pad with zeros
-    if (nameBytesToCopy < 7) {
-      result.fill(0, 5 + nameBytesToCopy, 12);
-    }
-  }
-
-  return result;
-}
-
-function decode(encoded: Uint8Array): GameMessage {
-  if (encoded.length !== 12) {
-    throw new Error("Invalid encoded message length. Expected 12 bytes.");
-  }
-
-  const view = new DataView(encoded.buffer);
-  const tag = encoded[0];
-  const user = view.getUint32(1, true);
-
-  if (tag === 0) {
-    const timeLow = view.getUint32(5, true);
-    const timeHigh = view.getUint16(9, true);
-    const time = (timeHigh << 32) | timeLow;
-    const key = encoded.slice(11, 12);
-
-    return {
-      tag: 0,
-      user,
-      time: time, 
-      key
-    };
-  } else if (tag === 1) {
-    const nameBytes = encoded.slice(5, 12);
-    const nullTerminatorIndex = nameBytes.indexOf(0);
-    const nameLength = nullTerminatorIndex === -1 ? 7 : nullTerminatorIndex;
-    const decoder = new TextDecoder();
-    const name = decoder.decode(nameBytes.subarray(0, nameLength));
-
-    return {
-      tag: 1,
-      user,
-      name
-    };
-  } else {
-    throw new Error("Invalid message tag");
-  }
 }
 
 type Position = {
@@ -278,7 +188,7 @@ function computeState(state: GameState, gameMessage: GameMessage): GameState {
 
   switch (gameMessage.tag) {
     case COMMAND_MESSAGE:
-      const decKey: KeyEvent = decodeKey(gameMessage.key);
+      const decKey: KeyEvent = lib.decodeKey(gameMessage.key);
       let player = getPlayerById(gameMessage.user, statePlayers);
       if(!player) {
         return state;
@@ -334,7 +244,7 @@ function enterRoom() {
         console.log('Connected to server');
 
         client.recv(testRoom, (msg: Uint8Array) => {
-            gameMessage = decode(msg);
+            gameMessage = lib.decode(msg);
             console.log(gameMessage);
         });
 
@@ -342,7 +252,7 @@ function enterRoom() {
             if (["a", "w", "d", "s"].includes(event.key)) {
               const key = event.key.charCodeAt(0);
               const keyEvType = KeyEventType.PRESS;
-              const encodedKey = encodeKey({key: key, event: keyEvType });
+              const encodedKey = lib.encodeKey({key: key, event: keyEvType });
               const tag = COMMAND_MESSAGE;
               const user = thisPlayerId;
               const time = Date.now();
@@ -354,7 +264,7 @@ function enterRoom() {
               state = computeState(state, gameMsg);
               draw(state);
 
-              const encodedMessage = encode(gameMsg);
+              const encodedMessage = lib.encode(gameMsg);
               client.send(testRoom, encodedMessage);
             }
         });
@@ -363,7 +273,7 @@ function enterRoom() {
           if (["a", "w", "d", "s"].includes(event.key)) {
               const key = event.key.charCodeAt(0);
               const keyEvType = KeyEventType.RELEASE;
-              const encodedKey = encodeKey({key: key, event: keyEvType });
+              const encodedKey = lib.encodeKey({key: key, event: keyEvType });
               const tag = COMMAND_MESSAGE;
               const user = thisPlayerId;
               const time = Date.now();
@@ -375,7 +285,7 @@ function enterRoom() {
               state = computeState(state, gameMsg);
               draw(state);
 
-              const encodedMessage = encode(gameMsg);
+              const encodedMessage = lib.encode(gameMsg);
               client.send(testRoom, encodedMessage);
             }
         });

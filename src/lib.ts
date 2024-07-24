@@ -1,8 +1,113 @@
-const WATCH: number = 0
-const UNWATCH: number = 1
-const POST: number = 2
-const SHOW: number = 3
-const TIME: number = 4
+
+
+function encodeKey(keyEv: { key: number, event: number }): Uint8Array {
+  if (keyEv.key > 127) {
+    throw new Error("Invalid key code. Must be 7 bits or less.");
+  }
+  const mergedByte = (keyEv.key << 1) | keyEv.event;
+  return new Uint8Array([mergedByte]);
+}
+
+function decodeKey(encodedKey: Uint8Array): { key: number, event: number } {
+  if (encodedKey.length !== 1) {
+    throw new Error("Invalid encoded key length.");
+  }
+
+  const mergedByte = encodedKey[0];
+  return {
+    key: mergedByte >> 1,
+    event: mergedByte & 1
+  };
+}
+
+function encode(message: {
+  tag: 0;
+  user: number;
+  time: number;
+  key: Uint8Array;
+} | {
+  tag: 1;
+  user: number;
+  name: string;
+}): Uint8Array {
+  const result = new Uint8Array(12);
+  const view = new DataView(result.buffer);
+
+  // Set tag
+  result[0] = message.tag;
+
+  // Set user (u32)
+  view.setUint32(1, message.user, true);
+
+  if (message.tag === 0) {
+    // Set time (u48)
+    view.setUint32(5, message.time & 0xFFFFFFFF, true);
+    view.setUint16(9, (message.time >> 32) & 0xFFFF, true);
+
+    // Set key (u8)
+    result[11] = message.key[0];
+  } else if (message.tag === 1) {
+    // Set name (7 bytes)
+    const encoder = new TextEncoder();
+    const nameBytes = encoder.encode(message.name);
+    const nameBytesToCopy = Math.min(nameBytes.length, 7);
+    result.set(nameBytes.subarray(0, nameBytesToCopy), 5);
+
+    // If name is shorter than 7 bytes, pad with zeros
+    if (nameBytesToCopy < 7) {
+      result.fill(0, 5 + nameBytesToCopy, 12);
+    }
+  }
+
+  return result;
+}
+
+function decode(encoded: Uint8Array): {
+  tag: 0;
+  user: number;
+  time: number;
+  key: Uint8Array;
+} | {
+  tag: 1;
+  user: number;
+  name: string;
+} {
+  if (encoded.length !== 12) {
+    throw new Error("Invalid encoded message length. Expected 12 bytes.");
+  }
+
+  const view = new DataView(encoded.buffer);
+  const tag = encoded[0];
+  const user = view.getUint32(1, true);
+
+  if (tag === 0) {
+    const timeLow = view.getUint32(5, true);
+    const timeHigh = view.getUint16(9, true);
+    const time = (timeHigh << 32) | timeLow;
+    const key = encoded.slice(11, 12);
+
+    return {
+      tag: 0,
+      user,
+      time: time,
+      key
+    };
+  } else if (tag === 1) {
+    const nameBytes = encoded.slice(5, 12);
+    const nullTerminatorIndex = nameBytes.indexOf(0);
+    const nameLength = nullTerminatorIndex === -1 ? 7 : nullTerminatorIndex;
+    const decoder = new TextDecoder();
+    const name = decoder.decode(nameBytes.subarray(0, nameLength));
+
+    return {
+      tag: 1,
+      user,
+      name
+    };
+  } else {
+    throw new Error("Invalid message tag");
+  }
+}
 
 function hex_to_bytes(hex: string): Uint8Array {
   const arr = []
@@ -145,11 +250,10 @@ function states_before(states: null | { bit: number; current: { tick: number }; 
 }
 
 export default {
-  WATCH,
-  UNWATCH,
-  POST,
-  SHOW,
-  TIME,
+  encodeKey,
+  decodeKey,
+  encode,
+  decode,
   hex_to_bytes,
   bytes_to_hex,
   hexs_to_bytes,
