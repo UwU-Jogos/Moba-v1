@@ -86,6 +86,7 @@ let username = '';
 let room = 0;
 let playerId = Math.floor(Math.random() * 1000000);
 let pressedKeys = new Set<number>();
+let players: { [key: number]: { name: string; keys: Set<number> } } = {};
 
 loginButton.onclick = async () => {
   username = usernameInput.value;
@@ -120,13 +121,24 @@ function sendKeyEvent(key: number, event: KeyEventType) {
   const keyEvent = lib.encodeKey({ key, event });
   client.send(room, lib.encode({ tag: 0, user: playerId, time: client.time(), key: keyEvent }));
 }
-
 function handleGameMessage(msg: Uint8Array) {
   const decoded = lib.decode(msg);
   if (decoded.tag === 0) {
-    console.log(`User ${decoded.user} pressed key ${decoded.key}`);
+      if (!players[decoded.user]) {
+          players[decoded.user] = { name: '', keys: new Set<number>() };
+      }
+      const keyEvent = lib.decodeKey(decoded.key);
+      if (keyEvent.event === KeyEventType.PRESS) {
+          players[decoded.user].keys.add(keyEvent.key);
+      } else if (keyEvent.event === KeyEventType.RELEASE) {
+          players[decoded.user].keys.delete(keyEvent.key);
+      }
   } else if (decoded.tag === 1) {
-    console.log(`User ${decoded.user} set name to ${decoded.name}`);
+      if (!players[decoded.user]) {
+          players[decoded.user] = { name: decoded.name, keys: new Set<number>() };
+      } else {
+          players[decoded.user].name = decoded.name;
+      }
   }
 }
 
@@ -134,8 +146,15 @@ function draw() {
   ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   ctx.fillText(`Ping: ${client.get_ping()} ms`, 10, 10);
   ctx.fillText(`Server Time: ${client.time()}`, 10, 30);
-  ctx.fillText(`Pressed Keys: ${Array.from(pressedKeys).join(', ')}`, 10, 50);
+  ctx.fillText(`Your Pressed Keys: ${Array.from(pressedKeys).join(', ')}`, 10, 50);
+
+  let yOffset = 70;
+  for (const userId in players) {
+      if (parseInt(userId) !== playerId) {
+          ctx.fillText(`Player ${players[userId].name} Keys: ${Array.from(players[userId].keys).join(', ')}`, 10, yOffset);
+          yOffset += 20;
+      }
+  }
 
   requestAnimationFrame(draw);
 }
-
