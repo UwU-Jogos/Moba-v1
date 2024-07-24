@@ -110,14 +110,6 @@ function decodeUsername(num: number): string {
   return new TextDecoder().decode(new Uint8Array(buffer));
 }
 
-function getRandomColor(): string {
-  const letters = '0123456789ABCDEF';
-  let color = '#';
-  for (let i = 0; i < 6; i++) {
-    color += letters[Math.floor(Math.random() * 16)];
-  }
-  return color;
-}
 // Function to generate a unique color based on the player's ID
 function generateColor(playerId: number): string {
   const hash = (playerId * 0xdeadbeef) % 0xffffff;
@@ -229,6 +221,7 @@ function draw() {
     const player = players[userId];
     if (parseInt(userId) !== playerId) {
       ctx.fillText(`Player ${players[userId].name} Keys: ${Array.from(players[userId].keys).join(', ')}`, 10, yOffset);
+      ctx.fillStyle = generateColor(encodeUsername(players[userId].name)); 
       yOffset += 20;
     }
     ctx.fillStyle = generateColor(parseInt(userId));
