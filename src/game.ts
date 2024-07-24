@@ -81,80 +81,105 @@ const ctx = gameCanvas.getContext('2d')!;
 const usernameInput = document.getElementById('username') as HTMLInputElement;
 const roomInput = document.getElementById('room') as HTMLInputElement;
 const loginButton = document.getElementById('login-button') as HTMLButtonElement;
-
 let username = '';
 let room = 0;
-let playerId = Math.floor(Math.random() * 1000000);
+let playerId = 0 // Math.floor(Math.random() * 1000000);
 let pressedKeys = new Set<number>();
 let players: { [key: number]: { name: string; keys: Set<number> } } = {};
 
+// Function to encode a username as a number
+function encodeUsername(name: string): number {
+    const buffer = new TextEncoder().encode(name);
+    let num = 0;
+    for (let i = 0; i < buffer.length; i++) {
+        num += buffer[i] * (256 ** i);
+    }
+    return num;
+}
+
+// Function to decode a number back to a username
+function decodeUsername(num: number): string {
+    const buffer = [];
+    while (num > 0) {
+        buffer.push(num % 256);
+        num = Math.floor(num / 256);
+    }
+    return new TextDecoder().decode(new Uint8Array(buffer));
+}
+
 loginButton.onclick = async () => {
-  username = usernameInput.value;
-  room = parseInt(roomInput.value);
-  if (username && room) {
-    await client.init('ws://server.uwu.games');
-    client.recv(room, handleGameMessage);
-    client.send(room, lib.encode({ tag: 1, user: playerId, name: username }));
+    username = usernameInput.value;
+    playerId = encodeUsername(username);
+    room = parseInt(roomInput.value);
+    if (username && room) {
+        await client.init('ws://server.uwu.games');
+        client.recv(room, handleGameMessage);
+        client.send(room, lib.encode({ tag: 1, user: playerId, name: username }));
 
-    loginScreen.style.display = 'none';
-    gameCanvas.style.display = 'block';
+        loginScreen.style.display = 'none';
+        gameCanvas.style.display = 'block';
 
-    draw();
-  }
+        draw();
+    }
 };
 
 document.addEventListener('keydown', (event) => {
-  if (!pressedKeys.has(event.keyCode)) {
-    pressedKeys.add(event.keyCode);
-    sendKeyEvent(event.keyCode, KeyEventType.PRESS);
-  }
+    if (!pressedKeys.has(event.keyCode)) {
+        pressedKeys.add(event.keyCode);
+        sendKeyEvent(event.keyCode, KeyEventType.PRESS);
+    }
 });
 
 document.addEventListener('keyup', (event) => {
-  if (pressedKeys.has(event.keyCode)) {
-    pressedKeys.delete(event.keyCode);
-    sendKeyEvent(event.keyCode, KeyEventType.RELEASE);
-  }
+    if (pressedKeys.has(event.keyCode)) {
+        pressedKeys.delete(event.keyCode);
+        sendKeyEvent(event.keyCode, KeyEventType.RELEASE);
+    }
 });
 
 function sendKeyEvent(key: number, event: KeyEventType) {
-  const keyEvent = lib.encodeKey({ key, event });
-  client.send(room, lib.encode({ tag: 0, user: playerId, time: client.time(), key: keyEvent }));
+    const keyEvent = lib.encodeKey({ key, event });
+    client.send(room, lib.encode({ tag: 0, user: playerId, time: client.time(), key: keyEvent }));
 }
+
 function handleGameMessage(msg: Uint8Array) {
-  const decoded = lib.decode(msg);
-  if (decoded.tag === 0) {
-      if (!players[decoded.user]) {
-          players[decoded.user] = { name: '', keys: new Set<number>() };
-      }
-      const keyEvent = lib.decodeKey(decoded.key);
-      if (keyEvent.event === KeyEventType.PRESS) {
-          players[decoded.user].keys.add(keyEvent.key);
-      } else if (keyEvent.event === KeyEventType.RELEASE) {
-          players[decoded.user].keys.delete(keyEvent.key);
-      }
-  } else if (decoded.tag === 1) {
-      if (!players[decoded.user]) {
-          players[decoded.user] = { name: decoded.name, keys: new Set<number>() };
-      } else {
-          players[decoded.user].name = decoded.name;
-      }
-  }
+    const decoded = lib.decode(msg);
+    computeState(decoded);
+}
+
+function computeState(event: { tag: 0; user: number; time: number; key: Uint8Array; } | { tag: 1; user: number; name: string; }) {
+    if (event.tag === 0) {
+        if (!players[event.user]) {
+            players[event.user] = { name: '', keys: new Set<number>() };
+        }
+        const keyEvent = lib.decodeKey(event.key);
+        if (keyEvent.event === KeyEventType.PRESS) {
+            players[event.user].keys.add(keyEvent.key);
+        } else if (keyEvent.event === KeyEventType.RELEASE) {
+            players[event.user].keys.delete(keyEvent.key);
+        }
+    } else if (event.tag === 1) {
+        if (!players[event.user]) {
+            players[event.user] = { name: event.name, keys: new Set<number>() };
+        } else {
+            players[event.user].name = event.name;
+        }
+    }
 }
 
 function draw() {
-  ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
-  ctx.fillText(`Ping: ${client.get_ping()} ms`, 10, 10);
-  ctx.fillText(`Server Time: ${client.time()}`, 10, 30);
-  ctx.fillText(`Your Pressed Keys: ${Array.from(pressedKeys).join(', ')}`, 10, 50);
+    ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
+    ctx.fillText(`Ping: ${client.get_ping()} ms`, 10, 10);
+    ctx.fillText(`Server Time: ${client.time()}`, 10, 30);
+    ctx.fillText(`Your Pressed Keys: ${Array.from(pressedKeys).join(', ')}`, 10, 50);
 
-  let yOffset = 70;
-  for (const userId in players) {
-      if (parseInt(userId) !== playerId) {
-          ctx.fillText(`Player ${players[userId].name} Keys: ${Array.from(players[userId].keys).join(', ')}`, 10, yOffset);
-          yOffset += 20;
-      }
-  }
+    let yOffset = 70;
+    for (const userId in players) {
+        if (parseInt(userId) !== playerId) {
+            ctx.fillText(`Player ${players[userId].name} Keys: ${Array.from(players[userId].keys).join(', ')}`, 10, yOffset);
+            yOffset += 20;
+        }
+    }
 
-  requestAnimationFrame(draw);
+    requestAnimationFrame(draw);
 }
