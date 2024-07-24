@@ -4,14 +4,16 @@ import { List } from "immutable";
 
 const COMMAND_MESSAGE = 0
 const SET_NICK = 1
+const TICK_MESSAGE = 2
 
 type GameMessage = 
   | { tag: 0, user: number, time: number, key: Uint8Array } 
   | { tag: 1, user: number, name: string } 
+  | { tag: 2 }
 
 const enum KeyEventType {
-  PRESS = 0,
-  RELEASE = 1
+  PRESS = 1,
+  RELEASE = 0
 }
 
 type KeyEvent = {
@@ -129,13 +131,17 @@ function initialGameState(p: Player): GameState {
 
 function playerPressed(key: number, player: Player, pressed: boolean): Player {
   switch (key) {
-    case (97 || 65):
+    case (97):
+      console.log("Player moving to left");
       return { ...player, a: pressed };
-    case (100 || 68):
+    case (100):
+      console.log("Player moving to right");
       return { ...player, d: pressed };
-    case (119 || 87):
+    case (119):
+      console.log("Player moving to up");
       return { ...player, w: pressed };
-    case (115 || 83):
+    case (115):
+      console.log("Player moving to down");
       return { ...player, s: pressed };
     default:
       return player;
@@ -176,9 +182,6 @@ function movePlayers(players: List<Player>): List<Player> {
   return players.map(movePlayer);
 }
 
-
-
-
 function computeState(state: GameState, gameMessage: GameMessage): GameState {
   const statePlayers = state.players;
 
@@ -189,15 +192,26 @@ function computeState(state: GameState, gameMessage: GameMessage): GameState {
   switch (gameMessage.tag) {
     case COMMAND_MESSAGE:
       const decKey: KeyEvent = lib.decodeKey(gameMessage.key);
+      
+      // if its null event, a player joined
+      if (decKey.key == 0) {
+        if (gameMessage.user == thisPlayer()) {
+          return state;
+        }
+        const player: Player = newPlayer(gameMessage.user, "test");
+        return newGameState(addPlayer(player, statePlayers));
+      }
+
       let player = getPlayerById(gameMessage.user, statePlayers);
       if(!player) {
         return state;
       }
-      const pressed = decKey.event == 0 ? true : false;
+      const pressed = decKey.event == 1 ? true : false;
       const playerPress = playerPressed(decKey.key, player, pressed);
-      return newGameState(movePlayers(newPlayerList(playerPress, statePlayers)));
+      return newGameState(newPlayerList(playerPress, statePlayers));
   
-    //return newGameState(tick, addPlayer(event.player, statePlayers));
+    case TICK_MESSAGE:
+      return newGameState(movePlayers(statePlayers));
 
     default:
       return state;
@@ -216,8 +230,9 @@ function getPlayerColor(id: string): string {
 function enterRoom() {
     const roomId: number = Number((document.getElementById('roomId') as HTMLInputElement).value);
     const nickname: string = (document.getElementById('nickname') as HTMLInputElement).value;
-    let thisPlayerId = generateHexId();
+    let thisPlayerId = generateId();
     const activePlayer = newPlayer(thisPlayerId, nickname);
+    setThisPlayer(thisPlayerId); 
 
     const formDiv = document.getElementById('formDiv');
     const canvas = document.getElementById('canvas') as HTMLCanvasElement | null;
@@ -238,81 +253,94 @@ function enterRoom() {
     const testRoom = 1;
     let gameMessage: any = null;
     let state : GameState = initialGameState(activePlayer);
-    console.log(state);
+    let pendingMessages: GameMessage[] = [];
+
 
     client.init('ws://localhost:8080').then(() => {
-        console.log('Connected to server');
+      console.log('Connected to server');
+
+      function sendPlayerJoinedEvent() {
+          // key = 0, which is the ascii code to null key
+          const key = 0;
+          const encodedKey = lib.encodeKey({ key: key, event: KeyEventType.PRESS });
+          const user = thisPlayer();
+          const time = Date.now();
+          const joinedMsg: GameMessage = {
+            tag: COMMAND_MESSAGE,
+            user: user,
+            time: time,
+            key: encodedKey
+          };
+          const encodedMessage = lib.encode(joinedMsg);
+          client.send(testRoom, encodedMessage);
+          console.log("SENT PLAYER JOINED EVENT");
+        }
+
+        sendPlayerJoinedEvent();
 
         client.recv(testRoom, (msg: Uint8Array) => {
-            gameMessage = lib.decode(msg);
-            console.log(gameMessage);
+            const decodedMessage = lib.decode(msg);
+            console.log("RECEIVED MESSAGE");
+            console.log(decodedMessage);
+            if (decodedMessage.user !== thisPlayerId) {
+                pendingMessages.push(decodedMessage);
+            }
+            console.log("PENDING MESSAGES: ");
+            console.log(pendingMessages);
         });
 
-        document.addEventListener('keypress', (event) => {
+        function handleKeyEvent(event: KeyboardEvent, keyEvType: KeyEventType) {
             if (["a", "w", "d", "s"].includes(event.key)) {
-              const key = event.key.charCodeAt(0);
-              const keyEvType = KeyEventType.PRESS;
-              const encodedKey = lib.encodeKey({key: key, event: keyEvType });
-              const tag = COMMAND_MESSAGE;
-              const user = thisPlayerId;
-              const time = Date.now();
+                const key = event.key.charCodeAt(0);
+                const encodedKey = lib.encodeKey({key: key, event: keyEvType});
+                const gameMsg: GameMessage = {
+                    tag: COMMAND_MESSAGE,
+                    user: thisPlayerId,
+                    time: Date.now(),
+                    key: encodedKey
+                };
 
-              const gameMsg: GameMessage = {
-                tag: tag, user: user, time: time, key: encodedKey
-              };
-
-              state = computeState(state, gameMsg);
-              draw(state);
-
-              const encodedMessage = lib.encode(gameMsg);
-              client.send(testRoom, encodedMessage);
+                pendingMessages.push(gameMsg);
+                const encodedMessage = lib.encode(gameMsg);
+                client.send(testRoom, encodedMessage);
             }
-        });
-
-        document.addEventListener('keydown', (event) => {
-          if (["a", "w", "d", "s"].includes(event.key)) {
-              const key = event.key.charCodeAt(0);
-              const keyEvType = KeyEventType.RELEASE;
-              const encodedKey = lib.encodeKey({key: key, event: keyEvType });
-              const tag = COMMAND_MESSAGE;
-              const user = thisPlayerId;
-              const time = Date.now();
-
-              const gameMsg: GameMessage = {
-                tag: tag, user: user, time: time, key: encodedKey
-              };
-
-              state = computeState(state, gameMsg);
-              draw(state);
-
-              const encodedMessage = lib.encode(gameMsg);
-              client.send(testRoom, encodedMessage);
-            }
-        });
-
-        function updateServerTime() {
-            const serverTime = new Date(client.time());
-            console.log(`Server Time: ${serverTime.toISOString()}`);
-
-            if (gameMessage.user == thisPlayer()) {
-              return;
-            }
-            state = computeState(state, gameMessage);
-            draw(state);
-            requestAnimationFrame(updateServerTime);
         }
-        updateServerTime();
 
-      }).catch(console.error);
- 
-    setThisPlayer(thisPlayerId); 
+        document.addEventListener('keydown', (event) => handleKeyEvent(event, KeyEventType.PRESS));
+        document.addEventListener('keyup', (event) => handleKeyEvent(event, KeyEventType.RELEASE));
+
+        function gameLoop() {
+            const serverTime = new Date(client.time());
+
+            console.log("I AM HERE IN GAMELOOP");
+            while (pendingMessages.length > 0) {
+              console.log("IM here processing pending messages!");
+              const message = pendingMessages.shift();
+              console.log(message);
+              if (message) {
+                console.log("PROCESSING NEW MESSAGE");
+                state = computeState(state, message);
+                state = computeState(state, { tag: TICK_MESSAGE });
+                console.log("new state: ");
+                console.log(state);
+              }
+            }
+            state = computeState(state, { tag: TICK_MESSAGE });
+            draw(state);
+
+            requestAnimationFrame(gameLoop);
+        }
+        gameLoop();
+
+      }).catch(console.error); 
 }
 
-function generateHexId(): number {
-  const timestamp = new Date().getTime();
-  const randomPart = Math.floor(Math.random() * 16777216); // 16777216 is 0xFFFFFF in decimal
-  return Number(`${timestamp}${randomPart}`);
+function generateId(): number {
+  const timestamp = new Date().getTime() & 0xFFFFFFFF;
+  const randomPart = Math.floor(Math.random() * 0x10000);
+  return (timestamp ^ randomPart) >>> 0;
 }
+
 
 (window as any).enterRoom = enterRoom
 
