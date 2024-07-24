@@ -1,199 +1,142 @@
-import lib from "./lib";
+import WebSocket from 'isomorphic-ws';
 
-function clone<T>(obj: T): T {
-  return JSON.parse(JSON.stringify(obj));
+type Room = number;
+type Recv = (msg: Uint8Array) => void;
+type Exit = () => void;
+
+const enum MessageType {
+  JOIN = 0,
+  EXIT = 1,
+  POST = 2,
+  DATA = 3,
+  TIME = 4,
+  PING = 5,
+  PONG = 6,
 }
 
-export default function client({ url = "ws://server.uwu.games" }: { url?: string } = {}) {
-  const ws = new WebSocket("ws://localhost:7171");
-  const watching: { [room: string]: boolean } = {};
+class UwUChat2Client {
+  private ws!: WebSocket;
+  private rooms: Map<Room, Set<Recv>>;
+  private server_time_offset: number;
+  private best_ping: number;
+  private last_ping_time: number;
 
-  function ws_send(buffer: Uint8Array) {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(buffer);
-    } else {
-      setTimeout(() => ws_send(buffer), 20);
+  constructor() {
+    this.rooms = new Map();
+    this.server_time_offset = 0;
+    this.best_ping = Infinity;
+    this.last_ping_time = 0;
+  }
+
+  public init(url: string): Promise<void> {
+    return new Promise((resolve, reject) => {
+      this.ws = new WebSocket(url);
+      this.ws.binaryType = 'arraybuffer';
+      this.ws.onopen = () => {
+        this.sync_time();
+        resolve();
+      };
+      this.ws.onerror = (event: WebSocket.ErrorEvent) => reject(event);
+      this.ws.onmessage = (event: WebSocket.MessageEvent) => {
+        const data = event.data;
+        this.handle_message(new Uint8Array(data instanceof ArrayBuffer ? data : new ArrayBuffer(0)));
+      };
+    });
+  }
+
+  public send(room: Room, msg: Uint8Array): void {
+    const buffer = new Uint8Array(7 + msg.length);
+    buffer[0] = MessageType.POST;
+    this.write_uint48_be(buffer, 1, room);
+    buffer.set(msg, 7);
+    this.ws.send(buffer);
+  }
+
+  public recv(room: Room, callback: Recv): Exit {
+    if (!this.rooms.has(room)) {
+      this.rooms.set(room, new Set());
+      this.join_room(room);
     }
-  }
+    this.rooms.get(room)!.add(callback);
 
-  let last_ask_time: number | null = null;
-  let last_ask_numb: number = 0;
-  let best_ask_ping: number = 0;
-  let delta_time: number = 0;
-  let ping: number = 0;
-
-  let on_init_callback: (() => void) | null = null;
-  let on_post_callback: ((post: any) => void) | null = null;
-
-  function on_init(callback: () => void) {
-    on_init_callback = callback;
-  }
-
-  function on_post(callback: (post: any) => void) {
-    on_post_callback = callback;
-  }
-
-  function send_post(post_room: number, post_user: number, post_json: any) {
-    const postRoom = lib.u64_to_hex(post_room);
-    const postUser = lib.u64_to_hex(post_user);
-    const post_data = lib.json_to_hex(post_json);
-    const msge_buff = lib.hexs_to_bytes([
-      lib.u8_to_hex(lib.POST),
-      postRoom,
-      postUser,
-      post_data,
-    ]);
-    ws_send(msge_buff);
-  }
-
-  function watch_room(room_id: number) {
-    if (!watching[room_id]) {
-      watching[room_id] = true;
-      const msge_buff = lib.hexs_to_bytes([
-        lib.u8_to_hex(lib.WATCH),
-        lib.u64_to_hex(room_id),
-      ]);
-      ws_send(msge_buff);
-    }
-  }
-
-  function unwatch_room(room_id: number) {
-    if (watching[room_id]) {
-      watching[room_id] = false;
-      const msge_buff = lib.hexs_to_bytes([
-        lib.u8_to_hex(lib.UNWATCH),
-        lib.u64_to_hex(room_id),
-      ]);
-      ws_send(msge_buff);
-    }
-  }
-
-  function get_time() {
-    return Date.now() + delta_time;
-  }
-
-  function ask_time() {
-    last_ask_time = Date.now();
-    last_ask_numb = ++last_ask_numb;
-    ws_send(lib.hexs_to_bytes([
-      lib.u8_to_hex(lib.TIME),
-      lib.u64_to_hex(last_ask_numb),
-    ]));
-  }
-
-  function roller({
-    room,
-    user,
-    on_init,
-    on_pass,
-    on_post,
-    on_tick,
-  }: {
-    room: number;
-    user: number;
-    on_init: (time: number, user: number, data: any) => any;
-    on_pass: (state: any, time: number, delta: number) => any;
-    on_post: (state: any, time: number, user: number, data: any) => any;
-    on_tick?: [number, (state: any) => any];
-  }) {
-    let state: any | null = null;
-    watch_room(room);
-
-    if (on_tick !== undefined) {
-      const fps = on_tick[0];
-      on_pass = function (state, time, dt) {
-        const init_tick = Math.floor((time + 0) * fps);
-        const last_tick = Math.floor((time + dt) * fps);
-        for (let t = init_tick; t < last_tick; ++t) {
-          state = on_tick[1](state);
-        }
-        return state;
+    return () => {
+      this.rooms.get(room)!.delete(callback);
+      if (this.rooms.get(room)!.size === 0) {
+        this.rooms.delete(room);
+        this.exit_room(room);
       }
-    }
+    };
+  }
 
-    on_post_callback = function (post) {
-      if (state === null) {
-        state = {
-          time: post.time,
-          value: on_init(post.time / 1000, post.user, post.data),
-        };
-      } else {
-        state.value = on_pass(state.value, state.time / 1000, (post.time - state.time) / 1000);
-        state.value = on_post(state.value, post.time / 1000, post.user, post.data);
-        state.time = post.time;
-      }
-    }
+  public time(): number {
+    return Date.now() + this.server_time_offset;
+  }
 
-    return {
-      post: (data: any) => {
-        return send_post(room, user, data);
-      },
-      get_state: () => {
-        if (state) {
-          const send_state = clone(state);
-          return on_pass(send_state.value, send_state.time / 1000, (get_time() - send_state.time) / 1000);
-        } else {
-          return null;
-        }
-      },
-      get_time: () => {
-        return get_time();
-      },
-      get_ping: () => {
-        return ping;
-      },
-      destroy: () => {
-        unwatch_room(room);
-      },
+  private handle_message(data: Uint8Array): void {
+    const tag = data[0];
+    switch (tag) {
+      case MessageType.DATA:
+        const room = this.read_uint48_be(data, 1);
+        const time = this.read_uint48_be(data, 7);
+        const msg = data.slice(13);
+        this.rooms.get(room)?.forEach(callback => callback(msg));
+        break;
+      case MessageType.PONG:
+        this.handle_pong(data);
+        break;
     }
   }
 
-  ws.binaryType = "arraybuffer";
-
-  ws.onopen = function () {
-    if (on_init_callback) {
-      on_init_callback();
-    }
-    setTimeout(ask_time, 0);
-    setTimeout(ask_time, 500);
-    setTimeout(ask_time, 1000);
-    setInterval(ask_time, 2000);
+  private join_room(room: Room): void {
+    const buffer = new Uint8Array(7);
+    buffer[0] = MessageType.JOIN;
+    this.write_uint48_be(buffer, 1, room);
+    this.ws.send(buffer);
   }
 
-  ws.onmessage = (msge: any) => {
-    const msgeData = new Uint8Array(msge.data);
-    if (msgeData[0] === lib.SHOW) {
-      const room = lib.hex_to_u64(lib.bytes_to_hex(msgeData.slice(1, 9)));
-      const time = lib.hex_to_u64(lib.bytes_to_hex(msgeData.slice(9, 17)));
-      const user = lib.hex_to_u64(lib.bytes_to_hex(msgeData.slice(17, 25)));
-      const data = lib.hex_to_json(lib.bytes_to_hex(msgeData.slice(25, msgeData.length)));
-      if (on_post_callback) {
-        on_post_callback({ room, time, user, data });
-      }
-    }
-    if (msgeData[0] === lib.TIME) {
-      const reported_server_time = lib.hex_to_u64(lib.bytes_to_hex(msgeData.slice(1, 9)));
-      const reply_numb = lib.hex_to_u64(lib.bytes_to_hex(msgeData.slice(9, 17)));
-      if (last_ask_time !== null && last_ask_numb === reply_numb) {
-        ping = (Date.now() - last_ask_time) / 2;
-        const local_time = Date.now();
-        const estimated_server_time = reported_server_time + ping;
-        if (ping < best_ask_ping) {
-          delta_time = estimated_server_time - local_time;
-          best_ask_ping = ping;
-        }
-      }
-    }
+  private exit_room(room: Room): void {
+    const buffer = new Uint8Array(7);
+    buffer[0] = MessageType.EXIT;
+    this.write_uint48_be(buffer, 1, room);
+    this.ws.send(buffer);
   }
 
-  return {
-    roller,
-    on_init,
-    on_post,
-    send_post,
-    watch_room,
-    unwatch_room,
-    get_time,
-    lib,
+  private sync_time(): void {
+    const buffer = new Uint8Array(1);
+    buffer[0] = MessageType.PING;
+    const send_time = Date.now();
+    this.ws.send(buffer);
+    this.last_ping_time = send_time;
+  }
+
+  private handle_pong(data: Uint8Array): void {
+    const receive_time = Date.now();
+    const server_time = this.read_uint48_be(data, 1);
+    const ping = receive_time - this.last_ping_time;
+    if (ping < this.best_ping) {
+      this.best_ping = ping;
+      this.server_time_offset = server_time - receive_time + Math.floor(ping / 2);
+    }
+    setTimeout(() => this.sync_time(), 3000);
+  }
+
+  private write_uint48_be(buffer: Uint8Array, offset: number, value: number): void {
+    buffer[offset] = (value / 2 ** 40) & 0xFF;
+    buffer[offset + 1] = (value / 2 ** 32) & 0xFF;
+    buffer[offset + 2] = (value / 2 ** 24) & 0xFF;
+    buffer[offset + 3] = (value / 2 ** 16) & 0xFF;
+    buffer[offset + 4] = (value / 2 ** 8) & 0xFF;
+    buffer[offset + 5] = value & 0xFF;
+  }
+
+  private read_uint48_be(buffer: Uint8Array, offset: number): number {
+    return (buffer[offset] * 2 ** 40) +
+           (buffer[offset + 1] * 2 ** 32) +
+           (buffer[offset + 2] * 2 ** 24) +
+           (buffer[offset + 3] * 2 ** 16) +
+           (buffer[offset + 4] * 2 ** 8) +
+           buffer[offset + 5];
   }
 }
+
+export default UwUChat2Client;

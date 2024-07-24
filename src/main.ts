@@ -1,20 +1,113 @@
-import client from "./client";
+import UwUChat2Client from "./client";
 import { List } from "immutable";
 
-enum EventType {
-  PLAYER_JOINED,
-  GAME_STARTED,
-  TICK,
-  PRESS,
-  RELEASE
+const COMMAND_MESSAGE = 0;
+const SET_NICK = 1;
+
+type GameMessage = 
+  | { tag: 0, user: number, time: number, key: Uint8Array } 
+  | { tag: 1, user: number, name: string } 
+
+const enum KeyEventType {
+  PRESS = 0,
+  RELEASE = 1
 }
 
-type GameEvent =
-  | { type: EventType.PLAYER_JOINED; player: Player; tick: number; }
-  | { type: EventType.GAME_STARTED; tick: number; }
-  | { type: EventType.TICK; tick: number; }
-  | { type: EventType.PRESS; player: number; key: string; tick: number; }
-  | { type: EventType.RELEASE; player: number; key: string; tick: number; }
+type KeyEvent = {
+  key: number,
+  event: KeyEventType
+}
+
+function encodeKey(keyEv: KeyEvent): Uint8Array {
+  if (keyEv.key > 127) {
+    throw new Error("Invalid key code. Must be 7 bits or less.");
+  }
+  const mergedByte = (keyEv.key << 1) | keyEv.event;
+  return new Uint8Array([mergedByte]);
+}
+
+function decodeKey(encodedKey: Uint8Array): KeyEvent {
+  if (encodedKey.length !== 1) {
+    throw new Error("Invalid encoded key length.");
+  }
+  
+  const mergedByte = encodedKey[0];
+  return {
+    key: mergedByte >> 1,
+    event: mergedByte & 1 as KeyEventType
+  };
+}
+
+function encode(message: GameMessage): Uint8Array {
+  const result = new Uint8Array(12);
+  const view = new DataView(result.buffer);
+
+  // Set tag
+  result[0] = message.tag;
+
+  // Set user (u32)
+  view.setUint32(1, message.user, true);
+
+  if (message.tag === 0) {
+    // Set time (u48)
+    view.setUint32(5, message.time & 0xFFFFFFFF, true);
+    view.setUint16(9, (message.time >> 32) & 0xFFFF, true);
+
+    // Set key (u8)
+    result[11] = message.key[0];
+  } else if (message.tag === 1) {
+    // Set name (7 bytes)
+    const encoder = new TextEncoder();
+    const nameBytes = encoder.encode(message.name);
+    const nameBytesToCopy = Math.min(nameBytes.length, 7);
+    result.set(nameBytes.subarray(0, nameBytesToCopy), 5);
+
+    // If name is shorter than 7 bytes, pad with zeros
+    if (nameBytesToCopy < 7) {
+      result.fill(0, 5 + nameBytesToCopy, 12);
+    }
+  }
+
+  return result;
+}
+
+function decode(encoded: Uint8Array): GameMessage {
+  if (encoded.length !== 12) {
+    throw new Error("Invalid encoded message length. Expected 12 bytes.");
+  }
+
+  const view = new DataView(encoded.buffer);
+  const tag = encoded[0];
+  const user = view.getUint32(1, true);
+
+  if (tag === 0) {
+    const timeLow = view.getUint32(5, true);
+    const timeHigh = view.getUint16(9, true);
+    const time = (timeHigh << 32) | timeLow;
+    const key = encoded.slice(11, 12);
+
+    return {
+      tag: 0,
+      user,
+      time: time, 
+      key
+    };
+  } else if (tag === 1) {
+    const nameBytes = encoded.slice(5, 12);
+    const nullTerminatorIndex = nameBytes.indexOf(0);
+    const nameLength = nullTerminatorIndex === -1 ? 7 : nullTerminatorIndex;
+    const decoder = new TextDecoder();
+    const name = decoder.decode(nameBytes.subarray(0, nameLength));
+
+    return {
+      tag: 1,
+      user,
+      name
+    };
+  } else {
+    throw new Error("Invalid message tag");
+  }
+}
 
 type Position = {
   x: number;
@@ -32,7 +125,6 @@ type Player = {
 }
 
 type GameState = {
-  tick: number;
   players: List<Player>;
 }
 
@@ -41,31 +133,6 @@ type StateHistory = List<GameState>;
 // ----------- KeyBoard Events Handling ------------------
 type KeyHandler = (roller: any, event: KeyboardEvent) => void;
 
-const handleKeyPress: KeyHandler = (roller: any, event: KeyboardEvent) => {
-  const pressEvent: GameEvent = {
-    type: EventType.PRESS,
-    player: thisPlayer(),
-    key: event.key,
-    tick: 0  
-  }
-  roller.post(pressEvent);
-}
-
-
-const handleKeyRelease: KeyHandler = (roller: any, event: KeyboardEvent) => {
-  const releaseEvent: GameEvent = {
-    type: EventType.RELEASE,
-    player: thisPlayer(),
-    key: event.key,
-    tick: 0  
-  }
-  roller.post(releaseEvent);
-}
-
-const addKeyboardListeners = (roller: any): void => {
-  document.addEventListener("keydown", (event) => handleKeyPress(roller, event));
-  document.addEventListener("keyup", (event) => handleKeyRelease(roller, event));
-}
 
 // ---------------- Local Player Handling -----------------
 let thisPlayerId = 0x0;
@@ -126,7 +193,6 @@ function draw(state: GameState): void {
 
   ctx.fillStyle = 'black';
   ctx.font = '14px Arial';
-  ctx.fillText(`Tick: ${state.tick}`, 10, 20);
 }
 
 function newPlayerList(updatedPlayer: Player, players: List<Player>): List<Player> {
@@ -139,29 +205,27 @@ function addPlayer(newPlayer: Player, players: List<Player>): List<Player> {
   return players.push(newPlayer);
 }
 
-function newGameState(tick: number, players: List<Player>): GameState {
+function newGameState(players: List<Player>): GameState {
     return {
-      tick: tick,
       players: players,
     }
 }
 
 function initialGameState(p: Player): GameState {
   return {
-    tick: 0,
     players: List([p])
   }
 }
 
-function playerPressed(key: string, player: Player, pressed: boolean): Player {
+function playerPressed(key: number, player: Player, pressed: boolean): Player {
   switch (key) {
-    case "a":
+    case (97 || 65):
       return { ...player, a: pressed };
-    case "d":
+    case (100 || 68):
       return { ...player, d: pressed };
-    case "w":
+    case (119 || 87):
       return { ...player, w: pressed };
-    case "s":
+    case (115 || 83):
       return { ...player, s: pressed };
     default:
       return player;
@@ -202,36 +266,28 @@ function movePlayers(players: List<Player>): List<Player> {
   return players.map(movePlayer);
 }
 
-function computeState(state: GameState, event: GameEvent): GameState {
-  const tick = state.tick;
+
+
+
+function computeState(state: GameState, gameMessage: GameMessage): GameState {
   const statePlayers = state.players;
 
-  switch (event.type) {
-    case EventType.TICK:
-      return newGameState(tick + 1, movePlayers(statePlayers));
+  if (gameMessage == null) {
+    return state;
+  }
 
-    case EventType.PLAYER_JOINED:
-      return newGameState(tick, addPlayer(event.player, statePlayers));
-
-    case EventType.GAME_STARTED: 
-      return newGameState(tick, statePlayers);
-
-    case EventType.PRESS:
-      let p = getPlayerById(event.player, statePlayers);
-      if(!p) {
+  switch (gameMessage.tag) {
+    case COMMAND_MESSAGE:
+      const decKey: KeyEvent = decodeKey(gameMessage.key);
+      let player = getPlayerById(gameMessage.user, statePlayers);
+      if(!player) {
         return state;
       }
-      const playerPress = playerPressed(event.key, p, true);
-      return newGameState(tick, newPlayerList(playerPress, statePlayers));
-
-    case EventType.RELEASE:
-      let pl = getPlayerById(event.player, statePlayers);
-      if(!pl) {
-        return state;
-      }
-      const player = playerPressed(event.key, pl, false);
-      const players = newPlayerList(player, statePlayers);
-      return newGameState(tick, players);
+      const pressed = decKey.event == 0 ? true : false;
+      const playerPress = playerPressed(decKey.key, player, pressed);
+      return newGameState(movePlayers(newPlayerList(playerPress, statePlayers)));
+  
+    //return newGameState(tick, addPlayer(event.player, statePlayers));
 
     default:
       return state;
@@ -268,60 +324,84 @@ function enterRoom() {
     const canvasWidth = rect.width;
     const canvasHeight = rect.height;
 
-    const uwuchat = client({ url: "ws://server.uwu.games" });
+    const client = new UwUChat2Client();
+    const testRoom = 1;
+    let gameMessage: any = null;
+    let state : GameState = initialGameState(activePlayer);
+    console.log(state);
 
-    let roller = uwuchat.roller({
-      room: roomId,
-      user: thisPlayerId,
+    client.init('ws://localhost:8080').then(() => {
+        console.log('Connected to server');
 
-      on_init: (time, user, data) => { 
-        const joinedEv: GameEvent = {
-          type: EventType.PLAYER_JOINED,
-          player: activePlayer,
-          tick: 0
+        client.recv(testRoom, (msg: Uint8Array) => {
+            gameMessage = decode(msg);
+            console.log(gameMessage);
+        });
+
+        document.addEventListener('keypress', (event) => {
+            if (["a", "w", "d", "s"].includes(event.key)) {
+              const key = event.key.charCodeAt(0);
+              const keyEvType = KeyEventType.PRESS;
+              const encodedKey = encodeKey({key: key, event: keyEvType });
+              const tag = COMMAND_MESSAGE;
+              const user = thisPlayerId;
+              const time = Date.now();
+
+              const gameMsg: GameMessage = {
+                tag: tag, user: user, time: time, key: encodedKey
+              };
+
+              state = computeState(state, gameMsg);
+              draw(state);
+
+              const encodedMessage = encode(gameMsg);
+              client.send(testRoom, encodedMessage);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+          if (["a", "w", "d", "s"].includes(event.key)) {
+              const key = event.key.charCodeAt(0);
+              const keyEvType = KeyEventType.RELEASE;
+              const encodedKey = encodeKey({key: key, event: keyEvType });
+              const tag = COMMAND_MESSAGE;
+              const user = thisPlayerId;
+              const time = Date.now();
+
+              const gameMsg: GameMessage = {
+                tag: tag, user: user, time: time, key: encodedKey
+              };
+
+              state = computeState(state, gameMsg);
+              draw(state);
+
+              const encodedMessage = encode(gameMsg);
+              client.send(testRoom, encodedMessage);
+            }
+        });
+
+        function updateServerTime() {
+            const serverTime = new Date(client.time());
+            console.log(`Server Time: ${serverTime.toISOString()}`);
+
+            if (gameMessage.user == thisPlayer()) {
+              return;
+            }
+            state = computeState(state, gameMessage);
+            draw(state);
+            requestAnimationFrame(updateServerTime);
         }
-        roller.post(joinedEv);
-        return initialGameState(activePlayer);
-      },
+        updateServerTime();
 
-      // when a post is made, compute state
-      on_post: (state, time, user, data) => {
-        let newState = computeState(state, data);
-        return newState;
-      },
-
-      on_tick: [60, (state) => {
-        return computeState(state, { type: EventType.TICK, tick: state.tick });
-      }],
-
-      on_pass: (state, time, delta) => {
-        return state;
-      }
-    }); 
-
-    const joined: GameEvent = {
-      type: EventType.PLAYER_JOINED,
-      player: activePlayer,
-      tick: 0
-    }
-
-    roller.post(joined);
+      }).catch(console.error);
+ 
     setThisPlayer(thisPlayerId); 
-    main(roller);
 }
 
 function generateHexId(): number {
   const timestamp = new Date().getTime();
   const randomPart = Math.floor(Math.random() * 16777216); // 16777216 is 0xFFFFFF in decimal
   return Number(`${timestamp}${randomPart}`);
-}
-
-function main(roller: any) {
-  addKeyboardListeners(roller);
-  setInterval(function render() {
-    let state = roller.get_state();
-    draw(state);
-  }, 1000 / 60);
 }
 
 (window as any).enterRoom = enterRoom
