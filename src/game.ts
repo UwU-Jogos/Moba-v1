@@ -3,12 +3,10 @@ import lib from "./lib.js";
 
 const COMMAND_MESSAGE = 0;
 const SET_NICK = 1;
-const REQUEST_STATE = 2;
 
 type GameMessage =
   | { tag: 0, user: number, time: number, key: Uint8Array }
-  | { tag: 1, user: number, name: string }
-  | { tag: 2, state: GameState }; 
+  | { tag: 1, user: number, name: string };
 
 const enum KeyEventType {
   PRESS = 1,
@@ -49,13 +47,14 @@ const loginButton = document.getElementById('login-button') as HTMLButtonElement
 
 let username = '';
 let room = 0;
-let playerId = 0;
+let playerId = 0; // Math.floor(Math.random() * 1000000);
 let pressedKeys = new Set<number>();
 let gameState: GameState = { players: {} };
 
-const PLAYER_RADIUS = 10;
+const PLAYER_RADIUS = 8;
 const MOVE_SPEED = 2;
 
+// Function to encode a username as a number
 function encodeUsername(name: string): number {
   const buffer = new TextEncoder().encode(name);
   let num = 0;
@@ -65,6 +64,7 @@ function encodeUsername(name: string): number {
   return num;
 }
 
+// Function to decode a number back to a username
 function decodeUsername(num: number): string {
   const buffer = [];
   while (num > 0) {
@@ -74,11 +74,13 @@ function decodeUsername(num: number): string {
   return new TextDecoder().decode(new Uint8Array(buffer));
 }
 
+// Function to generate a unique color based on the player's ID
 function generateColor(playerId: number): string {
   const hash = (playerId * 0xdeadbeef) % 0xffffff;
   const color = '#' + ('000000' + hash.toString(16)).slice(-6);
   return color;
 }
+
 loginButton.onclick = async () => {
   username = usernameInput.value;
   playerId = encodeUsername(username);
@@ -88,24 +90,19 @@ loginButton.onclick = async () => {
     client.recv(room, handleGameMessage);
     client.send(room, lib.encode({ tag: SET_NICK, user: playerId, name: username }));
 
-    // Solicitar o estado do jogo
-    
     loginScreen.style.display = 'none';
     gameCanvas.style.display = 'block';
-    
+
     // Initialize the player's position and color
-    if (gameState.players[playerId].id == playerId) {
-      gameState.players[playerId] = {
-        id: playerId,
-        name: username,
-        position: { x: gameCanvas.width / 2, y: gameCanvas.height / 2 },
-        w: false,
-        a: false,
-        s: false,
-        d: false,
-      };
-    }
-    client.send(room, lib.encode({ tag: REQUEST_STATE, state: gameState}));
+    gameState.players[playerId] = {
+      id: playerId,
+      name: username,
+      position: { x: gameCanvas.width / 2, y: gameCanvas.height / 2 },
+      w: false,
+      a: false,
+      s: false,
+      d: false,
+    };
 
     draw();
   }
@@ -135,13 +132,8 @@ function handleGameMessage(msg: Uint8Array) {
   computeState(decoded);
 }
 
-
 function computeState(event: GameMessage) {
-  // if (gameState === null) {
-  //   console.error("gameState is null");
-  //   return;
-  // }
-
+  
   if (event.tag === COMMAND_MESSAGE) {
     if (!gameState.players[event.user]) {
       gameState.players[event.user] = {
@@ -161,6 +153,7 @@ function computeState(event: GameMessage) {
       if ((keyEvent.key === 83) || (keyEvent.key === 40)) player.s = true;
       if ((keyEvent.key === 65) || (keyEvent.key === 37)) player.a = true;
       if ((keyEvent.key === 68) || (keyEvent.key === 39)) player.d = true;
+
     } else if (keyEvent.event === KeyEventType.RELEASE) {
       const player = gameState.players[event.user];
       if ((keyEvent.key === 87) || (keyEvent.key === 38)) player.w = false;
@@ -182,15 +175,9 @@ function computeState(event: GameMessage) {
     } else {
       gameState.players[event.user].name = event.name;
     }
-  } else if (event.tag === REQUEST_STATE) {
-    // Quando o estado do jogo é recebido, atualize o gameState
-    // if (event.state) {
-      gameState = event.state;
-    // } else {
-    //   console.error("Received state is null or undefined");
-    // }
   }
 }
+
 function updatePlayerPositions() {
   for (const userId in gameState.players) {
     const player = gameState.players[userId];

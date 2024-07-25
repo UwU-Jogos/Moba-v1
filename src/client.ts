@@ -1,5 +1,3 @@
-import WebSocket from 'isomorphic-ws';
-
 type Room = number;
 type Recv = (msg: Uint8Array) => void;
 type Exit = () => void;
@@ -36,8 +34,8 @@ class UwUChat2Client {
         this.sync_time();
         resolve();
       };
-      this.ws.onerror = (event: WebSocket.ErrorEvent) => reject(event);
-      this.ws.onmessage = (event: WebSocket.MessageEvent) => {
+      this.ws.onerror = (event: Event) => reject(event);
+      this.ws.onmessage = (event: MessageEvent) => {
         const data = event.data;
         this.handle_message(new Uint8Array(data instanceof ArrayBuffer ? data : new ArrayBuffer(0)));
       };
@@ -68,10 +66,11 @@ class UwUChat2Client {
     };
   }
 
-  public time(): number{
+  public time(): number {
     return Date.now() + this.server_time_offset;
   }
-  public get_ping(): number{
+
+  public get_ping(): number {
     return this.server_time_offset;
   }
 

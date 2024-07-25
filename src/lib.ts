@@ -29,24 +29,26 @@ function encode(message: {
   tag: 1;
   user: number;
   name: string;
-} | {
-  tag: 2;
-  state: any; 
-}): Uint8Array {
-  if (message.tag === 2) {
-    // Encode any state as JSON
-    const json = JSON.stringify(message.state);
-    const encoder = new TextEncoder();
-    const jsonBytes = encoder.encode(json);
-    const length = jsonBytes.length;
+} 
+// | {
+//   tag: 2;
+//   state: any; 
+// }
+): Uint8Array {
+  // if (message.tag === 2) {
+  //   // Encode any state as JSON
+  //   const json = JSON.stringify(message.state);
+  //   const encoder = new TextEncoder();
+  //   const jsonBytes = encoder.encode(json);
+  //   const length = jsonBytes.length;
 
-    const result = new Uint8Array(5 + length);
-    result[0] = message.tag;
-    const view = new DataView(result.buffer);
-    view.setUint32(1, length, true); // Length of JSON string
-    result.set(jsonBytes, 5); // JSON string
-    return result;
-  }
+  //   const result = new Uint8Array(5 + length);
+  //   result[0] = message.tag;
+  //   const view = new DataView(result.buffer);
+  //   view.setUint32(1, length, true); // Length of JSON string
+  //   result.set(jsonBytes, 5); // JSON string
+  //   return result;
+  // }
 
   const result = new Uint8Array(12);
   const view = new DataView(result.buffer);
@@ -89,21 +91,23 @@ function decode(encoded: Uint8Array): {
   tag: 1;
   user: number;
   name: string;
-} | {
-  tag: 2;
-  state: any; // Tipo genérico para o estado
-} {
+}
+//  | {
+//   tag: 2;
+//   state: any; // Tipo genérico para o estado
+// } 
+{
   const view = new DataView(encoded.buffer);
   const tag = encoded[0];
 
-  if (tag === 2) {
-    // Decode any state from JSON
-    const length = view.getUint32(1, true);
-    const jsonBytes = encoded.slice(5, 5 + length);
-    const json = new TextDecoder().decode(jsonBytes);
-    const state = JSON.parse(json);
-    return { tag, state };
-  }
+  // if (tag === 2) {
+  //   // Decode any state from JSON
+  //   const length = view.getUint32(1, true);
+  //   const jsonBytes = encoded.slice(5, 5 + length);
+  //   const json = new TextDecoder().decode(jsonBytes);
+  //   const state = JSON.parse(json);
+  //   return { tag, state };
+  // }
 
   if (encoded.length !== 12) {
     throw new Error("Invalid encoded message length. Expected 12 bytes.");
