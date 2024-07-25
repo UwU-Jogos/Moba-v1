@@ -130,6 +130,7 @@ function initialGameState(p: Player): GameState {
 }
 
 function playerPressed(key: number, player: Player, pressed: boolean): Player {
+  console.log('Key pressed:', key);
   switch (key) {
     case (97):
       console.log("Player moving to left");
@@ -151,7 +152,7 @@ function playerPressed(key: number, player: Player, pressed: boolean): Player {
 function movePlayers(players: List<Player>): List<Player> {
   const canvasX = 1;
   const canvasY = 1;
-  const canvasWidth = 1024;
+  const canvasWidth = 400;
   const canvasHeight = 800;
   const playerRadius = 10;
 
@@ -192,7 +193,7 @@ function computeState(state: GameState, gameMessage: GameMessage): GameState {
   switch (gameMessage.tag) {
     case COMMAND_MESSAGE:
       const decKey: KeyEvent = lib.decodeKey(gameMessage.key);
-      
+      console.log('Decoded key:', decKey);
       // if its null event, a player joined
       if (decKey.key == 0) {
         if (gameMessage.user == thisPlayer()) {
@@ -208,6 +209,7 @@ function computeState(state: GameState, gameMessage: GameMessage): GameState {
       }
       const pressed = decKey.event == 1 ? true : false;
       const playerPress = playerPressed(decKey.key, player, pressed);
+      console.log('Player after press:', playerPress); 
       return newGameState(newPlayerList(playerPress, statePlayers));
   
     case TICK_MESSAGE:
@@ -256,7 +258,7 @@ function enterRoom() {
     let pendingMessages: GameMessage[] = [];
 
 
-    client.init('ws://localhost:8080').then(() => {
+    client.init('ws://server.uwu.games').then(() => {
       console.log('Connected to server');
 
       function sendPlayerJoinedEvent() {
@@ -273,26 +275,28 @@ function enterRoom() {
           };
           const encodedMessage = lib.encode(joinedMsg);
           client.send(testRoom, encodedMessage);
-          console.log("SENT PLAYER JOINED EVENT");
+          // console.log("SENT PLAYER JOINED EVENT");
         }
 
         sendPlayerJoinedEvent();
 
         client.recv(testRoom, (msg: Uint8Array) => {
             const decodedMessage = lib.decode(msg);
-            console.log("RECEIVED MESSAGE");
-            console.log(decodedMessage);
+            // console.log("RECEIVED MESSAGE");
+            // console.log(decodedMessage);
             if (decodedMessage.user !== thisPlayerId) {
                 pendingMessages.push(decodedMessage);
             }
-            console.log("PENDING MESSAGES: ");
-            console.log(pendingMessages);
+            // console.log("PENDING MESSAGES: ");
+            // console.log(pendingMessages);
         });
 
         function handleKeyEvent(event: KeyboardEvent, keyEvType: KeyEventType) {
             if (["a", "w", "d", "s"].includes(event.key)) {
                 const key = event.key.charCodeAt(0);
+                console.log('Key code:', key);
                 const encodedKey = lib.encodeKey({key: key, event: keyEvType});
+                console.log('Encoded key:', encodedKey);
                 const gameMsg: GameMessage = {
                     tag: COMMAND_MESSAGE,
                     user: thisPlayerId,
@@ -305,24 +309,22 @@ function enterRoom() {
                 client.send(testRoom, encodedMessage);
             }
         }
-
         document.addEventListener('keydown', (event) => handleKeyEvent(event, KeyEventType.PRESS));
         document.addEventListener('keyup', (event) => handleKeyEvent(event, KeyEventType.RELEASE));
 
         function gameLoop() {
             const serverTime = new Date(client.time());
 
-            console.log("I AM HERE IN GAMELOOP");
             while (pendingMessages.length > 0) {
-              console.log("IM here processing pending messages!");
+              // console.log("IM here processing pending messages!");
               const message = pendingMessages.shift();
-              console.log(message);
+              // console.log(message);
               if (message) {
-                console.log("PROCESSING NEW MESSAGE");
+                // console.log("PROCESSING NEW MESSAGE");
                 state = computeState(state, message);
                 state = computeState(state, { tag: TICK_MESSAGE });
-                console.log("new state: ");
-                console.log(state);
+                // console.log("new state: ");
+                // console.log(state);
               }
             }
             state = computeState(state, { tag: TICK_MESSAGE });
