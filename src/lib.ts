@@ -41,8 +41,8 @@ function encode(message: {
 
   if (message.tag === 0) {
     // Set time (u48)
-    view.setUint32(5, message.time & 0xFFFFFFFF, true);
-    view.setUint16(9, (message.time >> 32) & 0xFFFF, true);
+    view.setUint32(5, message.time % 0x100000000, true);
+    view.setUint16(9, Math.floor(message.time / 0x100000000), true);
 
     // Set key (u8)
     result[11] = message.key[0];
@@ -83,13 +83,13 @@ function decode(encoded: Uint8Array): {
   if (tag === 0) {
     const timeLow = view.getUint32(5, true);
     const timeHigh = view.getUint16(9, true);
-    const time = (timeHigh << 32) | timeLow;
+    const time = timeHigh * 0x100000000 + timeLow;
     const key = encoded.slice(11, 12);
 
     return {
       tag: 0,
       user,
-      time: time,
+      time,
       key
     };
   } else if (tag === 1) {
@@ -108,6 +108,7 @@ function decode(encoded: Uint8Array): {
     throw new Error("Invalid message tag");
   }
 }
+
 
 function hex_to_bytes(hex: string): Uint8Array {
   const arr = []
