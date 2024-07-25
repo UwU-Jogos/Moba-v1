@@ -284,9 +284,11 @@ function enterRoom() {
             const decodedMessage = lib.decode(msg);
             // console.log("RECEIVED MESSAGE");
             // console.log(decodedMessage);
-            if (decodedMessage.user !== thisPlayerId) {
-                pendingMessages.push(decodedMessage);
-            }
+            if (decodedMessage.tag === SET_NICK) {
+              if (decodedMessage.user !== thisPlayerId) {
+                  pendingMessages.push(decodedMessage);
+              }
+          }
             // console.log("PENDING MESSAGES: ");
             // console.log(pendingMessages);
         });
