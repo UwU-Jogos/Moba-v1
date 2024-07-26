@@ -8,10 +8,11 @@ import { List } from "immutable";
 // twice (one when pressed, other in the interval). To get this, we get the delta between the the two (3 - 1) = 2 divided by the tick_rate / 1 = 2
 // this means we have to run computeState() with tick event twice, rendering twice too.
 // to do this, we can use w : { tag: 2 }
+//
 // a messageQueue that starts empty
 // The first message is the 1st player join. The time of this message will be the initialRoomTime
 // then, we loop
-// if the queue is empty, we emit a TICK event and add TICK_RATE to the currentTIck (that starts at initialRoomTime)
+// if the queue is empty, we emit a TICK event and add TICK_RATE to the currentTIck (that starts at initialRoomTime) [1, 2, 3, 4]
 // if the currentTick is == to the time of the next message, process the message
 // need to sync message sending to assure every message has a time that is a multiple of TICK_RATE
 // How to loop this and make old messages process fast and sync fast, and then just go with the game flow? Process fast while the currentTick is < then client time (client.time()). When it reaches there, we keep computing as messages come. We can manage the outer loop with a setInterval / requestAnimationFrame, and the innter with the currentTick and clientTime
@@ -21,7 +22,7 @@ const SET_NICK = 1
 const TICK_MESSAGE = 2
 
 // 60 fps
-const TICK_RATE = 1000 / 60 
+const TICK_RATE = 1000 / 100 
 
 type GameMessage = 
   | { tag: 0, user: number, time: number, key: Uint8Array } 
@@ -274,6 +275,7 @@ function enterRoom() {
     let messageQueue: GameMessage[] = [];
     let initialRoomTime : number | null = null;
     let currentTick : number | null = null;
+    let setByMe : boolean = false;
 
     client.init('ws://localhost:8080').then(() => {
       console.log('Connected to server');
@@ -296,6 +298,8 @@ function enterRoom() {
           if (initialRoomTime === null) {
             initialRoomTime = time;
             currentTick = time;
+            setByMe = true;
+            console.log("SET BY ME INITIAL TIME TO: ", initialRoomTime);
           }
           const encodedMessage = lib.encode(joinedMsg);
           client.send(testRoom, encodedMessage);
@@ -306,6 +310,19 @@ function enterRoom() {
         client.recv(testRoom, (msg: Uint8Array) => {
             const decodedMessage = lib.decode(msg);
             if (decodedMessage.user !== thisPlayerId) {
+
+              if ('time' in decodedMessage && (initialRoomTime === null || setByMe)) {
+                // se eu setei pro mais novo q recebi, mas o mais novo for > q a minha mensagem de join (antigo initial), n seta
+                if (setByMe && initialRoomTime && decodedMessage.time > initialRoomTime) {
+                  console.log("Not setting because my time is lower!"); 
+                } else {
+                  initialRoomTime = decodedMessage.time;
+                  console.log("Set initial room time to other player message: ", initialRoomTime);
+                  currentTick = decodedMessage.time
+                  setByMe = false;
+                }
+              }
+
               messageQueue.push(decodedMessage);
               messageQueue.sort((a, b) => { 
                 if ('time' in a && 'time' in b) {
@@ -320,10 +337,11 @@ function enterRoom() {
             if (["a", "w", "d", "s"].includes(event.key)) {
                 const key = event.key.charCodeAt(0);
                 const encodedKey = lib.encodeKey({key: key, event: keyEvType});
+                const time = Math.ceil(Date.now() / TICK_RATE) * TICK_RATE;
                 const gameMsg: GameMessage = {
                     tag: COMMAND_MESSAGE,
                     user: thisPlayerId,
-                    time: Date.now(),
+                    time: time, 
                     key: encodedKey
                 };
 
@@ -359,16 +377,28 @@ function enterRoom() {
           const clientTime = client.time();
 
           while (currentTick <= clientTime) {
-            if (messageQueue.length > 0 && 'time' in messageQueue[0]  && messageQueue[0].time <= currentTick) {
-              const message = messageQueue.shift()!;
-              state = computeState(state, message);
+            const messagesForCurrentTick = extractMessagesForTick(currentTick);
+            
+            if (messagesForCurrentTick.length > 0) {
+              for (const message of messagesForCurrentTick) {
+                state = computeState(state, message);
+              }
             } else {
               state = computeState(state, { tag: TICK_MESSAGE });
             }
+
+            draw(state);
             currentTick += TICK_RATE;
           }
         }
 
+        function extractMessagesForTick(tick: number): any[] {
+          const messages = [];
+          while (messageQueue.length > 0 && 'time' in messageQueue[0] && messageQueue[0].time === tick) {
+            messages.push(messageQueue.shift()!);
+          }
+          return messages;
+        }
 
         function gameLoop() {
           processMessages();
