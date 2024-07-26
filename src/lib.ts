@@ -29,12 +29,15 @@ function encode(message: {
   tag: 1;
   user: number;
   name: string;
-}): Uint8Array {
+} | { tag: 2 }): Uint8Array {
   const result = new Uint8Array(12);
   const view = new DataView(result.buffer);
 
   // Set tag
   result[0] = message.tag;
+  if (message.tag == 2) {
+    return result;
+  }
 
   // Set user (u32)
   view.setUint32(1, message.user, true);
@@ -57,8 +60,7 @@ function encode(message: {
     if (nameBytesToCopy < 7) {
       result.fill(0, 5 + nameBytesToCopy, 12);
     }
-  }
-
+  } 
   return result;
 }
 

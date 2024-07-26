@@ -2,9 +2,26 @@ import UwUChat2Client from "./client";
 import lib from "./lib";
 import { List } from "immutable";
 
+// key presses and releases has timestamps
+// we have a TICK_RATE fixed. suppose tick_rate = 1
+// when we receive old messages: suppose received 3 messages [1, 3] where = is press W and 3 is release W. We have a tick rate of 1, which means we moved
+// twice (one when pressed, other in the interval). To get this, we get the delta between the the two (3 - 1) = 2 divided by the tick_rate / 1 = 2
+// this means we have to run computeState() with tick event twice, rendering twice too.
+// to do this, we can use w : { tag: 2 }
+// a messageQueue that starts empty
+// The first message is the 1st player join. The time of this message will be the initialRoomTime
+// then, we loop
+// if the queue is empty, we emit a TICK event and add TICK_RATE to the currentTIck (that starts at initialRoomTime)
+// if the currentTick is == to the time of the next message, process the message
+// need to sync message sending to assure every message has a time that is a multiple of TICK_RATE
+// How to loop this and make old messages process fast and sync fast, and then just go with the game flow? Process fast while the currentTick is < then client time (client.time()). When it reaches there, we keep computing as messages come. We can manage the outer loop with a setInterval / requestAnimationFrame, and the innter with the currentTick and clientTime
+
 const COMMAND_MESSAGE = 0
 const SET_NICK = 1
 const TICK_MESSAGE = 2
+
+// 60 fps
+const TICK_RATE = 1000 / 60 
 
 type GameMessage = 
   | { tag: 0, user: number, time: number, key: Uint8Array } 
@@ -253,8 +270,10 @@ function enterRoom() {
     const testRoom = 1;
     let gameMessage: any = null;
     let state : GameState = initialGameState(activePlayer);
-    let pendingMessages: GameMessage[] = [];
 
+    let messageQueue: GameMessage[] = [];
+    let initialRoomTime : number | null = null;
+    let currentTick : number | null = null;
 
     client.init('ws://localhost:8080').then(() => {
       console.log('Connected to server');
@@ -264,29 +283,37 @@ function enterRoom() {
           const key = 0;
           const encodedKey = lib.encodeKey({ key: key, event: KeyEventType.PRESS });
           const user = thisPlayer();
-          const time = Date.now();
-          const joinedMsg: GameMessage = {
+          // round to the next valid tick
+          const time = Math.ceil(Date.now() / TICK_RATE) * TICK_RATE;
+          const joinedMsg = {
             tag: COMMAND_MESSAGE,
             user: user,
             time: time,
             key: encodedKey
-          };
+          } as GameMessage;
+
+          messageQueue.push(joinedMsg);
+          if (initialRoomTime === null) {
+            initialRoomTime = time;
+            currentTick = time;
+          }
           const encodedMessage = lib.encode(joinedMsg);
           client.send(testRoom, encodedMessage);
-          console.log("SENT PLAYER JOINED EVENT");
         }
 
         sendPlayerJoinedEvent();
 
         client.recv(testRoom, (msg: Uint8Array) => {
             const decodedMessage = lib.decode(msg);
-            console.log("RECEIVED MESSAGE");
-            console.log(decodedMessage);
             if (decodedMessage.user !== thisPlayerId) {
-                pendingMessages.push(decodedMessage);
+              messageQueue.push(decodedMessage);
+              messageQueue.sort((a, b) => { 
+                if ('time' in a && 'time' in b) {
+                  return a.time - b.time 
+                }
+                return 0;
+              });
             }
-            console.log("PENDING MESSAGES: ");
-            console.log(pendingMessages);
         });
 
         function handleKeyEvent(event: KeyboardEvent, keyEvType: KeyEventType) {
@@ -300,36 +327,55 @@ function enterRoom() {
                     key: encodedKey
                 };
 
-                pendingMessages.push(gameMsg);
+                messageQueue.push(gameMsg);
+                messageQueue.sort((a, b) => {
+                  if ('time' in a && 'time' in b) {
+                    return a.time - b.time;
+                  }
+                  return 0;
+                });
                 const encodedMessage = lib.encode(gameMsg);
                 client.send(testRoom, encodedMessage);
             }
         }
 
-        document.addEventListener('keydown', (event) => handleKeyEvent(event, KeyEventType.PRESS));
-        document.addEventListener('keyup', (event) => handleKeyEvent(event, KeyEventType.RELEASE));
+        const keyState: any = {};
+        document.addEventListener('keydown', (event) => { 
+          if (!keyState[event.code]) {
+            keyState[event.code] = true;
+            handleKeyEvent(event, KeyEventType.PRESS)
+          }
+        });
+        document.addEventListener('keyup', (event) => { 
+          if (keyState[event.code]) {
+            keyState[event.code] = false;
+            handleKeyEvent(event, KeyEventType.RELEASE)
+          }
+        });
+
+        function processMessages() {
+          if (initialRoomTime === null || currentTick === null) return;
+
+          const clientTime = client.time();
+
+          while (currentTick <= clientTime) {
+            if (messageQueue.length > 0 && 'time' in messageQueue[0]  && messageQueue[0].time <= currentTick) {
+              const message = messageQueue.shift()!;
+              state = computeState(state, message);
+            } else {
+              state = computeState(state, { tag: TICK_MESSAGE });
+            }
+            currentTick += TICK_RATE;
+          }
+        }
+
 
         function gameLoop() {
-            const serverTime = new Date(client.time());
-
-            console.log("I AM HERE IN GAMELOOP");
-            while (pendingMessages.length > 0) {
-              console.log("IM here processing pending messages!");
-              const message = pendingMessages.shift();
-              console.log(message);
-              if (message) {
-                console.log("PROCESSING NEW MESSAGE");
-                state = computeState(state, message);
-                state = computeState(state, { tag: TICK_MESSAGE });
-                console.log("new state: ");
-                console.log(state);
-              }
-            }
-            state = computeState(state, { tag: TICK_MESSAGE });
-            draw(state);
-
-            requestAnimationFrame(gameLoop);
+          processMessages();
+          draw(state);
+          requestAnimationFrame(gameLoop);
         }
+
         gameLoop();
 
       }).catch(console.error); 
