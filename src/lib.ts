@@ -1,4 +1,30 @@
 
+// Function to encode a username as a number
+function encodeUsername(name: string): number {
+  const buffer = new TextEncoder().encode(name);
+  let num = 0;
+  for (let i = 0; i < buffer.length; i++) {
+    num += buffer[i] * (256 ** i);
+  }
+  return num;
+}
+
+// Function to decode a number back to a username
+function decodeUsername(num: number): string {
+  const buffer = [];
+  while (num > 0) {
+    buffer.push(num % 256);
+    num = Math.floor(num / 256);
+  }
+  return new TextDecoder().decode(new Uint8Array(buffer));
+}
+
+// Function to generate a unique color based on the player's ID
+function generateColor(playerId: number): string {
+  const hash = (playerId * 0xdeadbeef) % 0xffffff;
+  const color = '#' + ('000000' + hash.toString(16)).slice(-6);
+  return color;
+}
 
 function encodeKey(keyEv: { key: number, event: number }): Uint8Array {
   if (keyEv.key > 127) {
@@ -253,6 +279,9 @@ function states_before(states: null | { bit: number; current: { tick: number }; 
 }
 
 export default {
+  encodeUsername,
+  decodeUsername,
+  generateColor,
   encodeKey,
   decodeKey,
   encode,
