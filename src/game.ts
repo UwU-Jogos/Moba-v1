@@ -31,8 +31,6 @@ type Player = {
   a: boolean;
   s: boolean;
   d: boolean;
-  moveStartTime: number;
-  moveDuration: number;
 };
 
 type GameState = {
@@ -55,8 +53,7 @@ let gameState: GameState = { players: {} };
 
 const PLAYER_RADIUS = 8;
 const MOVE_SPEED = 2;
-let tick = 1;
-const TICK_RATE = 24; // milliseconds
+const TICK_RATE = 100; // milliseconds
 
 // Function to encode a username as a number
 function encodeUsername(name: string): number {
@@ -106,8 +103,6 @@ async function handleLogin() {
       a: false,
       s: false,
       d: false,
-      moveDuration : 0,
-      moveStartTime: 0
     };
     addKeyboardListeners();
     requestAnimationFrame(gameLoop);
@@ -118,12 +113,10 @@ loginButton.onclick = handleLogin;
 
 function addKeyboardListeners(): void {
   document.addEventListener('keydown', (event) => {
-    if (!pressedKeys.has(event.keyCode)) {
+    // if (!pressedKeys.has(event.keyCode)) {
       pressedKeys.add(event.keyCode);
       sendKeyEvent(event.keyCode, KeyEventType.PRESS);
-      console.log(tick);
-      tick += 1
-    }
+    // }
   });
 
   document.addEventListener('keyup', (event) => {
@@ -141,6 +134,7 @@ function sendKeyEvent(key: number, event: KeyEventType) {
 function handleGameMessage(msg: Uint8Array) {
   const decoded = lib.decode(msg);
   computeState(decoded);
+  updatePlayerPositions(); // Update player positions right after state computation
 }
 
 function computeState(event: GameMessage) {
@@ -154,16 +148,12 @@ function computeState(event: GameMessage) {
         a: false,
         s: false,
         d: false,
-        moveDuration : 0,
-        moveStartTime: 0
       };
     }
     const keyEvent = lib.decodeKey(event.key);
     const player = gameState.players[event.user];
-    
+
     if (keyEvent.event === KeyEventType.PRESS) {
-      player.moveStartTime = event.time;
-      player.moveDuration = 500; // Duration to move in milliseconds
       if ((keyEvent.key === 87) || (keyEvent.key === 38)) player.w = true;
       if ((keyEvent.key === 83) || (keyEvent.key === 40)) player.s = true;
       if ((keyEvent.key === 65) || (keyEvent.key === 37)) player.a = true;
@@ -173,10 +163,6 @@ function computeState(event: GameMessage) {
       if ((keyEvent.key === 83) || (keyEvent.key === 40)) player.s = false;
       if ((keyEvent.key === 65) || (keyEvent.key === 37)) player.a = false;
       if ((keyEvent.key === 68) || (keyEvent.key === 39)) player.d = false;
-      if (!player.w && !player.s && !player.a && !player.d) {
-        player.moveStartTime = 0;
-        player.moveDuration = 0;
-      }
     }
   } else if (event.tag === SET_NICK) {
     if (!gameState.players[event.user]) {
@@ -188,35 +174,25 @@ function computeState(event: GameMessage) {
         a: false,
         s: false,
         d: false,
-        moveDuration : 0,
-        moveStartTime: 0
       };
     } else {
       gameState.players[event.user].name = event.name;
     }
   }
-  updatePlayerPositions();
 }
 
 function updatePlayerPositions() {
-  const now = Date.now();
-
   for (const userId in gameState.players) {
     const player = gameState.players[userId];
 
-      const elapsedTime = now - player.moveStartTime;
-      const moveFraction = Math.min(elapsedTime / player.moveDuration!, 1); // 1 is the maximum fraction (100%)
-      
-      if (player.w) player.position.y -= MOVE_SPEED * moveFraction;
-      if (player.s) player.position.y += MOVE_SPEED * moveFraction;
-      if (player.a) player.position.x -= MOVE_SPEED * moveFraction;
-      if (player.d) player.position.x += MOVE_SPEED * moveFraction;
-    
+    if (player.w) player.position.y -= MOVE_SPEED;
+    if (player.s) player.position.y += MOVE_SPEED;
+    if (player.a) player.position.x -= MOVE_SPEED;
+    if (player.d) player.position.x += MOVE_SPEED;
 
     player.position.x = Math.max(PLAYER_RADIUS, Math.min(gameCanvas.width - PLAYER_RADIUS, player.position.x));
     player.position.y = Math.max(PLAYER_RADIUS, Math.min(gameCanvas.height - PLAYER_RADIUS, player.position.y));
   }
-  // requestAnimationFrame(updatePlayerPositions)
 }
 
 function draw() {
@@ -243,6 +219,5 @@ function draw() {
 
 function gameLoop() {
   draw();
-  // updatePlayerPositions();
-  setTimeout(() => requestAnimationFrame(gameLoop), TICK_RATE);
+  // requestAnimationFrame(gameLoop); // Call requestAnimationFrame continuously for the game loop
 }
