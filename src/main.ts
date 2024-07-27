@@ -150,16 +150,12 @@ function initialGameState(p: Player): GameState {
 function playerPressed(key: number, player: Player, pressed: boolean): Player {
   switch (key) {
     case (97):
-      console.log("Player moving to left");
       return { ...player, a: pressed };
     case (100):
-      console.log("Player moving to right");
       return { ...player, d: pressed };
     case (119):
-      console.log("Player moving to up");
       return { ...player, w: pressed };
     case (115):
-      console.log("Player moving to down");
       return { ...player, s: pressed };
     default:
       return player;
@@ -260,7 +256,6 @@ function enterRoom() {
         canvas.style.display = 'block';
     } 
 
-    // next feat: do clamping on the canvas
     const rect = canvas?.getBoundingClientRect() || { left: 10, top: 10, height: 500, width: 500 };
     const canvasX = rect.left;
     const canvasY = rect.top;
@@ -294,49 +289,43 @@ function enterRoom() {
             key: encodedKey
           } as GameMessage;
 
-          messageQueue.push(joinedMsg);
           if (initialRoomTime === null) {
             initialRoomTime = time;
             currentTick = time;
             setByMe = true;
-            console.log("SET BY ME INITIAL TIME TO: ", initialRoomTime);
           }
           const encodedMessage = lib.encode(joinedMsg);
           client.send(testRoom, encodedMessage);
         }
 
         sendPlayerJoinedEvent();
-
+        
         client.recv(testRoom, (msg: Uint8Array) => {
             const decodedMessage = lib.decode(msg);
-            if (decodedMessage.user !== thisPlayerId) {
-
-              if ('time' in decodedMessage && (initialRoomTime === null || setByMe)) {
-                // se eu setei pro mais novo q recebi, mas o mais novo for > q a minha mensagem de join (antigo initial), n seta
-                if (setByMe && initialRoomTime && decodedMessage.time > initialRoomTime) {
-                  console.log("Not setting because my time is lower!"); 
-                } else {
-                  initialRoomTime = decodedMessage.time;
-                  console.log("Set initial room time to other player message: ", initialRoomTime);
-                  currentTick = decodedMessage.time
-                  setByMe = false;
-                }
+            if ('time' in decodedMessage && (initialRoomTime === null || setByMe)) {
+              // se eu setei pro mais novo q recebi, mas o mais novo for > q a minha mensagem de join (antigo initial), n seta
+              if (setByMe && initialRoomTime && decodedMessage.time > initialRoomTime) {
+                console.log("Not setting because my time is lower!"); 
+              } else {
+                initialRoomTime = decodedMessage.time;
+                currentTick = decodedMessage.time
+                setByMe = false;
               }
-
-              messageQueue.push(decodedMessage);
-              messageQueue.sort((a, b) => { 
-                if ('time' in a && 'time' in b) {
-                  return a.time - b.time 
-                }
-                return 0;
-              });
             }
+
+            messageQueue.push(decodedMessage);
+            messageQueue.sort((a, b) => { 
+              if ('time' in a && 'time' in b) {
+                return a.time - b.time 
+              }
+              return 0;
+            });
         });
 
         function handleKeyEvent(event: KeyboardEvent, keyEvType: KeyEventType) {
             if (["a", "w", "d", "s"].includes(event.key)) {
                 const key = event.key.charCodeAt(0);
-                const encodedKey = lib.encodeKey({key: key, event: keyEvType});
+                const encodedKey = lib.encodeKey({ key: key, event: keyEvType});
                 const time = Math.ceil(Date.now() / TICK_RATE) * TICK_RATE;
                 const gameMsg: GameMessage = {
                     tag: COMMAND_MESSAGE,
@@ -345,13 +334,6 @@ function enterRoom() {
                     key: encodedKey
                 };
 
-                messageQueue.push(gameMsg);
-                messageQueue.sort((a, b) => {
-                  if ('time' in a && 'time' in b) {
-                    return a.time - b.time;
-                  }
-                  return 0;
-                });
                 const encodedMessage = lib.encode(gameMsg);
                 client.send(testRoom, encodedMessage);
             }
@@ -391,12 +373,24 @@ function enterRoom() {
             currentTick += TICK_RATE;
           }
         }
-
-        function extractMessagesForTick(tick: number): any[] {
+        
+        function extractMessagesForTick(tick: number, errorBound: number = (TICK_RATE / 2)): any[] {
           const messages = [];
-          while (messageQueue.length > 0 && 'time' in messageQueue[0] && messageQueue[0].time === tick) {
-            messages.push(messageQueue.shift()!);
+          const upperTick = tick + errorBound;
+          const lowerTick = tick - errorBound;
+
+          while (messageQueue.length > 0 && 'time' in messageQueue[0]) {
+            const message = messageQueue[0];
+            if (message.time < lowerTick) {
+              currentTick = message.time;
+              messages.push(messageQueue.shift());
+            } else if (message.time <= upperTick) {
+              messages.push(messageQueue.shift()!);
+            } else {
+              break;
+            }
           }
+
           return messages;
         }
 
