@@ -2,21 +2,6 @@ import UwUChat2Client from "./client";
 import lib from "./lib";
 import { List } from "immutable";
 
-// key presses and releases has timestamps
-// we have a TICK_RATE fixed. suppose tick_rate = 1
-// when we receive old messages: suppose received 3 messages [1, 3] where = is press W and 3 is release W. We have a tick rate of 1, which means we moved
-// twice (one when pressed, other in the interval). To get this, we get the delta between the the two (3 - 1) = 2 divided by the tick_rate / 1 = 2
-// this means we have to run computeState() with tick event twice, rendering twice too.
-// to do this, we can use w : { tag: 2 }
-//
-// a messageQueue that starts empty
-// The first message is the 1st player join. The time of this message will be the initialRoomTime
-// then, we loop
-// if the queue is empty, we emit a TICK event and add TICK_RATE to the currentTIck (that starts at initialRoomTime) [1, 2, 3, 4]
-// if the currentTick is == to the time of the next message, process the message
-// need to sync message sending to assure every message has a time that is a multiple of TICK_RATE
-// How to loop this and make old messages process fast and sync fast, and then just go with the game flow? Process fast while the currentTick is < then client time (client.time()). When it reaches there, we keep computing as messages come. We can manage the outer loop with a setInterval / requestAnimationFrame, and the innter with the currentTick and clientTime
-
 const COMMAND_MESSAGE = 0
 const SET_NICK = 1
 const TICK_MESSAGE = 2
@@ -58,7 +43,13 @@ type GameState = {
   players: List<Player>;
 }
 
-type StateHistory = List<GameState>;
+// to prevent loosing ticks, implement a simple rollback based on the state history
+// type StateHistory = List<GameState>;
+type StateHistory = {
+  tick: number;
+  state: GameState;
+  messages: GameMessage[];
+}[];
 
 // ----------- KeyBoard Events Handling ------------------
 type KeyHandler = (roller: any, event: KeyboardEvent) => void;
@@ -149,16 +140,11 @@ function initialGameState(p: Player): GameState {
 
 function playerPressed(key: number, player: Player, pressed: boolean): Player {
   switch (key) {
-    case (97):
-      return { ...player, a: pressed };
-    case (100):
-      return { ...player, d: pressed };
-    case (119):
-      return { ...player, w: pressed };
-    case (115):
-      return { ...player, s: pressed };
-    default:
-      return player;
+    case (97): return { ...player, a: pressed };
+    case (100): return { ...player, d: pressed };
+    case (119): return { ...player, w: pressed };
+    case (115): return { ...player, s: pressed };
+    default: return player;
   }
 }
 
@@ -220,7 +206,7 @@ function computeState(state: GameState, gameMessage: GameMessage): GameState {
       if(!player) {
         return state;
       }
-      const pressed = decKey.event == 1 ? true : false;
+      const pressed = decKey.event == KeyEventType.PRESS;
       const playerPress = playerPressed(decKey.key, player, pressed);
       return newGameState(newPlayerList(playerPress, statePlayers));
   
@@ -271,6 +257,7 @@ function enterRoom() {
     let initialRoomTime : number | null = null;
     let currentTick : number | null = null;
     let setByMe : boolean = false;
+    let stateHistory: StateHistory = [];
 
     client.init('ws://localhost:8080').then(() => {
       console.log('Connected to server');
@@ -303,7 +290,6 @@ function enterRoom() {
         client.recv(testRoom, (msg: Uint8Array) => {
             const decodedMessage = lib.decode(msg);
             if ('time' in decodedMessage && (initialRoomTime === null || setByMe)) {
-              // se eu setei pro mais novo q recebi, mas o mais novo for > q a minha mensagem de join (antigo initial), n seta
               if (setByMe && initialRoomTime && decodedMessage.time > initialRoomTime) {
                 console.log("Not setting because my time is lower!"); 
               } else {
@@ -359,7 +345,43 @@ function enterRoom() {
           const clientTime = client.time();
 
           while (currentTick <= clientTime) {
-            const messagesForCurrentTick = extractMessagesForTick(currentTick);
+            let messagesForCurrentTick = extractMessagesForTick(currentTick);
+            const currTick = currentTick || 0; 
+            const lateMessages = messageQueue.filter(msg => 'time' in msg && msg.time < currTick);
+            if (lateMessages.length > 0) {
+              const earliestLateMessage = lateMessages.reduce((earliest, msg) => (('time' in msg && 'time' in earliest && (msg.time < earliest.time)) ? msg : earliest));
+
+              if (!('time' in earliestLateMessage)) {
+              } else {
+                console.log("ROLLING BACK!");
+                const rollbackTick = earliestLateMessage.time;
+                const rollbackIndex = stateHistory.findIndex(history => history.tick >= rollbackTick);
+                if (rollbackIndex !== -1) {
+                  state = JSON.parse(JSON.stringify(stateHistory[rollbackIndex].state));
+                  currentTick = stateHistory[rollbackIndex].tick;
+                  stateHistory = stateHistory.slice(0, rollbackIndex);
+
+                  while (currentTick <= clientTime) {
+                    messagesForCurrentTick = extractMessagesForTick(currentTick);
+
+                    for (const message of messagesForCurrentTick) {
+                      state = computeState(state, message);
+                    }
+
+                    if (messagesForCurrentTick.length === 0) {
+                      state = computeState(state, { tag: TICK_MESSAGE });
+                    }
+                    stateHistory.push({
+                      tick: currentTick,
+                      state: JSON.parse(JSON.stringify(state)),
+                      messages: messagesForCurrentTick 
+                    });
+                    currentTick += TICK_RATE;
+                  }
+                  break;
+                }
+              }
+            }
             
             if (messagesForCurrentTick.length > 0) {
               for (const message of messagesForCurrentTick) {
@@ -368,6 +390,12 @@ function enterRoom() {
             } else {
               state = computeState(state, { tag: TICK_MESSAGE });
             }
+
+            stateHistory.push({
+              tick: currentTick,
+              state: state,
+              messages: messagesForCurrentTick
+            });
 
             draw(state);
             currentTick += TICK_RATE;
