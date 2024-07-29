@@ -209,7 +209,6 @@ function processMessage(state: GameState, message: GameMessage): GameState {
         };
       }
 
-    // tick falls back here
     default:
       return {
         ...state,
@@ -219,8 +218,9 @@ function processMessage(state: GameState, message: GameMessage): GameState {
 }
 
 function computeState(state: GameState): GameState {
+  let errorBound = TICK_RATE / 2;
   const messagesToProcess = state.messages.filter(msg => 
-    !('time' in msg) || (msg.time === state.tick)
+    !('time' in msg) || (((msg.time >= state.tick - errorBound) && (msg.time <= state.tick + errorBound)))
   );
 
   const processedState = messagesToProcess.reduce(
@@ -228,11 +228,15 @@ function computeState(state: GameState): GameState {
     state
   );
 
-  return {
+  const finishedState =  {
     ...processedState,
     players: movePlayers(processedState.players),
     tick: gameState.tick + TICK_RATE 
   };
+
+  addToStateHistory(finishedState);
+
+  return finishedState;
 }
 
 function checkAndRollback(state: GameState): GameState {
@@ -244,6 +248,10 @@ function checkAndRollback(state: GameState): GameState {
     return state;
   }
 
+  console.log("NEED ROLLBACK");
+  console.log(messageNeedingRollback);
+  console.log(state);
+
   const rollbackTick = messageNeedingRollback.time;
   const rollbackState = stateHistory.find(s => s.tick === rollbackTick);
 
@@ -251,17 +259,20 @@ function checkAndRollback(state: GameState): GameState {
     console.error("Unable to find state for rollback");
     return state;
   }
+  console.log("FOUND rollback state: ", rollbackState);
 
-  return rebuildState(rollbackState, state.tick);
+  return rebuildState(addMessageToQueue(rollbackState, messageNeedingRollback), state.tick);
 }
 
 function rebuildState(startState: GameState, endTick: number): GameState {
+  console.log("start state: ", startState);
   let currentState = startState;
 
   while (currentState.tick < endTick) {
     currentState = computeState(currentState);
   }
 
+  console.log(currentState);
   return currentState;
 }
 
@@ -376,7 +387,6 @@ function enterRoom() {
       accumulatedTime -= TICK_RATE;
     }
     
-    addToStateHistory(gameState);
     draw(gameState);
     requestAnimationFrame(gameLoop);
   }
