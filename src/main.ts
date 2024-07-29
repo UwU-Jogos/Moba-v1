@@ -2,17 +2,33 @@ import UwUChat2Client from "./client";
 import lib from "./lib";
 import { List } from "immutable";
 
-const COMMAND_MESSAGE = 0
-const SET_NICK = 1
-const TICK_MESSAGE = 2
+// how to do all the rollback logic and messageQueue in a functional way?
+// gameState should hold the list of players, the messages in the queue, the current tick
+// the gameLoop should receive an initialState and return a computed state
+// the initial game state has an empty list of players, currentTick = 0 and messageQueue empty 
+// when a message is received, we add the message to the messageQueue. The queue should be sorted by timeStamp, where SET_NICK messages have time=0 (represent player joins, the order should be ASAP)
+// after adding the message(s) to the queue, call the computeState function with this new gameState with the new messages
+// the computeState will then process the messages for the current tick
+// when trying to process, if the next message to compute has a tick < than the current tick, it will call the rollback logic
+// the rollback logic will retrieve the state with the tick that got behind and recalculate the state. This recalculateState should be a recursive function that keeps recalculating untill we get to the endTick, (which is the currentTick of the state before calling the rollback logic).
+// Then, this computeState will reprocess the message for that tick after the rollback and return a synchronized gameState with the messages it processed remove
+// The gameLoop will be called every time a message comes, or if not comes, it will be called with a TICK event to represent time passing
+// this means that we can call gameLoop with a requestAnimationFrame. Than, for each call, it will: check if a rollback is needed, or compute the state. Then draw the resulting state
+// the computeState function is responsible for dealing the tick (no more need for the tick message probably, since we can just check for that when the message is not a command) 
 
-// 60 fps
-const TICK_RATE = 1000 / 100 
+const enum MessageType {
+  COMMAND = 0,
+  SET_NICK = 1,
+  TICK = 2
+};
+
+// 30 FPS
+const TICK_RATE = 1000 / 50;
 
 type GameMessage = 
   | { tag: 0, user: number, time: number, key: Uint8Array } 
   | { tag: 1, user: number, name: string } 
-  | { tag: 2 }
+  | { tag: 2 , time: number }
 
 const enum KeyEventType {
   PRESS = 1,
@@ -41,19 +57,12 @@ type Player = {
 
 type GameState = {
   players: List<Player>;
+  tick: number;
+  messages: GameMessage[];
+  tickSet: boolean;
 }
 
-// to prevent loosing ticks, implement a simple rollback based on the state history
-// type StateHistory = List<GameState>;
-type StateHistory = {
-  tick: number;
-  state: GameState;
-  messages: GameMessage[];
-}[];
-
-// ----------- KeyBoard Events Handling ------------------
-type KeyHandler = (roller: any, event: KeyboardEvent) => void;
-
+type StateHistory = GameState[]
 
 // ---------------- Local Player Handling -----------------
 let thisPlayerId = 0x0;
@@ -64,6 +73,7 @@ function thisPlayer() {
 function setThisPlayer(p: number) {
   thisPlayerId = p;
 }
+// --------------------------------------------------------
 
 function newPlayer(pid: number, name: string): Player {
   return {
@@ -80,43 +90,8 @@ function newPlayer(pid: number, name: string): Player {
 function getPlayerById(playerId: number, players: List<Player>): Player | undefined {
   return players.find(player => player.id === playerId);
 }
-// -------------------------------------------------------
 
-
-function draw(state: GameState): void {
-  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-  if (!canvas) {
-    console.error("Canvas not found");
-    return;
-  }
-
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    console.error("Unable to get 2D context");
-    return;
-  }
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const drawPlayer = (player: Player): void => {
-    ctx.beginPath();
-    ctx.arc(player.position.x, player.position.y, 10, 0, 2 * Math.PI);
-    ctx.fillStyle = getPlayerColor((player.id).toString());
-    ctx.fill();
-    ctx.closePath();
-
-    ctx.fillStyle = 'black';
-    ctx.font = '12px Arial';
-    ctx.fillText(player.name, player.position.x - 20, player.position.y - 15);
-  };
-
-  state.players.forEach(drawPlayer);
-
-  ctx.fillStyle = 'black';
-  ctx.font = '14px Arial';
-}
-
-function newPlayerList(updatedPlayer: Player, players: List<Player>): List<Player> {
+function updatePlayer(updatedPlayer: Player, players: List<Player>): List<Player> {
   return players.map(player =>
     player.id === updatedPlayer.id ? updatedPlayer : player 
   );
@@ -126,15 +101,43 @@ function addPlayer(newPlayer: Player, players: List<Player>): List<Player> {
   return players.push(newPlayer);
 }
 
-function newGameState(players: List<Player>): GameState {
+function addMessageToQueue(state: GameState, message: GameMessage): GameState {
+  const updatedMessages = [...state.messages, message];
+  const sortedMessages = updatedMessages.sort((a, b) => {
+    const timeA = 'time' in a ? a.time : 0;
+    const timeB = 'time' in b ? b.time : 0;
+    return timeA - timeB;
+  });
+
+  if ('time' in message && !state.tickSet) {
+    return {
+      ...state,
+      tick: message.time,
+      messages: sortedMessages,
+      tickSet: true
+    }
+  }
+  return {
+    ...state,
+    messages: sortedMessages
+  }
+}
+
+function newGameState(players: List<Player>, tick: number, messages: GameMessage[], tickSet: boolean): GameState {
     return {
       players: players,
+      tick: tick,
+      messages: messages,
+      tickSet: tickSet
     }
 }
 
-function initialGameState(p: Player): GameState {
+function initialGameState(): GameState {
   return {
-    players: List([p])
+    players: List(),
+    tick: 0,
+    messages: [],
+    tickSet: false
   }
 }
 
@@ -182,40 +185,240 @@ function movePlayers(players: List<Player>): List<Player> {
   return players.map(movePlayer);
 }
 
-function computeState(state: GameState, gameMessage: GameMessage): GameState {
-  const statePlayers = state.players;
+function removeMessage(messages: GameMessage[], messageToRemove: GameMessage): GameMessage[] {
+  return messages.filter(msg => msg !== messageToRemove);
+}
 
-  if (gameMessage == null) {
+function processMessage(state: GameState, message: GameMessage): GameState {
+  switch (message.tag) {
+    case MessageType.COMMAND:
+      const decKey: KeyEvent = lib.decodeKey(message.key);
+      const player = getPlayerById(message.user, state.players);
+      if (!player) { 
+        return {
+          ...state,
+          messages: removeMessage(state.messages, message)
+        };
+      }
+      const pressed = decKey.event === KeyEventType.PRESS;
+      const playerPress = playerPressed(decKey.key, player, pressed);
+      return {
+        ...state,
+        players: updatePlayer(playerPress, state.players),
+        messages: removeMessage(state.messages, message)
+      };
+
+    case MessageType.SET_NICK:
+      const existingPlayer = getPlayerById(message.user, state.players);
+      if (existingPlayer) {
+        const updatedExisting = {
+          ...existingPlayer,
+          name: message.name
+        };
+
+        return {
+          ...state,
+          players: updatePlayer(updatedExisting, state.players),
+          messages: removeMessage(state.messages, message)
+        };
+      } else {
+        const playerJoined = newPlayer(message.user, message.name);
+        return {
+          ...state,
+          players: addPlayer(playerJoined, state.players),
+          messages: removeMessage(state.messages, message)
+        };
+      }
+
+    // tick falls back here
+    default:
+      return {
+        ...state,
+        messages: removeMessage(state.messages, message),
+        players: movePlayers(state.players)
+      };
+  }
+}
+
+function computeState(state: GameState): GameState {
+  const messagesToProcess = state.messages.filter(msg => 
+    !('time' in msg) || msg.time === state.tick
+  );
+  
+  const processedState = messagesToProcess.reduce(
+    (currentState, message) => processMessage(currentState, message),
+    state
+  );
+
+  const newState = {
+    ...processedState,
+    tick: processedState.tick + TICK_RATE,
+    messages: processedState.messages,
+    players: movePlayers(processedState.players)
+  };
+  addToStateHistory(newState);
+
+  return newState;
+}
+
+function checkAndRollback(state: GameState): GameState {
+  const messageNeedingRollback = state.messages.find(msg => 
+    'time' in msg && msg.time < state.tick && msg.time !== 0
+  );
+
+  if (!messageNeedingRollback || !('time' in messageNeedingRollback)) {
     return state;
   }
 
-  switch (gameMessage.tag) {
-    case COMMAND_MESSAGE:
-      const decKey: KeyEvent = lib.decodeKey(gameMessage.key);
-      
-      // if its null event, a player joined
-      if (decKey.key == 0) {
-        if (gameMessage.user == thisPlayer()) {
-          return state;
-        }
-        const player: Player = newPlayer(gameMessage.user, "test");
-        return newGameState(addPlayer(player, statePlayers));
-      }
+  console.log("ROLLING BACK");
+  const rollbackTick = messageNeedingRollback.time;
+  const rollbackState = stateHistory.find(s => s.tick === rollbackTick);
 
-      let player = getPlayerById(gameMessage.user, statePlayers);
-      if(!player) {
-        return state;
-      }
-      const pressed = decKey.event == KeyEventType.PRESS;
-      const playerPress = playerPressed(decKey.key, player, pressed);
-      return newGameState(newPlayerList(playerPress, statePlayers));
-  
-    case TICK_MESSAGE:
-      return newGameState(movePlayers(statePlayers));
-
-    default:
-      return state;
+  if (!rollbackState) {
+    console.error("Unable to find state for rollback");
+    return state;
   }
+
+  return rebuildState(rollbackState, state.tick);
+}
+
+function rebuildState(startState: GameState, endTick: number): GameState {
+  let currentState = startState;
+
+  while (currentState.tick < endTick) {
+    currentState = computeState(currentState);
+  }
+
+  return currentState;
+}
+
+function addToStateHistory(state: GameState) {
+  stateHistory.push(state);
+}
+
+let gameState: GameState = initialGameState();
+let messageQueue: GameMessage[] = [];
+let stateHistory: StateHistory = [];
+
+function enterRoom() {
+  const roomId: number = Number((document.getElementById('roomId') as HTMLInputElement).value);
+  const nickname: string = (document.getElementById('nickname') as HTMLInputElement).value;
+
+  const formDiv = document.getElementById('formDiv');
+  
+  const canvas = document.getElementById('canvas') as HTMLCanvasElement | null;
+
+  let thisPlayerId = generateId();
+  setThisPlayer(thisPlayerId);
+
+  if (formDiv && canvas) {
+    formDiv.style.display = 'none';
+    canvas.style.display = 'block';
+  }
+
+  const client = new UwUChat2Client();
+
+  client.init('ws://localhost:8080').then(() => {
+    console.log("Connected to server");   
+
+    sendPlayerJoinedMessage();
+
+    client.recv(roomId, (msg: Uint8Array) => {
+      const decodedMessage = lib.decode(msg);
+      messageQueue.push(decodedMessage);
+    });
+  })
+
+  
+  function sendPlayerJoinedMessage() {
+    const setNickMessage = {
+      tag: MessageType.SET_NICK,
+      user: thisPlayer(),
+      name: nickname
+    } as GameMessage;
+
+    client.send(roomId, lib.encode(setNickMessage));
+  }
+
+
+  function handleKeyEvent(event: KeyboardEvent, keyEvType: KeyEventType) {
+    if (["a", "w", "d", "s"].includes(event.key)) {
+      const key = event.key.charCodeAt(0);
+      const encodedKey = lib.encodeKey({ key: key, event: keyEvType});
+      const time = Math.ceil(Date.now() / TICK_RATE) * TICK_RATE;
+      const gameMsg: GameMessage = {
+        tag: MessageType.COMMAND,
+        user: thisPlayerId,
+        time: time, 
+        key: encodedKey
+      };
+
+      const encodedMessage = lib.encode(gameMsg);
+      //client.send(roomId, encodedMessage);
+    }
+  }
+
+  const keyState: any = {};
+  document.addEventListener('keydown', (event) => { 
+    if (!keyState[event.code]) {
+      keyState[event.code] = true;
+      handleKeyEvent(event, KeyEventType.PRESS)
+    }
+  });
+  document.addEventListener('keyup', (event) => { 
+    if (keyState[event.code]) {
+      keyState[event.code] = false;
+      handleKeyEvent(event, KeyEventType.RELEASE)
+    }
+  });
+
+  function gameLoop() {
+    gameState = computeState(gameState); 
+    draw(gameState);
+    requestAnimationFrame(gameLoop);
+  }
+  
+  requestAnimationFrame(gameLoop);
+}
+
+function draw(state: GameState): void {
+  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+  if (!canvas) {
+    console.error("Canvas not found");
+    return;
+  }
+
+  const ctx = canvas.getContext("2d");
+  if (!ctx) {
+    console.error("Unable to get 2D context");
+    return;
+  }
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const drawPlayer = (player: Player): void => {
+    ctx.beginPath();
+    ctx.arc(player.position.x, player.position.y, 10, 0, 2 * Math.PI);
+    ctx.fillStyle = getPlayerColor((player.id).toString());
+    ctx.fill();
+    ctx.closePath();
+
+    ctx.fillStyle = 'black';
+    ctx.font = '12px Arial';
+    ctx.fillText(player.name, player.position.x - 20, player.position.y - 15);
+  };
+
+  state.players.forEach(drawPlayer);
+
+  ctx.fillStyle = 'black';
+  ctx.font = '20px Arial';
+  ctx.fillText(`Tick: ${state.tick}`, 10, 20);
+}
+
+function generateId(): number {
+  const timestamp = new Date().getTime() & 0xFFFFFFFF;
+  const randomPart = Math.floor(Math.random() * 0x10000);
+  return (timestamp ^ randomPart) >>> 0;
 }
 
 function getPlayerColor(id: string): string {
@@ -227,218 +430,15 @@ function getPlayerColor(id: string): string {
   return '#' + '00000'.substring(0, 6 - c.length) + c;
 }
 
-function enterRoom() {
-    const roomId: number = Number((document.getElementById('roomId') as HTMLInputElement).value);
-    const nickname: string = (document.getElementById('nickname') as HTMLInputElement).value;
-    let thisPlayerId = generateId();
-    const activePlayer = newPlayer(thisPlayerId, nickname);
-    setThisPlayer(thisPlayerId); 
-
-    const formDiv = document.getElementById('formDiv');
-    const canvas = document.getElementById('canvas') as HTMLCanvasElement | null;
-
-    if (formDiv && canvas) {
-        formDiv.style.display = 'none';
-        canvas.style.display = 'block';
-    } 
-
-    const rect = canvas?.getBoundingClientRect() || { left: 10, top: 10, height: 500, width: 500 };
-    const canvasX = rect.left;
-    const canvasY = rect.top;
-    const canvasWidth = rect.width;
-    const canvasHeight = rect.height;
-
-    const client = new UwUChat2Client();
-    const testRoom = 1;
-    let gameMessage: any = null;
-    let state : GameState = initialGameState(activePlayer);
-
-    let messageQueue: GameMessage[] = [];
-    let initialRoomTime : number | null = null;
-    let currentTick : number | null = null;
-    let setByMe : boolean = false;
-    let stateHistory: StateHistory = [];
-
-    client.init('ws://localhost:8080').then(() => {
-      console.log('Connected to server');
-
-      function sendPlayerJoinedEvent() {
-          // key = 0, which is the ascii code to null key
-          const key = 0;
-          const encodedKey = lib.encodeKey({ key: key, event: KeyEventType.PRESS });
-          const user = thisPlayer();
-          // round to the next valid tick
-          const time = Math.ceil(Date.now() / TICK_RATE) * TICK_RATE;
-          const joinedMsg = {
-            tag: COMMAND_MESSAGE,
-            user: user,
-            time: time,
-            key: encodedKey
-          } as GameMessage;
-
-          if (initialRoomTime === null) {
-            initialRoomTime = time;
-            currentTick = time;
-            setByMe = true;
-          }
-          const encodedMessage = lib.encode(joinedMsg);
-          client.send(testRoom, encodedMessage);
-        }
-
-        sendPlayerJoinedEvent();
-        
-        client.recv(testRoom, (msg: Uint8Array) => {
-            const decodedMessage = lib.decode(msg);
-            if ('time' in decodedMessage && (initialRoomTime === null || setByMe)) {
-              if (setByMe && initialRoomTime && decodedMessage.time > initialRoomTime) {
-                console.log("Not setting because my time is lower!"); 
-              } else {
-                initialRoomTime = decodedMessage.time;
-                currentTick = decodedMessage.time
-                setByMe = false;
-              }
-            }
-
-            messageQueue.push(decodedMessage);
-            messageQueue.sort((a, b) => { 
-              if ('time' in a && 'time' in b) {
-                return a.time - b.time 
-              }
-              return 0;
-            });
-        });
-
-        function handleKeyEvent(event: KeyboardEvent, keyEvType: KeyEventType) {
-            if (["a", "w", "d", "s"].includes(event.key)) {
-                const key = event.key.charCodeAt(0);
-                const encodedKey = lib.encodeKey({ key: key, event: keyEvType});
-                const time = Math.ceil(Date.now() / TICK_RATE) * TICK_RATE;
-                const gameMsg: GameMessage = {
-                    tag: COMMAND_MESSAGE,
-                    user: thisPlayerId,
-                    time: time, 
-                    key: encodedKey
-                };
-
-                const encodedMessage = lib.encode(gameMsg);
-                client.send(testRoom, encodedMessage);
-            }
-        }
-
-        const keyState: any = {};
-        document.addEventListener('keydown', (event) => { 
-          if (!keyState[event.code]) {
-            keyState[event.code] = true;
-            handleKeyEvent(event, KeyEventType.PRESS)
-          }
-        });
-        document.addEventListener('keyup', (event) => { 
-          if (keyState[event.code]) {
-            keyState[event.code] = false;
-            handleKeyEvent(event, KeyEventType.RELEASE)
-          }
-        });
-
-        function processMessages() {
-          if (initialRoomTime === null || currentTick === null) return;
-
-          const clientTime = client.time();
-
-          while (currentTick <= clientTime) {
-            let messagesForCurrentTick = extractMessagesForTick(currentTick);
-            const currTick = currentTick || 0; 
-            const lateMessages = messageQueue.filter(msg => 'time' in msg && msg.time < currTick);
-            if (lateMessages.length > 0) {
-              const earliestLateMessage = lateMessages.reduce((earliest, msg) => (('time' in msg && 'time' in earliest && (msg.time < earliest.time)) ? msg : earliest));
-
-              if (!('time' in earliestLateMessage)) {
-              } else {
-                console.log("ROLLING BACK!");
-                const rollbackTick = earliestLateMessage.time;
-                const rollbackIndex = stateHistory.findIndex(history => history.tick >= rollbackTick);
-                if (rollbackIndex !== -1) {
-                  state = JSON.parse(JSON.stringify(stateHistory[rollbackIndex].state));
-                  currentTick = stateHistory[rollbackIndex].tick;
-                  stateHistory = stateHistory.slice(0, rollbackIndex);
-
-                  while (currentTick <= clientTime) {
-                    messagesForCurrentTick = extractMessagesForTick(currentTick);
-
-                    for (const message of messagesForCurrentTick) {
-                      state = computeState(state, message);
-                    }
-
-                    if (messagesForCurrentTick.length === 0) {
-                      state = computeState(state, { tag: TICK_MESSAGE });
-                    }
-                    stateHistory.push({
-                      tick: currentTick,
-                      state: JSON.parse(JSON.stringify(state)),
-                      messages: messagesForCurrentTick 
-                    });
-                    currentTick += TICK_RATE;
-                  }
-                  break;
-                }
-              }
-            }
-            
-            if (messagesForCurrentTick.length > 0) {
-              for (const message of messagesForCurrentTick) {
-                state = computeState(state, message);
-              }
-            } else {
-              state = computeState(state, { tag: TICK_MESSAGE });
-            }
-
-            stateHistory.push({
-              tick: currentTick,
-              state: state,
-              messages: messagesForCurrentTick
-            });
-
-            draw(state);
-            currentTick += TICK_RATE;
-          }
-        }
-        
-        function extractMessagesForTick(tick: number, errorBound: number = (TICK_RATE / 2)): any[] {
-          const messages = [];
-          const upperTick = tick + errorBound;
-          const lowerTick = tick - errorBound;
-
-          while (messageQueue.length > 0 && 'time' in messageQueue[0]) {
-            const message = messageQueue[0];
-            if (message.time < lowerTick) {
-              currentTick = message.time;
-              messages.push(messageQueue.shift());
-            } else if (message.time <= upperTick) {
-              messages.push(messageQueue.shift()!);
-            } else {
-              break;
-            }
-          }
-
-          return messages;
-        }
-
-        function gameLoop() {
-          processMessages();
-          draw(state);
-          requestAnimationFrame(gameLoop);
-        }
-
-        gameLoop();
-
-      }).catch(console.error); 
-}
-
-function generateId(): number {
-  const timestamp = new Date().getTime() & 0xFFFFFFFF;
-  const randomPart = Math.floor(Math.random() * 0x10000);
-  return (timestamp ^ randomPart) >>> 0;
-}
+(window as any).enterRoom = enterRoom;
 
 
-(window as any).enterRoom = enterRoom
+
+
+
+
+
+
+
+
 
