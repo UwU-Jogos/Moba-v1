@@ -244,7 +244,6 @@ function checkAndRollback(state: GameState): GameState {
     return state;
   }
 
-  console.log("ROLLING BACK");
   const rollbackTick = messageNeedingRollback.time;
   const rollbackState = stateHistory.find(s => s.tick === rollbackTick);
 
@@ -373,11 +372,11 @@ function enterRoom() {
     }
 
     while (accumulatedTime >= TICK_RATE) {
-      gameState = computeState(gameState);  
+      gameState = computeState(checkAndRollback(gameState));  
       accumulatedTime -= TICK_RATE;
     }
     
-    //addToStateHistory(gameState);
+    addToStateHistory(gameState);
     draw(gameState);
     requestAnimationFrame(gameLoop);
   }
