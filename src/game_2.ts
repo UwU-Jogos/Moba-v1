@@ -26,15 +26,11 @@ type Position = {
 type Player = {
   id: number;
   name: string;
-  // position: Position;
+  position: Position;
   w: boolean;
   a: boolean;
   s: boolean;
   d: boolean;
-  wCounter: number;
-  aCounter: number;
-  sCounter: number;
-  dCounter: number;
 };
 
 type GameState = {
@@ -54,32 +50,26 @@ let room = 0;
 let playerId = 0;
 let pressedKeys = new Set<number>();
 let gameState: GameState = { players: {} };
-
-const UPDATE_INTERVAL_MS = 1000 / 240; // Atualizar a cada 60 vezes por minuto (60 FPS)
 let lastUpdateTime = 0;
-let tick = 1;
-const tickRate = 240;
-const tickInterval = 1000 / tickRate;
+let initTime = client.time();
+const PLAYER_RADIUS = 8;
+const TICK_RATE = 240;
+const UPDATE_INTERVAL_MS = 1000 / TICK_RATE;
+
 async function handleLogin() {
   username = usernameInput.value;
   playerId = lib.encodeUsername(username);
   room = parseInt(roomInput.value);
   if (username && room) {
-    await client.init('ws://localhost:8080');
-    // await client.init('ws://server.uwu.games');
+    await client.init("ws://localhost:8080");
     client.recv(room, handleGameMessage);
     client.send(room, lib.encode({ tag: SET_NICK, user: playerId, name: username }));
 
     loginScreen.style.display = 'none';
     gameCanvas.style.display = 'block';
 
-    // addKeyboardListeners();
-    // setInterval(updateGameState, tickRate); // update game state at tick rate
     addKeyboardListeners();
-    setInterval(() => {
-      // updatePlayerPositions();
-      gameLoop();
-    }, tickInterval);
+    setInterval(gameLoop, UPDATE_INTERVAL_MS);
   }
 }
 
@@ -109,22 +99,29 @@ function sendKeyEvent(key: number, event: KeyEventType) {
 function handleGameMessage(msg: Uint8Array) {
   const decoded = lib.decode(msg);
   computeState(decoded);
-  // updateGameState();
 }
-function processTimeBasedUpdates() {
+
+function updatePlayerPositions(elapsedTime: number) {
+  const moveDistance = (elapsedTime / 1000) * TICK_RATE;
+
   for (const userId in gameState.players) {
     const player = gameState.players[userId];
-    if (player.w) player.wCounter++;
-    if (player.a) player.aCounter++;
-    if (player.s) player.sCounter++;
-    if (player.d) player.dCounter++;
-    if ((player.w) || (player.s) || (player.a) || (player.d)) {
-      console.log(player);
-    } 
 
-
+    if (player.w) {
+      player.position.y -= moveDistance;
+    }
+    if (player.s) {
+      player.position.y += moveDistance;
+    }
+    if (player.a) {
+      player.position.x -= moveDistance;
+    }
+    if (player.d) {
+      player.position.x += moveDistance;
+    }
+    player.position.x = Math.max(PLAYER_RADIUS, Math.min(gameCanvas.width - PLAYER_RADIUS, player.position.x));
+    player.position.y = Math.max(PLAYER_RADIUS, Math.min(gameCanvas.height - PLAYER_RADIUS, player.position.y));
   }
-  
 }
 
 function computeState(event?: GameMessage) {
@@ -134,89 +131,77 @@ function computeState(event?: GameMessage) {
         gameState.players[event.user] = {
           id: event.user,
           name: '',
+          position: { x: gameCanvas.width / 2, y: gameCanvas.height / 2 },
           w: false,
           a: false,
           s: false,
           d: false,
-          wCounter: 0,
-          aCounter: 0,
-          sCounter: 0,
-          dCounter: 0,
         };
       }
       const keyEvent = lib.decodeKey(event.key);
       const player = gameState.players[event.user];
       const currentTime = event.time;
-      console.log(currentTime);
-      
+
+      if (initTime > currentTime) {
+        const elapsedTime = currentTime - lastUpdateTime;
+        if (elapsedTime >= UPDATE_INTERVAL_MS) {
+          updatePlayerPositions(elapsedTime);
+        }
+      } 
 
       if (keyEvent.event === KeyEventType.PRESS) {
-        if ((keyEvent.key === 87) || (keyEvent.key === 38)) {
-          player.w = true;
-          console.log(tick);
-          tick +=1
-        }
-        
+        if ((keyEvent.key === 87) || (keyEvent.key === 38)) player.w = true;
         if ((keyEvent.key === 83) || (keyEvent.key === 40)) player.s = true;
         if ((keyEvent.key === 65) || (keyEvent.key === 37)) player.a = true;
         if ((keyEvent.key === 68) || (keyEvent.key === 39)) player.d = true;
       } else if (keyEvent.event === KeyEventType.RELEASE) {
         if ((keyEvent.key === 87) || (keyEvent.key === 38)) {
           player.w = false;
-          player.wCounter = 0;
         }
         if ((keyEvent.key === 83) || (keyEvent.key === 40)) {
           player.s = false;
-          player.sCounter = 0;
         }
         if ((keyEvent.key === 65) || (keyEvent.key === 37)) {
           player.a = false;
-          player.aCounter = 0;
         }
         if ((keyEvent.key === 68) || (keyEvent.key === 39)) {
           player.d = false;
-          player.dCounter = 0;
         }
       }
+      lastUpdateTime = currentTime;
     } else if (event.tag === SET_NICK) {
       if (!gameState.players[event.user]) {
         gameState.players[event.user] = {
           id: event.user,
           name: event.name,
+          position: { x: gameCanvas.width / 2, y: gameCanvas.height / 2 },
           w: false,
           a: false,
           s: false,
           d: false,
-          wCounter: 0,
-          aCounter: 0,
-          sCounter: 0,
-          dCounter: 0,
         };
       } else {
         gameState.players[event.user].name = event.name;
       }
     }
+  } else {
+    if (lastUpdateTime > initTime) {
+      const currentTime = client.time();
+      const elapsedTime = currentTime - lastUpdateTime;
+    
+      if (elapsedTime >= UPDATE_INTERVAL_MS) {
+        updatePlayerPositions(elapsedTime);
+        lastUpdateTime = currentTime;
+      }
+    }
   }
-
-  // Atualizações baseadas em tempo
-  processTimeBasedUpdates();
 }
-// function updateGameState() {
-//   const speed = 0.5; // speed of movement, adjust as needed
 
-//   for (const userId in gameState.players) {
-//     const player = gameState.players[userId];
+function gameLoop() {
+  computeState();
+  draw();
+}
 
-//     if (player.w) player.position.y -= speed * player.wCounter;
-//     if (player.s) player.position.y += speed * player.sCounter;
-//     if (player.a) player.position.x -= speed * player.aCounter;
-//     if (player.d) player.position.x += speed * player.dCounter;
-
-//     player.position.x = Math.max(10, Math.min(gameCanvas.width - 10, player.position.x));
-//     player.position.y = Math.max(10, Math.min(gameCanvas.height - 10, player.position.y));
-//   }
-  
-// }
 function draw() {
   ctx.clearRect(0, 0, gameCanvas.width, gameCanvas.height);
   ctx.fillText(`Ping: ${client.get_ping()} ms`, 10, 10);
@@ -226,42 +211,12 @@ function draw() {
   let yOffset = 70;
   for (const userId in gameState.players) {
     const player = gameState.players[userId];
-    ctx.fillText(`Player ${player.name} Keys: ${[
-      player.w ? `W(${player.wCounter.toFixed(2)})` : '',
-      player.a ? `A(${player.aCounter.toFixed(2)})` : '',
-      player.s ? `S(${player.sCounter.toFixed(2)})` : '',
-      player.d ? `D(${player.dCounter.toFixed(2)})` : ''
-    ].join(', ')}`, 10, yOffset);
+    ctx.fillText(`Player ${player.name} Keys: ${[player.w ? 'W' : '', player.a ? 'A' : '', player.s ? 'S' : '', player.d ? 'D' : ''].join(', ')}`, 10, yOffset);
     yOffset += 20;
+    ctx.fillStyle = lib.generateColor(player.id);
+    ctx.beginPath();
+    ctx.arc(player.position.x, player.position.y, PLAYER_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillText(player.name, player.position.x - PLAYER_RADIUS, player.position.y - PLAYER_RADIUS - 5);
   }
-}
-
-
-function calculateKeyDuration(start: number, end: number): number {
-  const duration = (end - start) / 240; // Assumindo 240 atualizações por segundo
-  return duration;
-}
-// function gameLoop() {
-//   for (const userId in gameState.players) {
-//     const player = gameState.players[userId];
-//     if (player.w) player.wCounter++;
-//     if (player.a) player.aCounter++;
-//     if (player.s) player.sCounter++;
-//     if (player.d) player.dCounter++;
-//   }
-
-//   draw();
-//   requestAnimationFrame(gameLoop);
-// }
-function gameLoop() {
-  const currentTime = client.time()
-  // Verifica se o intervalo de atualização passou
-  if (currentTime - lastUpdateTime >= UPDATE_INTERVAL_MS) {
-    computeState(); // Recalcula o estado do jogo
-
-    lastUpdateTime = currentTime; // Atualiza o tempo da última atualização
-  }
-
-  draw(); // Desenha o estado atual do jogo
-  requestAnimationFrame(gameLoop);
 }
