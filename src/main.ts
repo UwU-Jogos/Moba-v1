@@ -2,20 +2,6 @@ import UwUChat2Client from "./client";
 import lib from "./lib";
 import { List } from "immutable";
 
-// how to do all the rollback logic and messageQueue in a functional way?
-// gameState should hold the list of players, the messages in the queue, the current tick
-// the gameLoop should receive an initialState and return a computed state
-// the initial game state has an empty list of players, currentTick = 0 and messageQueue empty 
-// when a message is received, we add the message to the messageQueue. The queue should be sorted by timeStamp, where SET_NICK messages have time=0 (represent player joins, the order should be ASAP)
-// after adding the message(s) to the queue, call the computeState function with this new gameState with the new messages
-// the computeState will then process the messages for the current tick
-// when trying to process, if the next message to compute has a tick < than the current tick, it will call the rollback logic
-// the rollback logic will retrieve the state with the tick that got behind and recalculate the state. This recalculateState should be a recursive function that keeps recalculating untill we get to the endTick, (which is the currentTick of the state before calling the rollback logic).
-// Then, this computeState will reprocess the message for that tick after the rollback and return a synchronized gameState with the messages it processed remove
-// The gameLoop will be called every time a message comes, or if not comes, it will be called with a TICK event to represent time passing
-// this means that we can call gameLoop with a requestAnimationFrame. Than, for each call, it will: check if a rollback is needed, or compute the state. Then draw the resulting state
-// the computeState function is responsible for dealing the tick (no more need for the tick message probably, since we can just check for that when the message is not a command) 
-
 const enum MessageType {
   COMMAND = 0,
   SET_NICK = 1,
@@ -23,12 +9,12 @@ const enum MessageType {
 };
 
 // 30 FPS
-const TICK_RATE = 1000 / 50;
+const TICK = 100;
+const TICK_RATE = 1000 / TICK;
 
 type GameMessage = 
   | { tag: 0, user: number, time: number, key: Uint8Array } 
   | { tag: 1, user: number, name: string } 
-  | { tag: 2 , time: number }
 
 const enum KeyEventType {
   PRESS = 1,
@@ -100,15 +86,8 @@ function updatePlayer(updatedPlayer: Player, players: List<Player>): List<Player
 function addPlayer(newPlayer: Player, players: List<Player>): List<Player> {
   return players.push(newPlayer);
 }
-
 function addMessageToQueue(state: GameState, message: GameMessage): GameState {
-  const updatedMessages = [...state.messages, message];
-  const sortedMessages = updatedMessages.sort((a, b) => {
-    const timeA = 'time' in a ? a.time : 0;
-    const timeB = 'time' in b ? b.time : 0;
-    return timeA - timeB;
-  });
-
+  const sortedMessages = [...state.messages, message];
   if ('time' in message && !state.tickSet) {
     return {
       ...state,
@@ -235,30 +214,25 @@ function processMessage(state: GameState, message: GameMessage): GameState {
       return {
         ...state,
         messages: removeMessage(state.messages, message),
-        players: movePlayers(state.players)
       };
   }
 }
 
 function computeState(state: GameState): GameState {
   const messagesToProcess = state.messages.filter(msg => 
-    !('time' in msg) || msg.time === state.tick
+    !('time' in msg) || (msg.time === state.tick)
   );
-  
+
   const processedState = messagesToProcess.reduce(
     (currentState, message) => processMessage(currentState, message),
     state
   );
 
-  const newState = {
+  return {
     ...processedState,
-    tick: processedState.tick + TICK_RATE,
-    messages: processedState.messages,
-    players: movePlayers(processedState.players)
+    players: movePlayers(processedState.players),
+    tick: gameState.tick + TICK_RATE 
   };
-  addToStateHistory(newState);
-
-  return newState;
 }
 
 function checkAndRollback(state: GameState): GameState {
@@ -318,6 +292,8 @@ function enterRoom() {
 
   const client = new UwUChat2Client();
 
+  let initTime: number = client.time();
+
   client.init('ws://localhost:8080').then(() => {
     console.log("Connected to server");   
 
@@ -325,7 +301,9 @@ function enterRoom() {
 
     client.recv(roomId, (msg: Uint8Array) => {
       const decodedMessage = lib.decode(msg);
-      messageQueue.push(decodedMessage);
+      if (decodedMessage.user !== thisPlayer()) {
+        messageQueue.push(decodedMessage);
+      }
     });
   })
 
@@ -337,9 +315,9 @@ function enterRoom() {
       name: nickname
     } as GameMessage;
 
+    messageQueue.push(setNickMessage);
     client.send(roomId, lib.encode(setNickMessage));
   }
-
 
   function handleKeyEvent(event: KeyboardEvent, keyEvType: KeyEventType) {
     if (["a", "w", "d", "s"].includes(event.key)) {
@@ -354,7 +332,8 @@ function enterRoom() {
       };
 
       const encodedMessage = lib.encode(gameMsg);
-      //client.send(roomId, encodedMessage);
+      messageQueue.push(gameMsg);
+      client.send(roomId, encodedMessage);
     }
   }
 
@@ -372,12 +351,36 @@ function enterRoom() {
     }
   });
 
-  function gameLoop() {
-    gameState = computeState(gameState); 
+  let lastUpdateTime = 0;
+  let accumulatedTime = 0;
+
+  function gameLoop(timestamp: number) {
+    const deltaTime = timestamp - lastUpdateTime;
+    lastUpdateTime = timestamp;
+    accumulatedTime += deltaTime;
+
+    while (gameState.tick < initTime && gameState.tickSet) {
+      while (messageQueue.length > 0) {
+        const message = messageQueue.shift()!;
+        gameState = addMessageToQueue(gameState, message);
+      }
+      gameState = computeState(gameState);
+    }
+
+    while (messageQueue.length > 0) {
+      const message = messageQueue.shift()!;
+      gameState = addMessageToQueue(gameState, message);
+    }
+
+    while (accumulatedTime >= TICK_RATE) {
+      gameState = computeState(gameState);  
+      accumulatedTime -= TICK_RATE;
+    }
+    
+    //addToStateHistory(gameState);
     draw(gameState);
     requestAnimationFrame(gameLoop);
   }
-  
   requestAnimationFrame(gameLoop);
 }
 
@@ -431,14 +434,6 @@ function getPlayerColor(id: string): string {
 }
 
 (window as any).enterRoom = enterRoom;
-
-
-
-
-
-
-
-
 
 
 
