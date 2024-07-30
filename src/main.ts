@@ -264,35 +264,61 @@ function checkAndRollback(state: GameState): GameState {
 
   console.log(messagesNeedingRollback);
   console.log(state.tick);
-  return state;
+  //return state;
 
-  //const oldestTick = messagesNeedingRollback.find(msg => 'time' in msg);
-  //console.log(oldestTick);
-  //if (!oldestTick) {
-    //return state;
-  //}
-  //let rollbackState = stateHistory.find(s => s.tick === oldestTick.time);
+  // returns the first message, since its sorted it is the oldest
+  const timedMessages = messagesNeedingRollback.filter(msg => 'time' in msg);
+  if (timedMessages.length === 0) {
+    return state;
+  }
+  const oldestTick = timedMessages[0].time;
+  console.log("oldest tick: ", oldestTick);
+
+  console.log("STATE HISTORY: ", stateHistory);
+
+  let rollbackState = stateHistory.find(s => s.tick == oldestTick);
+  if (!rollbackState) {
+    console.error("Unable to find state for rollback");
+    return state;
+  }
+
+  // need to erase state history and rewrite it from tick on
+  // compute state already pushes states to state history, so we just need to erase all states after the oldest that needs rollback
  
-  //if (!rollbackState) {
-    //console.error("Unable to find state for rollback");
-    //return state;
-  //}
+  console.log("STATE HISTORY STATES LENGTH: ", stateHistory.length); 
 
-  //for (const message of messagesNeedingRollback) {
-    //rollbackState = addMessageToQueue(rollbackState, message);
-  //}
+  //stateHistory = stateHistory.filter((s: GameState) => ('time' in s && (state.tick > oldestTick)));
+  stateHistory = stateHistory.filter((state: GameState) => state.tick <= oldestTick);
+  let wrongStates: GameState[] = stateHistory.filter((state: GameState) => state.tick > oldestTick);
 
-  //return rebuildState(rollbackState, state.tick);
+  const futureMessages: GameMessage[] = wrongStates.reduce((acc: GameMessage[], state: GameState) => acc.concat(state.messages), []);
+  console.log("FUTURE MESSAGES: ", futureMessages);
+
+  console.log("STATE HISTORY STATES LENGTH AFTER REMOVING ONES AFTER WRONG TICK: ", stateHistory.length); 
+
+  let allMessages: GameMessage[] = futureMessages.concat(messagesNeedingRollback);
+
+  // adds the lost messages to the rollback state
+  for (const message of allMessages) {
+    rollbackState = addMessageToQueue(rollbackState, message);
+  }
+
+  return rebuildState(rollbackState, state.tick);
 }
 
 function rebuildState(startState: GameState, endTick: number): GameState {
   let currentState = startState;
+  console.log("START STATE: ", currentState);
+  let stateTick: number = currentState.tick;
 
-  while (currentState.tick < endTick) {
-    console.log("PROCESSING TICK: ", currentState.tick);
+  console.log("REBUILDING STATE untill endTick: ", endTick);
+  while (stateTick < endTick) {
+    console.log("PROCESSING TICK: ", stateTick);
     currentState = computeState(currentState);
+    stateTick = currentState.tick;
+    console.log("STATE AFTER PROCESS: ", currentState);
   }
-  console.log("FINAL STATE: ", currentState);
+  console.log("FINAL STATE AFTER REBUILDING: ", currentState);
 
   return currentState;
 }
@@ -358,7 +384,7 @@ function enterRoom() {
       const key = event.key.charCodeAt(0);
       const encodedKey = lib.encodeKey({ key: key, event: keyEvType});
       const ping = client.get_ping();
-      const time = (Math.ceil((client.time() + Math.ceil((ping / 2))) / TICK_RATE) * TICK_RATE); // sending 10 ticks ahead
+      const time = (Math.ceil(client.time() / TICK_RATE) * TICK_RATE) //+ (10 * TICK_RATE);
       const gameMsg: GameMessage = {
         tag: MessageType.COMMAND,
         user: thisPlayerId,
@@ -389,12 +415,6 @@ function enterRoom() {
   let lastUpdateTime = 0;
   let accumulatedTime = 0;
 
-  // when p1 enters, everything goes fine
-  // when p2 enters, it catches up with initTime which is clientTime() when we entered the room
-  // and then computes things normally
-  // but we have a delay from initTime to the new updated client time
-  // should we keep trying to reach the client time sync?
-  // like, if our tick is >= than initTime,
   function gameLoop() {
     const clientTime = client.time();
 
@@ -414,24 +434,9 @@ function enterRoom() {
           gameState = addMessageToQueue(gameState, message);
         }
 
-        // 190 -> rollback .... 230
         gameState = checkAndRollback(gameState);
-        // basically all messages from other users will need rollback
         gameState = computeState(gameState);
         currentTick = gameState.tick; 
-
-        //const deltaTime = timestamp - lastUpdateTime;
-        //lastUpdateTime = timestamp;
-        //accumulatedTime += deltaTime;
-
-        
-        //gameState = checkAndRollback(gameState);
-
-       // while (accumulatedTime >= TICK_RATE) {
-        //gameState = computeState(gameState);  
-          //accumulatedTime -= TICK_RATE;
-        //}
-        
         draw(gameState);
       }
     } else {
