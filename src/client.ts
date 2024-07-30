@@ -68,6 +68,10 @@ class UwUChat2Client {
     };
   }
 
+  public get_ping(): number {
+    return this.best_ping;
+  }
+
   public time(): number {
     return Date.now() + this.server_time_offset;
   }

@@ -8,7 +8,6 @@ const enum MessageType {
   TICK = 2
 };
 
-// 30 FPS
 const TICK = 100;
 const TICK_RATE = 1000 / TICK;
 
@@ -65,7 +64,7 @@ function newPlayer(pid: number, name: string): Player {
   return {
       id: pid,
       name: name,
-      position: { x: 50, y: 50 },
+      position: { x: 50, y: 100 },
       w: false,
       a: false,
       s: false,
@@ -87,7 +86,14 @@ function addPlayer(newPlayer: Player, players: List<Player>): List<Player> {
   return players.push(newPlayer);
 }
 function addMessageToQueue(state: GameState, message: GameMessage): GameState {
-  const sortedMessages = [...state.messages, message];
+  const extendedMessages = [...state.messages, message];
+
+  const sortedMessages = [...state.messages, message].sort((a, b) => {
+    const timeA = 'time' in a ? a.time : 0;
+    const timeB = 'time' in b ? b.time : 0;
+    return timeA - timeB;
+  });
+
   if ('time' in message && !state.tickSet) {
     return {
       ...state,
@@ -218,7 +224,7 @@ function processMessage(state: GameState, message: GameMessage): GameState {
 }
 
 function computeState(state: GameState): GameState {
-  let errorBound = TICK_RATE / 2;
+  let errorBound = TICK_RATE - 1;
   const messagesToProcess = state.messages.filter(msg => 
     !('time' in msg) || (((msg.time >= state.tick - errorBound) && (msg.time <= state.tick + errorBound)))
   );
@@ -240,39 +246,54 @@ function computeState(state: GameState): GameState {
 }
 
 function checkAndRollback(state: GameState): GameState {
-  const messageNeedingRollback = state.messages.find(msg => 
+  const messagesNeedingRollback = state.messages.filter(msg => 
     'time' in msg && msg.time < state.tick && msg.time !== 0
   );
 
-  if (!messageNeedingRollback || !('time' in messageNeedingRollback)) {
+  if (messagesNeedingRollback.length === 0) {
     return state;
   }
 
   console.log("NEED ROLLBACK");
-  console.log(messageNeedingRollback);
-  console.log(state);
 
-  const rollbackTick = messageNeedingRollback.time;
-  const rollbackState = stateHistory.find(s => s.tick === rollbackTick);
+  messagesNeedingRollback.sort((a, b) => { 
+    const aTime = 'time' in a ? a.time : 0;
+    const bTime = 'time' in b ? b.time : 0;
+    return aTime - bTime;
+  });
 
-  if (!rollbackState) {
-    console.error("Unable to find state for rollback");
-    return state;
-  }
-  console.log("FOUND rollback state: ", rollbackState);
+  console.log(messagesNeedingRollback);
+  console.log(state.tick);
+  return state;
 
-  return rebuildState(addMessageToQueue(rollbackState, messageNeedingRollback), state.tick);
+  //const oldestTick = messagesNeedingRollback.find(msg => 'time' in msg);
+  //console.log(oldestTick);
+  //if (!oldestTick) {
+    //return state;
+  //}
+  //let rollbackState = stateHistory.find(s => s.tick === oldestTick.time);
+ 
+  //if (!rollbackState) {
+    //console.error("Unable to find state for rollback");
+    //return state;
+  //}
+
+  //for (const message of messagesNeedingRollback) {
+    //rollbackState = addMessageToQueue(rollbackState, message);
+  //}
+
+  //return rebuildState(rollbackState, state.tick);
 }
 
 function rebuildState(startState: GameState, endTick: number): GameState {
-  console.log("start state: ", startState);
   let currentState = startState;
 
   while (currentState.tick < endTick) {
+    console.log("PROCESSING TICK: ", currentState.tick);
     currentState = computeState(currentState);
   }
+  console.log("FINAL STATE: ", currentState);
 
-  console.log(currentState);
   return currentState;
 }
 
@@ -304,8 +325,11 @@ function enterRoom() {
 
   let initTime: number = client.time();
 
-  client.init('ws://localhost:8080').then(() => {
-    console.log("Connected to server");   
+  //const server = 'ws://localhost:8080';
+  const server = 'ws://server.uwu.games';
+  
+  client.init(server).then(() => {  
+    console.log("Connected to server ", server);   
 
     sendPlayerJoinedMessage();
 
@@ -333,7 +357,8 @@ function enterRoom() {
     if (["a", "w", "d", "s"].includes(event.key)) {
       const key = event.key.charCodeAt(0);
       const encodedKey = lib.encodeKey({ key: key, event: keyEvType});
-      const time = Math.ceil(Date.now() / TICK_RATE) * TICK_RATE;
+      const ping = client.get_ping();
+      const time = (Math.ceil((client.time() + Math.ceil((ping / 2))) / TICK_RATE) * TICK_RATE); // sending 10 ticks ahead
       const gameMsg: GameMessage = {
         tag: MessageType.COMMAND,
         user: thisPlayerId,
@@ -364,10 +389,14 @@ function enterRoom() {
   let lastUpdateTime = 0;
   let accumulatedTime = 0;
 
-  function gameLoop(timestamp: number) {
-    const deltaTime = timestamp - lastUpdateTime;
-    lastUpdateTime = timestamp;
-    accumulatedTime += deltaTime;
+  // when p1 enters, everything goes fine
+  // when p2 enters, it catches up with initTime which is clientTime() when we entered the room
+  // and then computes things normally
+  // but we have a delay from initTime to the new updated client time
+  // should we keep trying to reach the client time sync?
+  // like, if our tick is >= than initTime,
+  function gameLoop() {
+    const clientTime = client.time();
 
     while (gameState.tick < initTime && gameState.tickSet) {
       while (messageQueue.length > 0) {
@@ -377,54 +406,80 @@ function enterRoom() {
       gameState = computeState(gameState);
     }
 
-    while (messageQueue.length > 0) {
-      const message = messageQueue.shift()!;
-      gameState = addMessageToQueue(gameState, message);
-    }
+    let currentTick = gameState.tick;
+    if (gameState.tickSet) {
+      while (currentTick <= clientTime) {
+        while (messageQueue.length > 0) {
+          const message = messageQueue.shift()!;
+          gameState = addMessageToQueue(gameState, message);
+        }
 
-    while (accumulatedTime >= TICK_RATE) {
-      gameState = computeState(checkAndRollback(gameState));  
-      accumulatedTime -= TICK_RATE;
-    }
-    
-    draw(gameState);
+        // 190 -> rollback .... 230
+        gameState = checkAndRollback(gameState);
+        // basically all messages from other users will need rollback
+        gameState = computeState(gameState);
+        currentTick = gameState.tick; 
+
+        //const deltaTime = timestamp - lastUpdateTime;
+        //lastUpdateTime = timestamp;
+        //accumulatedTime += deltaTime;
+
+        
+        //gameState = checkAndRollback(gameState);
+
+       // while (accumulatedTime >= TICK_RATE) {
+        //gameState = computeState(gameState);  
+          //accumulatedTime -= TICK_RATE;
+        //}
+        
+        draw(gameState);
+      }
+    } else {
+      while (messageQueue.length > 0) {
+        const message = messageQueue.shift()!;
+        gameState = addMessageToQueue(gameState, message);
+      }
+      gameState = computeState(gameState);
+      draw(gameState);
+    } 
     requestAnimationFrame(gameLoop);
   }
-  requestAnimationFrame(gameLoop);
-}
+  gameLoop();
 
-function draw(state: GameState): void {
-  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-  if (!canvas) {
-    console.error("Canvas not found");
-    return;
-  }
+  function draw(state: GameState): void {
+    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+    if (!canvas) {
+      console.error("Canvas not found");
+      return;
+    }
 
-  const ctx = canvas.getContext("2d");
-  if (!ctx) {
-    console.error("Unable to get 2D context");
-    return;
-  }
+    const ctx = canvas.getContext("2d");
+    if (!ctx) {
+      console.error("Unable to get 2D context");
+      return;
+    }
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  const drawPlayer = (player: Player): void => {
-    ctx.beginPath();
-    ctx.arc(player.position.x, player.position.y, 10, 0, 2 * Math.PI);
-    ctx.fillStyle = getPlayerColor((player.id).toString());
-    ctx.fill();
-    ctx.closePath();
+    const drawPlayer = (player: Player): void => {
+      ctx.beginPath();
+      ctx.arc(player.position.x, player.position.y, 10, 0, 2 * Math.PI);
+      ctx.fillStyle = getPlayerColor((player.id).toString());
+      ctx.fill();
+      ctx.closePath();
+
+      ctx.fillStyle = 'black';
+      ctx.font = '12px Arial';
+      ctx.fillText(player.name, player.position.x - 20, player.position.y - 15);
+    };
+
+    state.players.forEach(drawPlayer);
 
     ctx.fillStyle = 'black';
-    ctx.font = '12px Arial';
-    ctx.fillText(player.name, player.position.x - 20, player.position.y - 15);
-  };
-
-  state.players.forEach(drawPlayer);
-
-  ctx.fillStyle = 'black';
-  ctx.font = '20px Arial';
-  ctx.fillText(`Tick: ${state.tick}`, 10, 20);
+    ctx.font = '20px Arial';
+    ctx.fillText(`Tick: ${state.tick}`, 10, 20);
+    ctx.fillText(`Ping: ${client.get_ping()} ms`, 10, 40);
+  }
 }
 
 function generateId(): number {
