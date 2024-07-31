@@ -52,6 +52,7 @@ let room = 0;
 let playerId = 0;
 let pressedKeys = new Set<number>();
 let gameState: GameState = { players: {} };
+let historyState: GameState[] = [];
 let lastUpdateTime = 0;
 let initTime = client.time();
 const PLAYER_RADIUS = 8;
@@ -63,7 +64,8 @@ async function handleLogin() {
   playerId = lib.encodeUsername(username);
   room = parseInt(roomInput.value);
   if (username && room) {
-    await client.init("ws://localhost:8080");
+    await client.init("ws://localhost:7171");
+    // await client.init("ws://server.uwu.games");
     client.recv(room, handleGameMessage);
     client.send(
       room,
@@ -103,7 +105,7 @@ function sendKeyEvent(key: number, event: KeyEventType) {
     lib.encode({
       tag: COMMAND_MESSAGE,
       user: playerId,
-      time: client.time(),
+      time: client.time() + client.get_ping(),
       key: keyEvent,
     })
   );
@@ -143,6 +145,12 @@ function updatePlayerPositions(elapsedTime: number) {
   }
 }
 
+function deepCopyGameState(state: GameState): GameState {
+  return {
+    players: JSON.parse(JSON.stringify(state.players)),
+  };
+}
+
 function computeState(event?: GameMessage) {
   if (event) {
     if (event.tag === COMMAND_MESSAGE) {
@@ -163,9 +171,14 @@ function computeState(event?: GameMessage) {
 
       if (initTime > currentTime) {
         const elapsedTime = currentTime - lastUpdateTime;
-        if (elapsedTime >= UPDATE_INTERVAL_MS) {
-          updatePlayerPositions(elapsedTime);
-        }
+        // if (elapsedTime >= UPDATE_INTERVAL_MS) {
+        updatePlayerPositions(elapsedTime);
+        // }
+      } else {
+        const elapsedTime = currentTime - lastUpdateTime;
+        // if (elapsedTime >= UPDATE_INTERVAL_MS) {
+        updatePlayerPositions(elapsedTime);
+        // }
       }
 
       if (keyEvent.event === KeyEventType.PRESS) {
@@ -207,13 +220,14 @@ function computeState(event?: GameMessage) {
     if (lastUpdateTime > initTime) {
       const currentTime = client.time();
       const elapsedTime = currentTime - lastUpdateTime;
-
-      if (elapsedTime >= UPDATE_INTERVAL_MS) {
-        updatePlayerPositions(elapsedTime);
-        lastUpdateTime = currentTime;
-      }
+      // if (elapsedTime >= UPDATE_INTERVAL_MS) {
+      updatePlayerPositions(elapsedTime);
+      // }
+      lastUpdateTime = currentTime;
     }
   }
+  // Adicionar estado ao histórico
+  historyState.push(deepCopyGameState(gameState));
 }
 
 function gameLoop() {

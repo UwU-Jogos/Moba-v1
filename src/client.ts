@@ -71,7 +71,7 @@ class UwUChat2Client {
   }
 
   public get_ping(): number {
-    return this.server_time_offset;
+    return this.best_ping;
   }
 
   private handle_message(data: Uint8Array): void {
