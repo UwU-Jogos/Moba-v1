@@ -12,24 +12,21 @@ import { GameState } from '../GameState/_';
 import { Player } from '../Player/_';
 import { UID } from '../UID/_';
 import { Map } from 'immutable';
-
-const PRADIUS = 10;
-const TPS = 32;
+import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
+import { PLAYER_RADIUS, TPS, PLAYER_SPEED } from '../Helpers/consts';
 
 export function tick(gs: GameState): GameState {
   const dt = 1 / TPS;
-  //const { width, height } = { 800, 1000 };
-  const width = 1000;
-  const height = 800;
+  const { width, height } = get_canvas_dimensions();
 
   const players = gs.players.map((player, uid) => {
     if (!player) return player;
     
-    const dx = ((player.key["D"] ? 1 : 0) + (player.key["A"] ? -1 : 0)) * dt * 128;
-    const dy = ((player.key["S"] ? 1 : 0) + (player.key["W"] ? -1 : 0)) * dt * 128;
+    const dx = ((player.key["D"] ? PLAYER_SPEED : 0) + (player.key["A"] ? -PLAYER_SPEED : 0)) * dt * 128;
+    const dy = ((player.key["S"] ? PLAYER_SPEED : 0) + (player.key["W"] ? -PLAYER_SPEED : 0)) * dt * 128;
     
-    let newX = Math.max(PRADIUS, Math.min(width - PRADIUS, (player.pos.x + dx)));
-    let newY = Math.max(PRADIUS, Math.min(height - PRADIUS, (player.pos.y + dy)));
+    let newX = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, (player.pos.x + dx)));
+    let newY = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, (player.pos.y + dy)));
     return {
       ...player,
       pos: {

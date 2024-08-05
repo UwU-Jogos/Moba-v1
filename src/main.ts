@@ -23,33 +23,13 @@ const PID = Math.floor(Math.random() * (2 ** 16));
 const PRADIUS = 10;
 console.log("PID is:", PID);
 
-// Application
-// -----------
 
-// Initial State
-
-// Computes an Action
-
-// Computes a Tick
-
-// Renders the GameState on the canvas
-// Helpers
-// ---------
-
-function get_canvas_dimensions(): { width: number, height: number } {
-  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-  return { width: canvas.width, height: canvas.height };
-}
-
-// Serialization
-// -------------
-// (For the Action type only.)
 
 // Main App
 // --------
 
 // Starts State Machine
-var room : UID = 339;
+var room : UID = 340;
 var mach : sm.Mach<GameState, Action> = sm.new_mach(TPS);
 
 // Connects to Server
@@ -80,6 +60,7 @@ function handle_key_event(event: KeyboardEvent) {
     }
   }
 }
+
 window.addEventListener('keydown', handle_key_event);
 window.addEventListener('keyup', handle_key_event);
 
@@ -94,4 +75,5 @@ function game_loop() {
   // Schedule the next frame
   requestAnimationFrame(game_loop);
 }
+
 game_loop();

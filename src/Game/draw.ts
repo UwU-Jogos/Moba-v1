@@ -9,8 +9,7 @@
 /// This function doesn't return a value, it performs the drawing operation.
 
 import { GameState } from '../GameState/_';
-
-const PRADIUS = 10;
+import { PLAYER_RADIUS } from '../Helpers/consts';
 
 export function draw(gs: GameState): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -25,7 +24,7 @@ export function draw(gs: GameState): void {
   gs.players.forEach(player => {
     // Draw player circle
     ctx.beginPath();
-    ctx.arc(player.pos.x, player.pos.y, PRADIUS, 0, 2 * Math.PI);
+    ctx.arc(player.pos.x, player.pos.y, PLAYER_RADIUS, 0, 2 * Math.PI);
     ctx.fillStyle = 'gray';
     ctx.fill();
 
