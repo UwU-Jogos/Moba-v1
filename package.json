@@ -12,6 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "immutable": "^4.3.7",
+    "@uwu-games/uwu-state-machine": "^0.0.3",
     "uwuchat2": "^0.0.4"
   },
   "devDependencies": {
