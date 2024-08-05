@@ -25,8 +25,27 @@ export function tick(gs: GameState): GameState {
     const dx = ((player.key["D"] ? PLAYER_SPEED : 0) + (player.key["A"] ? -PLAYER_SPEED : 0)) * dt * 128;
     const dy = ((player.key["S"] ? PLAYER_SPEED : 0) + (player.key["W"] ? -PLAYER_SPEED : 0)) * dt * 128;
     
-    let newX = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, (player.pos.x + dx)));
-    let newY = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, (player.pos.y + dy)));
+    let newX = player.pos.x + dx;
+    let newY = player.pos.y + dy;
+
+    // Check collision with other players
+    gs.players.forEach((otherPlayer, otherUid) => {
+      if (uid !== otherUid) {
+        const dx = newX - otherPlayer.pos.x;
+        const dy = newY - otherPlayer.pos.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        if (distance < PLAYER_RADIUS * 2) {
+          const angle = Math.atan2(dy, dx);
+          newX = otherPlayer.pos.x + Math.cos(angle) * PLAYER_RADIUS * 2;
+          newY = otherPlayer.pos.y + Math.sin(angle) * PLAYER_RADIUS * 2;
+        }
+      }
+    });
+
+    // Clamp to canvas boundaries
+    newX = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, newX));
+    newY = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, newY));
+
     return {
       ...player,
       pos: {
@@ -42,4 +61,3 @@ export function tick(gs: GameState): GameState {
     players: players as Map<UID, Player>
   };
 }
-
