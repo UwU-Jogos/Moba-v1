@@ -11,7 +11,7 @@
 import { GameState } from '../GameState/_';
 import { PLAYER_RADIUS, PLAYER_COLOR } from '../Helpers/consts';
 import { circle } from '../Shape/circle';
-import { draw as drawShape } from '../Shape/draw';
+import { draw as draw_shape } from '../Shape/draw';
 
 export function draw(gs: GameState): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -28,7 +28,7 @@ export function draw(gs: GameState): void {
     ctx.fillStyle = 'gray';
     ctx.fill(new Path2D());
 
-    drawShape(ctx, circle(player.pos, PLAYER_RADIUS), PLAYER_COLOR);
+    draw_shape(ctx, circle(player.pos, PLAYER_RADIUS), PLAYER_COLOR);
 
     // Draw player name
     ctx.fillStyle = 'black';
