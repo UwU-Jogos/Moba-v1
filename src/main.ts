@@ -14,6 +14,7 @@ import { tick } from './Game/tick';
 import { draw } from './Game/draw';
 import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
+import { ARTIFICIAL_DELAY } from './Helpers/consts';
 
 // Types
 // -----
@@ -23,19 +24,20 @@ const PID = Math.floor(Math.random() * (2 ** 16));
 const PRADIUS = 10;
 console.log("PID is:", PID);
 
-
-
 // Main App
 // --------
 
 // Starts State Machine
-var room : UID = 340;
+var room : UID = 402;
 var mach : sm.Mach<GameState, Action> = sm.new_mach(TPS);
 
 // Connects to Server
 const client = new UwUChat2Client();
+
+
 //await client.init('ws://localhost:7171');
 await client.init('ws://server.uwu.games');
+
 
 // Joins Room & Handles Messages
 const leave = client.recv(room, msg => {
@@ -61,8 +63,24 @@ function handle_key_event(event: KeyboardEvent) {
   }
 }
 
+// Mouse Click Handler
+function handle_mouse_click(event: MouseEvent) {
+  if (event.button === 0 && event.target instanceof HTMLCanvasElement) {
+    const time = client.time() + ARTIFICIAL_DELAY;
+    const x = event.clientX - event.target.offsetLeft;
+    const y = event.clientY - event.target.offsetTop;
+    const act = {$: "MouseClick", time, pid: PID, x, y} as Action;
+
+    // Add to own action log
+    sm.register_action(mach, act);
+    // Send to server
+    client.send(room, serialize(act));
+  }
+}
+
 window.addEventListener('keydown', handle_key_event);
 window.addEventListener('keyup', handle_key_event);
+window.addEventListener('click', handle_mouse_click);
 
 // Game Loop
 function game_loop() {

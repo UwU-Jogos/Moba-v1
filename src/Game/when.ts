@@ -16,7 +16,7 @@ import { Player } from '../Player/_';
 export function when(when: Action, gs: GameState): GameState {
   let players = gs.players;
   if (!players.has(when.pid)) {
-    players = players.set(when.pid, { id: when.pid, name: "Anon", pos: { x: 256, y: 128 }, key: {} });
+    players = players.set(when.pid, { id: when.pid, name: "Anon", pos: { x: 256, y: 128 }, target_pos: { x: 256, y: 128 }, key: {} });
   }
 
   switch (when.$) {
@@ -30,6 +30,14 @@ export function when(when: Action, gs: GameState): GameState {
         if (!player) { return player };
         const newKey = { ...player.key, [when.key]: when.down };
         return { ...player, key: newKey } as Player;
+      });
+      break;
+    }
+
+    case "MouseClick": {
+      players = players.update(when.pid, player => {
+        if (!player) { return player };
+        return { ...player, target_pos: { x: when.x, y: when.y } } as Player;
       });
       break;
     }

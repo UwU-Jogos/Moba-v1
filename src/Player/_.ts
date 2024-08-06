@@ -20,5 +20,6 @@ export type Player = {
   id: UID;
   name: Name;
   pos: V2;
+  target_pos: V2;
   key: { [key: Key]: boolean };
 };
