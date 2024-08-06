@@ -15,6 +15,7 @@ import { draw } from './Game/draw';
 import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
 import { ARTIFICIAL_DELAY } from './Helpers/consts';
+import { TimeDisplay } from './Helpers/time';
 
 // Types
 // -----
@@ -28,21 +29,19 @@ console.log("PID is:", PID);
 // --------
 
 // Starts State Machine
-var room : UID = 402;
-var mach : sm.Mach<GameState, Action> = sm.new_mach(TPS);
+var room: UID = 415;
+var mach: sm.Mach<GameState, Action> = sm.new_mach(TPS);
 
 // Connects to Server
 const client = new UwUChat2Client();
 
-
-//await client.init('ws://localhost:7171');
-await client.init('ws://server.uwu.games');
-
+await client.init('ws://localhost:7171');
+//await client.init('ws://server.uwu.games');
 
 // Joins Room & Handles Messages
 const leave = client.recv(room, msg => {
   try { sm.register_action(mach, deserialize(msg)); }
-  catch (e) {}
+  catch (e) { }
 });
 
 // Input Handler
@@ -54,8 +53,8 @@ function handle_key_event(event: KeyboardEvent) {
     if (key_state[key] !== down) {
       key_state[key] = down;
       var time = client.time();
-      var act  = {$: "KeyEvent", time, pid: PID, key, down} as Action;
-      // Add to own action log 
+      var act = { $: "KeyEvent", time, pid: PID, key, down } as Action;
+      // Add to own action log
       sm.register_action(mach, act);
       // Send to server
       client.send(room, serialize(act));
@@ -69,7 +68,7 @@ function handle_mouse_click(event: MouseEvent) {
     const time = client.time() + ARTIFICIAL_DELAY;
     const x = event.clientX - event.target.offsetLeft;
     const y = event.clientY - event.target.offsetTop;
-    const act = {$: "MouseClick", time, pid: PID, x, y} as Action;
+    const act = { $: "MouseClick", time, pid: PID, x, y } as Action;
 
     // Add to own action log
     sm.register_action(mach, act);
@@ -82,13 +81,22 @@ window.addEventListener('keydown', handle_key_event);
 window.addEventListener('keyup', handle_key_event);
 window.addEventListener('click', handle_mouse_click);
 
+// Inicializa o TimeDisplay
+const timeDisplay = new TimeDisplay();
+
 // Game Loop
 function game_loop() {
   // Compute the current state
-  const state = sm.compute(mach, {init,tick,when}, client.time());
+  const state = sm.compute(mach, { init, tick, when }, client.time());
 
   // Draw the current state
   draw(state);
+
+  // Calcula o tempo decorrido em segundos
+  const elapsedTime = state.tick / TPS;
+
+  // Atualiza o tempo decorrido
+  timeDisplay.update(elapsedTime);
 
   // Schedule the next frame
   requestAnimationFrame(game_loop);
