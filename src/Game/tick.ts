@@ -19,6 +19,8 @@ export function tick(gs: GameState): GameState {
   const dt = 1 / TPS;
   const { width, height } = get_canvas_dimensions();
   const interpolationFactor = 0.1; // Adjust this value to control smoothness
+  
+  // handle skill movement (after already casted if needed)
 
   const players = gs.players.map((player, uid) => {
     if (!player) return player;

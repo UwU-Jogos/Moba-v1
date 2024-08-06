@@ -20,8 +20,10 @@
 import { Time } from '@uwu-games/uwu-state-machine';
 import { UID } from '../UID/_';
 import { Key } from '../Key/_';
+import { V2 } from '../V2/_';
 
 export type Action =
   | { $: 'SetNick'; time: Time; pid: UID; name: string }
-  | { $: 'KeyEvent'; time: Time; pid: UID; key: Key; down: boolean }
-  | { $: 'MouseClick'; time: Time; pid: UID; x: number; y: number };
+  | { $: 'KeyEvent'; time: Time; pid: UID; key: Key; down: boolean; mouse_pos: V2 }
+  | { $: 'MouseClick'; time: Time; pid: UID; x: number; y: number }
+

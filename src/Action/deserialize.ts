@@ -1,4 +1,3 @@
-
 import { Action } from './_';
 import { match } from './match';
 
@@ -24,7 +23,9 @@ export function deserialize(data: Uint8Array): Action {
       const pid = Number(new BigUint64Array(pid_buffer.buffer)[0]);
       const key = String.fromCharCode(data[13]);
       const down = data[14] === 1;
-      return { $: "KeyEvent", time, pid, key, down };
+      const mouse_pos_x = new Uint32Array(data.slice(15, 19).buffer)[0];
+      const mouse_pos_y = new Uint32Array(data.slice(19, 23).buffer)[0];
+      return { $: "KeyEvent", time, pid, key, down, mouse_pos: { x: mouse_pos_x, y: mouse_pos_y } };
     }
     case 2: { // Mouse event
       const tick_buffer = new Uint8Array(8);

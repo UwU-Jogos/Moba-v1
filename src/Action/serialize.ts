@@ -1,5 +1,6 @@
 import { Action } from './_';
 import { match } from './match';
+import { UID } from '../UID/_';
 
 export function serialize(action: Action): Uint8Array {
   const encoder = new TextEncoder();
@@ -14,13 +15,15 @@ export function serialize(action: Action): Uint8Array {
       return new Uint8Array(buffer);
     },
 
-    KeyEvent: (time: number, pid: number, key: string, down: boolean) => {
+    KeyEvent: (time: number, pid: number, key: string, down: boolean, mouse_pos: { x: number, y: number }) => {
       let buffer: number[] = [];
       buffer.push(1); // Action type identifier for KeyEvent
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(time)]).buffer).slice(0, 6)); // 48-bit Time
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(pid)]).buffer).slice(0, 6)); // 48-bit UID
       buffer.push(key.charCodeAt(0)); // 8-bit Key
       buffer.push(down ? 1 : 0); // Boolean as 1 or 0
+      buffer.push(...new Uint8Array(new Uint32Array([mouse_pos.x]).buffer)); // 32-bit mouse_pos.x
+      buffer.push(...new Uint8Array(new Uint32Array([mouse_pos.y]).buffer)); // 32-bit mouse_pos.y
       return new Uint8Array(buffer);
     },
 
@@ -35,6 +38,6 @@ export function serialize(action: Action): Uint8Array {
       buffer.push((y >> 8) & 0xFF);  // High byte
       buffer.push(y & 0xFF);         // Low byte
       return new Uint8Array(buffer);
-    }
+    },
   });
 }

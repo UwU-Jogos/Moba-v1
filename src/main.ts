@@ -28,7 +28,7 @@ console.log("PID is:", PID);
 // --------
 
 // Starts State Machine
-var room : UID = 402;
+var room : UID = 425;
 var mach : sm.Mach<GameState, Action> = sm.new_mach(TPS);
 
 // Connects to Server
@@ -41,20 +41,23 @@ await client.init('ws://server.uwu.games');
 
 // Joins Room & Handles Messages
 const leave = client.recv(room, msg => {
+  //console.log(deserialize(msg));
   try { sm.register_action(mach, deserialize(msg)); }
   catch (e) {}
 });
 
 // Input Handler
 const key_state: { [key: string]: boolean } = {};
+let mouse_pos: V2 = { x: 0, y: 0 };
+
 function handle_key_event(event: KeyboardEvent) {
   const key = event.key.toUpperCase();
-  if (['W', 'A', 'S', 'D'].includes(key)) {
+  if (['Q'].includes(key)) {
     const down = event.type === 'keydown';
     if (key_state[key] !== down) {
       key_state[key] = down;
       var time = client.time();
-      var act  = {$: "KeyEvent", time, pid: PID, key, down} as Action;
+      var act  = {$: "KeyEvent", time, pid: PID, key, down, mouse_pos} as Action;
       // Add to own action log 
       sm.register_action(mach, act);
       // Send to server
@@ -62,6 +65,8 @@ function handle_key_event(event: KeyboardEvent) {
     }
   }
 }
+
+// 
 
 // Mouse Click Handler
 function handle_mouse_click(event: MouseEvent) {
@@ -78,6 +83,10 @@ function handle_mouse_click(event: MouseEvent) {
   }
 }
 
+window.addEventListener('mousemove', (e: MouseEvent) => {
+  mouse_pos.x = e.clientX;
+  mouse_pos.y = e.clientY;
+});
 window.addEventListener('keydown', handle_key_event);
 window.addEventListener('keyup', handle_key_event);
 window.addEventListener('click', handle_mouse_click);
@@ -86,6 +95,7 @@ window.addEventListener('click', handle_mouse_click);
 function game_loop() {
   // Compute the current state
   const state = sm.compute(mach, {init,tick,when}, client.time());
+  console.log(state);
 
   // Draw the current state
   draw(state);
