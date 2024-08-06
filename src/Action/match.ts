@@ -16,6 +16,7 @@ export function match<R>(
   handlers: {
     SetNick: (time: number, pid: number, name: string) => R;
     KeyEvent: (time: number, pid: number, key: string, down: boolean) => R;
+    MouseClick: (time: number, pid: number, x: number, y: number) => R;
   }
 ): R {
   switch (action.$) {
@@ -23,5 +24,7 @@ export function match<R>(
       return handlers.SetNick(action.time, action.pid, action.name);
     case 'KeyEvent':
       return handlers.KeyEvent(action.time, action.pid, action.key, action.down);
+    case 'MouseClick':
+      return handlers.MouseClick(action.time, action.pid, action.x, action.y);
   }
 }
