@@ -15,10 +15,12 @@ import { UID } from '../UID/_';
 import { Name } from '../Name/_';
 import { V2 } from '../V2/_';
 import { Key } from '../Key/_';
+import { Life } from '../Life/_';
 
 export type Player = {
   id: UID;
   name: Name;
+  life: Life;
   pos: V2;
   target_pos: V2;
   key: { [key: Key]: boolean };

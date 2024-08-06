@@ -12,11 +12,12 @@
 import { Action } from '../Action/_';
 import { GameState } from '../GameState/_';
 import { Player } from '../Player/_';
+import { PLAYER_LIFE } from '../Helpers/consts';
 
 export function when(when: Action, gs: GameState): GameState {
   let players = gs.players;
   if (!players.has(when.pid)) {
-    players = players.set(when.pid, { id: when.pid, name: "Anon", pos: { x: 256, y: 128 }, target_pos: { x: 256, y: 128 }, key: {} });
+    players = players.set(when.pid, { id: when.pid, name: "Anon", life: PLAYER_LIFE, pos: { x: 256, y: 128 }, target_pos: { x: 256, y: 128 }, key: {} });
   }
 
   switch (when.$) {

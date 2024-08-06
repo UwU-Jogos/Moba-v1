@@ -35,5 +35,9 @@ export function draw(gs: GameState): void {
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(player.name, player.pos.x, player.pos.y - 20);
+
+    // Draw player life
+    ctx.fillStyle = 'green';
+    ctx.fillRect(player.pos.x - PLAYER_RADIUS, player.pos.y + PLAYER_RADIUS + 5, (player.life / 100) * (PLAYER_RADIUS * 2), 5);
   });
 }
