@@ -9,7 +9,9 @@
 /// This function doesn't return a value, it performs the drawing operation.
 
 import { GameState } from '../GameState/_';
-import { PLAYER_RADIUS } from '../Helpers/consts';
+import { PLAYER_RADIUS, PLAYER_COLOR } from '../Helpers/consts';
+import { circle } from '../Shape/circle';
+import { draw as draw_shape } from '../Shape/draw';
 
 export function draw(gs: GameState): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -23,10 +25,10 @@ export function draw(gs: GameState): void {
   // Draw the player as a filled gray circle, centered around their pos, with the name in a small font above the circle
   gs.players.forEach(player => {
     // Draw player circle
-    ctx.beginPath();
-    ctx.arc(player.pos.x, player.pos.y, PLAYER_RADIUS, 0, 2 * Math.PI);
     ctx.fillStyle = 'gray';
-    ctx.fill();
+    ctx.fill(new Path2D());
+
+    draw_shape(ctx, circle(player.pos, PLAYER_RADIUS), PLAYER_COLOR);
 
     // Draw player name
     ctx.fillStyle = 'black';
@@ -35,4 +37,3 @@ export function draw(gs: GameState): void {
     ctx.fillText(player.name, player.pos.x, player.pos.y - 20);
   });
 }
-
