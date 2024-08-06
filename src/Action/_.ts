@@ -23,4 +23,5 @@ import { Key } from '../Key/_';
 
 export type Action =
   | { $: 'SetNick'; time: Time; pid: UID; name: string }
-  | { $: 'KeyEvent'; time: Time; pid: UID; key: Key; down: boolean };
+  | { $: 'KeyEvent'; time: Time; pid: UID; key: Key; down: boolean }
+  | { $: 'MouseClick'; time: Time; pid: UID; x: number; y: number };
