@@ -1,3 +1,4 @@
+
 import { Action } from './_';
 import { match } from './match';
 
@@ -25,9 +26,19 @@ export function deserialize(data: Uint8Array): Action {
       const down = data[14] === 1;
       return { $: "KeyEvent", time, pid, key, down };
     }
+    case 2: { // Mouse event
+      const tick_buffer = new Uint8Array(8);
+      tick_buffer.set(data.slice(1, 7), 0);
+      const time = Number(new BigUint64Array(tick_buffer.buffer)[0]);
+      const pid_buffer = new Uint8Array(8);
+      pid_buffer.set(data.slice(7, 13), 0);
+      const pid = Number(new BigUint64Array(pid_buffer.buffer)[0]);
+      const x = (data[13] << 8) | data[14];
+      const y = (data[15] << 8) | data[16];
+      return { $: "MouseClick", time, pid, x, y };
+    }
     default: {
       throw new Error("Unknown action type");
     }
   }
 }
-
