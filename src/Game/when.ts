@@ -28,7 +28,6 @@ export function when(when: Action, gs: GameState): GameState {
 
   switch (when.$) {
     case "SetNick": {
-      console.log("Updating player name:", when.name);
       players = players.update(when.pid, player => {
         const updatedPlayer = { ...player, name: when.name } as Player;
         return updatedPlayer;
