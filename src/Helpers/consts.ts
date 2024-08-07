@@ -6,6 +6,8 @@
 /// * `PLAYER_SPEED` - The movement speed of players
 /// * `PLAYER_RADIUS` - The radius of the player's circular representation
 /// * `PLAYER_COLOR` - The color used to draw players
+/// * `WALL_COLOR` - The color used for walls
+/// * `PLATFORM_COLOR` - The color used for platforms
 
 export const TPS = 32;
 export const PLAYER_SPEED = 5;
@@ -13,3 +15,5 @@ export const PLAYER_RADIUS = 10;
 export const PLAYER_COLOR = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
 export const PID = Math.floor(Math.random() * (2 ** 16));
 export const ARTIFICIAL_DELAY = 100;
+export const WALL_COLOR = 'grey';
+export const PLATFORM_COLOR = 'black';
