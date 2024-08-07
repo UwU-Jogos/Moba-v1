@@ -312,9 +312,15 @@
       resizeHandle = '';
     });
 
+    function stringify_without_quoted_keys(obj) {
+      return JSON.stringify(obj, null, 2)
+        .replace(/"([^"]+)":/g, '$1:')
+        .replace(/\\/g, '');
+    }
+
     // Export button click event
     exportButton.addEventListener('click', () => {
-      const exportData = JSON.stringify(objects, null, 2);
+      const exportData = stringify_without_quoted_keys(objects);
       exportTextarea.value = exportData;
     });
   </script>
