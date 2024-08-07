@@ -1,4 +1,3 @@
-console.log("Script loaded");
 import * as sm from '@uwu-games/uwu-state-machine';
 import { UwUChat2Client } from 'uwuchat2';
 import { Map } from 'immutable';
@@ -33,14 +32,8 @@ let room: UID;
 let mach: sm.Mach<GameState, Action>;
 const client = new UwUChat2Client();
 
-
-document.getElementById('test-button')?.addEventListener('click', () => {
-  console.log("Test button clicked");
-});
-
 // Handle form submission
 document.addEventListener('DOMContentLoaded', () => {
-  console.log("DOM fully loaded");
   setupFormListener();
 });
 
@@ -59,21 +52,19 @@ function setupFormListener() {
 
 async function handleFormSubmit(e: Event) {
   e.preventDefault();
-  console.log("Form submitted");
   
   const roomInput = document.getElementById('room-number') as HTMLInputElement;
   const roomId = parseInt(roomInput.value);
-  
-  console.log("Room ID is:", roomId);
-  console.log("Room ID type is:", typeof(roomId));
+  const nameInput = document.getElementById('nickname') as HTMLInputElement;
+  const name = nameInput.value;
+
 
   // Start the game with the provided room ID
-  await startGame(roomId);
+  await startGame(roomId, name);
 }
 
 // Function to start the game
-async function startGame(roomId: UID) {
-  console.log("Starting game with room ID:", roomId);
+async function startGame(roomId: UID, name: Name) {
   room = roomId;
 
   await client.init('ws://localhost:7171');
@@ -87,6 +78,16 @@ async function startGame(roomId: UID) {
     catch (e) { console.error("Error processing message:", e); }
   });
 
+  // Create and send SetNick action
+  const setNickAction: Action = {
+    $: "SetNick",
+    time: client.time(),
+    pid: PID,
+    name: name
+  };
+  sm.register_action(mach, setNickAction);
+  client.send(room, serialize(setNickAction));
+
   // Hide login form and show game container
   const loginContainer = document.getElementById('login-container');
   const gameContainer = document.getElementById('game-container');
@@ -96,7 +97,7 @@ async function startGame(roomId: UID) {
     gameContainer.style.display = 'block';
   } else {
     console.error("Could not find login or game container");
-    return; // Exit if we can't find the containers
+    return; 
   }
 
   // Set up key and mouse event listeners
