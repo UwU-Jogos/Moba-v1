@@ -20,6 +20,10 @@ git clone https://github.com/UwU-Jogos/Taemoba
 ```
 npm install
 ```
+> If you don't have http-server installed, you can install it globally with:
+> ```
+> sudo npm install -g http-server
+> ```
 
 ## Usage
 
