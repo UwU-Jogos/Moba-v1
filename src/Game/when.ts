@@ -16,12 +16,22 @@ import { Player } from '../Player/_';
 export function when(when: Action, gs: GameState): GameState {
   let players = gs.players;
   if (!players.has(when.pid)) {
-    players = players.set(when.pid, { id: when.pid, name: "Anon", pos: { x: 256, y: 128 }, target_pos: { x: 256, y: 128 }, key: {} });
+    const initial_name = when.$ === "SetNick" ? when.name : "Anon";
+    players = players.set(when.pid, { 
+      id: when.pid, 
+      name: initial_name, 
+      pos: { x: 256, y: 128 }, 
+      target_pos: { x: 256, y: 128 }, 
+      key: {} 
+    });
   }
 
   switch (when.$) {
     case "SetNick": {
-      players = players.update(when.pid, player => ({ ...player, name: when.name } as Player));
+      players = players.update(when.pid, player => {
+        const updatedPlayer = { ...player, name: when.name } as Player;
+        return updatedPlayer;
+      });
       break;
     }
 

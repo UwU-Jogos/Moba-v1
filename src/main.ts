@@ -28,21 +28,86 @@ console.log("PID is:", PID);
 // Main App
 // --------
 
-// Starts State Machine
-var room: UID = 415;
-var mach: sm.Mach<GameState, Action> = sm.new_mach(TPS);
-
-// Connects to Server
+let room: UID;
+let mach: sm.Mach<GameState, Action>;
 const client = new UwUChat2Client();
 
-await client.init('ws://localhost:7171');
-//await client.init('ws://server.uwu.games');
-
-// Joins Room & Handles Messages
-const leave = client.recv(room, msg => {
-  try { sm.register_action(mach, deserialize(msg)); }
-  catch (e) { }
+// Handle form submission
+document.addEventListener('DOMContentLoaded', () => {
+  setup_form_listener();
 });
+
+// Also set up the listener immediately in case DOMContentLoaded has already fired
+setup_form_listener();
+
+function setup_form_listener() {
+  const login_form = document.getElementById('login-form');
+  
+  if (login_form) {
+    login_form.addEventListener('submit', handle_form_submit);
+  } else {
+    console.error("Login form not found!");
+  }
+}
+
+async function handle_form_submit(e: Event) {
+  e.preventDefault();
+  
+  const room_input = document.getElementById('room-number') as HTMLInputElement;
+  const room_id = parseInt(room_input.value);
+  const name_input = document.getElementById('nickname') as HTMLInputElement;
+  const name = name_input.value;
+
+
+  // Start the game with the provided room ID
+  await start_game(room_id, name);
+}
+
+// Function to start the game
+async function start_game(room_id: UID, name: Name) {
+  room = room_id;
+
+  await client.init('ws://localhost:7171');
+  //await client.init('ws://server.uwu.games');
+
+  mach = sm.new_mach(TPS);
+
+  // Join room and handle messages
+  const leave = client.recv(room, msg => {
+    try { sm.register_action(mach, deserialize(msg)); }
+    catch (e) { console.error("Error processing message:", e); }
+  });
+
+  // Create and send SetNick action
+  const set_nick_action: Action = {
+    $: "SetNick",
+    time: client.time(),
+    pid: PID,
+    name: name
+  };
+  sm.register_action(mach, set_nick_action);
+  client.send(room, serialize(set_nick_action));
+
+  // Hide login form and show game container
+  const login_container = document.getElementById('login-container');
+  const game_container = document.getElementById('game-container');
+  
+  if (login_container && game_container) {
+    login_container.style.display = 'none';
+    game_container.style.display = 'block';
+  } else {
+    console.error("Could not find login or game container");
+    return; 
+  }
+
+  // Set up key and mouse event listeners
+  window.addEventListener('keydown', handle_key_event);
+  window.addEventListener('keyup', handle_key_event);
+  window.addEventListener('click', handle_mouse_click);
+
+  // Start game loop
+  game_loop();
+}
 
 // Input Handler
 const key_state: { [key: string]: boolean } = {};
@@ -81,9 +146,6 @@ window.addEventListener('keydown', handle_key_event);
 window.addEventListener('keyup', handle_key_event);
 window.addEventListener('click', handle_mouse_click);
 
-// Inicializa o TimeDisplay
-const timeDisplay = new TimeDisplay();
-
 // Game Loop
 function game_loop() {
   // Compute the current state
@@ -102,4 +164,6 @@ function game_loop() {
   requestAnimationFrame(game_loop);
 }
 
-game_loop();
+// Initialize TimeDisplay
+const timeDisplay = new TimeDisplay();
+
