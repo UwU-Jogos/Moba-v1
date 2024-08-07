@@ -17,6 +17,9 @@ export function init(): GameMap {
 
   const objects: GameObject[] = [
     { kind: 'Wall', position: { x: 100, y: 200 }, width: width - 400, height: 10 },
+    { kind: 'Platform', position: { x: 100, y: height - 100 }, width: 100, height: 20 },
+  ];
+    { kind: 'Wall', position: { x: 100, y: 200 }, width: width - 400, height: 10 },
     //{ kind: 'Wall', position: { x: 0, y: height - 10 }, width: width, height: 10 },
     //{ kind: 'Wall', position: { x: 0, y: 0 }, width: 10, height: height },
     //{ kind: 'Wall', position: { x: width - 10, y: 0 }, width: 10, height: height },
