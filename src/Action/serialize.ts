@@ -1,3 +1,17 @@
+/// Serializes an Action into a Uint8Array.
+///
+/// # Description
+///
+/// This function takes an Action object and converts it into a serialized Uint8Array.
+///
+/// # Input
+///
+/// * `action` - An Action object to be serialized
+///
+/// # Output
+///
+/// Returns a Uint8Array containing the serialized Action data
+
 import { Action } from './_';
 import { match } from './match';
 
