@@ -25,7 +25,7 @@ export function draw(gs: GameState): void {
 
   // Draw the game map
   gs.game_map.objects.forEach(game_object => {
-    console.log("DRAWING OBJ: ", game_object);
+ 
     draw_game_object(ctx, game_object);
   });
 
