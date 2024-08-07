@@ -6,7 +6,7 @@
 ///
 /// # Output
 ///
-/// Returns an initial GameState with tick set to 0 and an empty players map.
+/// Returns an initial GameState with tick set to 0, an empty players map and the initial objects map 
 
 import { GameState } from '../GameState/_';
 import { Map } from 'immutable';

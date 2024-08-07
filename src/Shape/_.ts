@@ -2,7 +2,7 @@
 ///
 /// # Description
 ///
-/// The Shape type can be a Line, Circle, Square, or Triangle.
+/// The Shape type can be a Line, Circle, Square, Triangle, or Rectangle.
 ///
 /// # Constructors
 ///
@@ -19,6 +19,10 @@
 ///   * `v1` - The first vertex of the triangle (V2)
 ///   * `v2` - The second vertex of the triangle (V2)
 ///   * `v3` - The third vertex of the triangle (V2)
+/// * `Rectangle` - Represents a rectangle with a top-left corner, width, and height
+///   * `pos` - The top-left corner of the rectangle (V2)
+///   * `width` - The width of the rectangle (number)
+///   * `height` - The height of the rectangle (number)
 
 import { V2 } from '../V2/_';
 

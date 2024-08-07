@@ -2,7 +2,7 @@
 ///
 /// # Description
 ///
-/// Action is a union type with two constructors: SetNick and KeyEvent.
+/// Action is a union type with three constructors: SetNick, KeyEvent, and MouseClick.
 ///
 /// # Constructors
 ///
@@ -16,6 +16,12 @@
 ///   - `pid` - The player's unique identifier
 ///   - `key` - The key involved in the event
 ///   - `down` - Whether the key is pressed down (true) or released (false)
+///
+/// * `MouseClick` - Action for a mouse click event
+///   - `time` - The time of the action
+///   - `pid` - The player's unique identifier
+///   - `x` - The x-coordinate of the mouse click
+///   - `y` - The y-coordinate of the mouse click
 
 import { Time } from '@uwu-games/uwu-state-machine';
 import { UID } from '../UID/_';

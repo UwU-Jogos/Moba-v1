@@ -2,13 +2,14 @@
 ///
 /// # Description
 ///
-/// A player entity with unique identifier, name, position, and key states.
+/// A player entity with unique identifier, name, position, target position, and key states.
 ///
 /// # Fields
 ///
 /// * `id` - The unique identifier of the player
 /// * `name` - The name of the player
-/// * `pos` - The position of the player in 2D space
+/// * `pos` - The current position of the player in 2D space
+/// * `target_pos` - The target position of the player in 2D space
 /// * `key` - An object representing the state of various keys
 
 import { UID } from '../UID/_';

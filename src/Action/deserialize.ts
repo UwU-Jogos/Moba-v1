@@ -1,3 +1,20 @@
+/// Deserializes a Uint8Array into an Action.
+///
+/// # Description
+///
+/// This function takes a serialized Uint8Array and converts it back into an Action object.
+///
+/// # Input
+///
+/// * `data` - A Uint8Array containing the serialized Action data
+///
+/// # Output
+///
+/// Returns an Action object deserialized from the input data
+///
+/// # Throws
+///
+/// Throws an Error if an unknown action type is encountered
 
 import { Action } from './_';
 import { match } from './match';
