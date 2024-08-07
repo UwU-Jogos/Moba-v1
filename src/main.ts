@@ -34,38 +34,38 @@ const client = new UwUChat2Client();
 
 // Handle form submission
 document.addEventListener('DOMContentLoaded', () => {
-  setupFormListener();
+  setup_form_listener();
 });
 
 // Also set up the listener immediately in case DOMContentLoaded has already fired
-setupFormListener();
+setup_form_listener();
 
-function setupFormListener() {
-  const loginForm = document.getElementById('login-form');
+function setup_form_listener() {
+  const login_form = document.getElementById('login-form');
   
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleFormSubmit);
+  if (login_form) {
+    login_form.addEventListener('submit', handle_form_submit);
   } else {
     console.error("Login form not found!");
   }
 }
 
-async function handleFormSubmit(e: Event) {
+async function handle_form_submit(e: Event) {
   e.preventDefault();
   
-  const roomInput = document.getElementById('room-number') as HTMLInputElement;
-  const roomId = parseInt(roomInput.value);
-  const nameInput = document.getElementById('nickname') as HTMLInputElement;
-  const name = nameInput.value;
+  const room_input = document.getElementById('room-number') as HTMLInputElement;
+  const room_id = parseInt(room_input.value);
+  const name_input = document.getElementById('nickname') as HTMLInputElement;
+  const name = name_input.value;
 
 
   // Start the game with the provided room ID
-  await startGame(roomId, name);
+  await start_game(room_id, name);
 }
 
 // Function to start the game
-async function startGame(roomId: UID, name: Name) {
-  room = roomId;
+async function start_game(room_id: UID, name: Name) {
+  room = room_id;
 
   await client.init('ws://localhost:7171');
   //await client.init('ws://server.uwu.games');
@@ -79,22 +79,22 @@ async function startGame(roomId: UID, name: Name) {
   });
 
   // Create and send SetNick action
-  const setNickAction: Action = {
+  const set_nick_action: Action = {
     $: "SetNick",
     time: client.time(),
     pid: PID,
     name: name
   };
-  sm.register_action(mach, setNickAction);
-  client.send(room, serialize(setNickAction));
+  sm.register_action(mach, set_nick_action);
+  client.send(room, serialize(set_nick_action));
 
   // Hide login form and show game container
-  const loginContainer = document.getElementById('login-container');
-  const gameContainer = document.getElementById('game-container');
+  const login_container = document.getElementById('login-container');
+  const game_container = document.getElementById('game-container');
   
-  if (loginContainer && gameContainer) {
-    loginContainer.style.display = 'none';
-    gameContainer.style.display = 'block';
+  if (login_container && game_container) {
+    login_container.style.display = 'none';
+    game_container.style.display = 'block';
   } else {
     console.error("Could not find login or game container");
     return; 

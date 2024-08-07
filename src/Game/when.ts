@@ -16,10 +16,10 @@ import { Player } from '../Player/_';
 export function when(when: Action, gs: GameState): GameState {
   let players = gs.players;
   if (!players.has(when.pid)) {
-    const initialName = when.$ === "SetNick" ? when.name : "Anon";
+    const initial_name = when.$ === "SetNick" ? when.name : "Anon";
     players = players.set(when.pid, { 
       id: when.pid, 
-      name: initialName, 
+      name: initial_name, 
       pos: { x: 256, y: 128 }, 
       target_pos: { x: 256, y: 128 }, 
       key: {} 
