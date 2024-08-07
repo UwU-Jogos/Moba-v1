@@ -38,6 +38,9 @@ export function draw(canvas: CanvasRenderingContext2D, shape: Shape, color: stri
       canvas.lineTo(v3.x, v3.y);
       canvas.closePath();
       canvas.fill();
+    },
+    rectangle: (pos: V2, width: number, height: number) => {
+      canvas.fillRect(pos.x, pos.y, width, height);
     }
   });
 }
