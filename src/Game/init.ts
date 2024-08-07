@@ -12,10 +12,12 @@ import { GameState } from '../GameState/_';
 import { Map } from 'immutable';
 import { UID } from '../UID/_';
 import { Player } from '../Player/_';
+import { init as init_map } from '../GameMap/init';
 
 export function init(): GameState {
   return {
     tick: 0,
-    players: Map<UID, Player>()
+    players: Map<UID, Player>(),
+    game_map: init_map()
   };
 }

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Game Object Editor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      font-family: Arial, sans-serif;
+    }
+
+    #sidebar {
+      width: 200px;
+      background-color: #f0f0f0;
+      padding: 1rem;
+      height: 100vh;
+      overflow-y: auto;
+    }
+
+    #canvas-container {
+      flex-grow: 1;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    #canvas {
+      border: 2px solid black;
+    }
+
+    .draggable {
+      padding: 0.5rem;
+      margin-bottom: 0.5rem;
+      background-color: #007bff;
+      color: white;
+      border-radius: 4px;
+      cursor: move;
+      user-select: none;
+    }
+
+    .draggable:hover {
+      background-color: #0056b3;
+    }
+
+    .object-form {
+      margin-bottom: 1rem;
+    }
+
+    .object-form input {
+      width: 50px;
+      margin-right: 5px;
+    }
+
+    #export-button {
+      display: block;
+      width: 100%;
+      padding: 0.5rem;
+      background-color: #28a745;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin-top: 1rem;
+    }
+
+    #export-button:hover {
+      background-color: #218838;
+    }
+
+    #export-textarea {
+      width: 100%;
+      height: 200px;
+      margin-top: 1rem;
+      resize: vertical;
+    }
+  </style>
+</head>
+<body>
+  <div id="sidebar">
+    <div class="object-form">
+      <h3>Wall</h3>
+      <input type="number" id="wall-width" value="50" min="1"> Width
+      <input type="number" id="wall-height" value="100" min="1"> Height
+      <div class="draggable" draggable="true" data-kind="Wall">Wall</div>
+    </div>
+    <div class="object-form">
+      <h3>Platform</h3>
+      <input type="number" id="platform-width" value="100" min="1"> Width
+      <input type="number" id="platform-height" value="20" min="1"> Height
+      <div class="draggable" draggable="true" data-kind="Platform">Platform</div>
+    </div>
+    <button id="export-button">Export Objects</button>
+    <textarea id="export-textarea" readonly></textarea>
+  </div>
+  <div id="canvas-container">
+    <canvas id="canvas"></canvas>
+  </div>
+
+  <script>
+    // Constructor function for Wall
+    function createWall(x, y, width, height) {
+      return {
+        kind: 'Wall',
+        position: { x, y },
+        width,
+        height
+      };
+    }
+
+    // Constructor function for Platform
+    function createPlatform(x, y, width, height) {
+      return {
+        kind: 'Platform',
+        position: { x, y },
+        width,
+        height
+      };
+    }
+
+    // Array of available object types
+    const typeOptions = [
+      { kind: 'Wall', create: createWall },
+      { kind: 'Platform', create: createPlatform }
+    ];
+
+    // Array to store all objects on the canvas
+    let objects = [];
+
+    // Function to draw an object on the canvas
+    function drawObject(ctx, object) {
+      ctx.fillStyle = object.kind === 'Wall' ? 'brown' : 'gray';
+      ctx.fillRect(object.position.x, object.position.y, object.width, object.height);
+      ctx.strokeStyle = 'black';
+      ctx.strokeRect(object.position.x, object.position.y, object.width, object.height);
+      ctx.fillStyle = 'white';
+      ctx.font = '12px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(object.kind, object.position.x + object.width / 2, object.position.y + object.height / 2);
+    }
+
+    // Function to redraw all objects
+    function redrawCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      objects.forEach(obj => drawObject(ctx, obj));
+    }
+
+    // Main script
+    const sidebar = document.getElementById('sidebar');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const exportButton = document.getElementById('export-button');
+    const exportTextarea = document.getElementById('export-textarea');
+
+    // Set canvas size
+    canvas.width = window.innerWidth - 200;
+    canvas.height = window.innerHeight;
+
+    // Add drag event listeners to draggable elements
+    const draggables = document.querySelectorAll('.draggable');
+    draggables.forEach(draggable => {
+      draggable.addEventListener('dragstart', (e) => {
+        const kind = e.target.dataset.kind;
+        const width = document.getElementById(`${kind.toLowerCase()}-width`).value;
+        const height = document.getElementById(`${kind.toLowerCase()}-height`).value;
+        e.dataTransfer.setData('text/plain', JSON.stringify({ kind, width, height }));
+      });
+    });
+
+    // Handle drop on canvas
+    canvas.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    canvas.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const data = JSON.parse(e.dataTransfer.getData('text'));
+      const x = e.clientX - canvas.offsetLeft;
+      const y = e.clientY - canvas.offsetTop;
+
+      const objectType = typeOptions.find(option => option.kind === data.kind);
+      if (objectType) {
+        const object = objectType.create(x, y, parseInt(data.width), parseInt(data.height));
+        objects.push(object);
+        redrawCanvas();
+      }
+    });
+
+    // Variables for resizing and moving
+    let isResizing = false;
+    let isMoving = false;
+    let resizingObject = null;
+    let movingObject = null;
+    let resizeHandle = '';
+    let lastMouseX, lastMouseY;
+
+    // Function to check if the mouse is over a resize handle
+    function getResizeHandle(x, y, obj) {
+      const handleSize = 5;
+      if (Math.abs(x - (obj.position.x + obj.width)) < handleSize && Math.abs(y - (obj.position.y + obj.height)) < handleSize) {
+        return 'se';
+      }
+      if (Math.abs(x - obj.position.x) < handleSize && Math.abs(y - (obj.position.y + obj.height)) < handleSize) {
+        return 'sw';
+      }
+      if (Math.abs(x - (obj.position.x + obj.width)) < handleSize && Math.abs(y - obj.position.y) < handleSize) {
+        return 'ne';
+      }
+      if (Math.abs(x - obj.position.x) < handleSize && Math.abs(y - obj.position.y) < handleSize) {
+        return 'nw';
+      }
+      return '';
+    }
+
+    // Function to check if the mouse is over an object
+    function getObjectAtPosition(x, y) {
+      for (let i = objects.length - 1; i >= 0; i--) {
+        const obj = objects[i];
+        if (x >= obj.position.x && x <= obj.position.x + obj.width &&
+            y >= obj.position.y && y <= obj.position.y + obj.height) {
+          return obj;
+        }
+      }
+      return null;
+    }
+
+    // Mouse down event for starting resize or move
+    canvas.addEventListener('mousedown', (e) => {
+      const x = e.clientX - canvas.offsetLeft;
+      const y = e.clientY - canvas.offsetTop;
+
+      for (let i = objects.length - 1; i >= 0; i--) {
+        const obj = objects[i];
+        resizeHandle = getResizeHandle(x, y, obj);
+        if (resizeHandle) {
+          isResizing = true;
+          resizingObject = obj;
+          return;
+        }
+      }
+
+      movingObject = getObjectAtPosition(x, y);
+      if (movingObject) {
+        isMoving = true;
+        lastMouseX = x;
+        lastMouseY = y;
+      }
+    });
+
+    // Mouse move event for resizing or moving
+    canvas.addEventListener('mousemove', (e) => {
+      const x = e.clientX - canvas.offsetLeft;
+      const y = e.clientY - canvas.offsetTop;
+
+      if (isResizing && resizingObject) {
+        switch (resizeHandle) {
+          case 'se':
+            resizingObject.width = x - resizingObject.position.x;
+            resizingObject.height = y - resizingObject.position.y;
+            break;
+          case 'sw':
+            resizingObject.width = resizingObject.position.x + resizingObject.width - x;
+            resizingObject.height = y - resizingObject.position.y;
+            resizingObject.position.x = x;
+            break;
+          case 'ne':
+            resizingObject.width = x - resizingObject.position.x;
+            resizingObject.height = resizingObject.position.y + resizingObject.height - y;
+            resizingObject.position.y = y;
+            break;
+          case 'nw':
+            resizingObject.width = resizingObject.position.x + resizingObject.width - x;
+            resizingObject.height = resizingObject.position.y + resizingObject.height - y;
+            resizingObject.position.x = x;
+            resizingObject.position.y = y;
+            break;
+        }
+        redrawCanvas();
+      } else if (isMoving && movingObject) {
+        const dx = x - lastMouseX;
+        const dy = y - lastMouseY;
+        movingObject.position.x += dx;
+        movingObject.position.y += dy;
+        lastMouseX = x;
+        lastMouseY = y;
+        redrawCanvas();
+      } else {
+        // Change cursor based on resize handle or movable object
+        for (let i = objects.length - 1; i >= 0; i--) {
+          const obj = objects[i];
+          const handle = getResizeHandle(x, y, obj);
+          if (handle) {
+            canvas.style.cursor = handle + '-resize';
+            return;
+          }
+          if (getObjectAtPosition(x, y)) {
+            canvas.style.cursor = 'move';
+            return;
+          }
+        }
+        canvas.style.cursor = 'default';
+      }
+    });
+
+    // Mouse up event for ending resize or move
+    canvas.addEventListener('mouseup', () => {
+      isResizing = false;
+      isMoving = false;
+      resizingObject = null;
+      movingObject = null;
+      resizeHandle = '';
+    });
+
+    // Export button click event
+    exportButton.addEventListener('click', () => {
+      const exportData = JSON.stringify(objects, null, 2);
+      exportTextarea.value = exportData;
+    });
+  </script>
+</body>
+</html>

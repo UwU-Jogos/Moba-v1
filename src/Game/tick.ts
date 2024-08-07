@@ -14,6 +14,7 @@ import { UID } from '../UID/_';
 import { Map } from 'immutable';
 import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
 import { PLAYER_RADIUS, TPS, PLAYER_SPEED } from '../Helpers/consts';
+import { GameObject } from '../GameMap/GameObject/_';
 
 export function tick(gs: GameState): GameState {
   const dt = 1 / TPS;
@@ -45,6 +46,26 @@ export function tick(gs: GameState): GameState {
             const angle = Math.atan2(dy, dx);
             newX = otherPlayer.pos.x + Math.cos(angle) * PLAYER_RADIUS * 2;
             newY = otherPlayer.pos.y + Math.sin(angle) * PLAYER_RADIUS * 2;
+          }
+        }
+      });
+
+      // Check collision with GameObjects
+      gs.game_map.objects.forEach((gameObject: GameObject) => {
+        if (gameObject.kind === 'Wall' || gameObject.kind === 'Platform') {
+          const left = gameObject.position.x;
+          const right = gameObject.position.x + gameObject.width;
+          const top = gameObject.position.y;
+          const bottom = gameObject.position.y + gameObject.height;
+
+          // Check if player is colliding with the object
+          if (newX + PLAYER_RADIUS > left && newX - PLAYER_RADIUS < right &&
+              newY + PLAYER_RADIUS > top && newY - PLAYER_RADIUS < bottom) {
+            // Resolve collision
+            if (Math.abs(player.pos.x - left) <= PLAYER_RADIUS) newX = left - PLAYER_RADIUS;
+            if (Math.abs(player.pos.x - right) <= PLAYER_RADIUS) newX = right + PLAYER_RADIUS;
+            if (Math.abs(player.pos.y - top) <= PLAYER_RADIUS) newY = top - PLAYER_RADIUS;
+            if (Math.abs(player.pos.y - bottom) <= PLAYER_RADIUS) newY = bottom + PLAYER_RADIUS;
           }
         }
       });

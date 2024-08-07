@@ -12,6 +12,7 @@ import { GameState } from '../GameState/_';
 import { PLAYER_RADIUS, PLAYER_COLOR } from '../Helpers/consts';
 import { circle } from '../Shape/circle';
 import { draw as draw_shape } from '../Shape/draw';
+import { draw as draw_game_object } from '../GameMap/GameObject/draw';
 
 export function draw(gs: GameState): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -21,6 +22,12 @@ export function draw(gs: GameState): void {
   // Clear the canvas
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  // Draw the game map
+  gs.game_map.objects.forEach(game_object => {
+ 
+    draw_game_object(ctx, game_object);
+  });
 
   // Draw the player as a filled gray circle, centered around their pos, with the name in a small font above the circle
   gs.players.forEach(player => {

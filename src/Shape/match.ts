@@ -18,7 +18,8 @@ export function match<T>(
     line: (ini: V2, end: V2) => T,
     circle: (pos: V2, rad: number) => T,
     square: (pos: V2, side: number) => T,
-    triangle: (v1: V2, v2: V2, v3: V2) => T
+    triangle: (v1: V2, v2: V2, v3: V2) => T,
+    rectangle: (pos: V2, width: number, height: number) => T
   }
 ): T {
   switch (shape.type) {
@@ -30,5 +31,7 @@ export function match<T>(
       return handlers.square(shape.pos, shape.side);
     case 'triangle':
       return handlers.triangle(shape.v1, shape.v2, shape.v3);
+    case 'rectangle':
+      return handlers.rectangle(shape.pos, shape.width, shape.height);
   }
 }

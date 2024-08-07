@@ -26,4 +26,5 @@ export type Shape =
   | { type: 'line', ini: V2, end: V2 }
   | { type: 'circle', pos: V2, rad: number }
   | { type: 'square', pos: V2, side: number }
-  | { type: 'triangle', v1: V2, v2: V2, v3: V2 };
+  | { type: 'triangle', v1: V2, v2: V2, v3: V2 }
+  | { type: 'rectangle', pos: V2, width: number, height: number }
