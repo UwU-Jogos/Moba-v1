@@ -14,7 +14,7 @@ export function create(
     id,
     skillType: skill.type,
     ownerId,
-    pos_proj: pos,
+    pos_proj: { ...pos },
     target,
     remainingDistance: skill.range,
     remainingDuration: skill.duration,
