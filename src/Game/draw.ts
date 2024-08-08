@@ -13,6 +13,7 @@ import { PLAYER_RADIUS, PLAYER_COLOR } from '../Helpers/consts';
 import { circle } from '../Shape/circle';
 import { draw as draw_shape } from '../Shape/draw';
 import { draw as draw_game_object } from '../GameMap/GameObject/draw';
+import { draw as draw_projectiles } from '../Projectile/draw';
 
 export function draw(gs: GameState): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -25,7 +26,6 @@ export function draw(gs: GameState): void {
 
   // Draw the game map
   gs.game_map.objects.forEach(game_object => {
- 
     draw_game_object(ctx, game_object);
   });
 
@@ -34,13 +34,15 @@ export function draw(gs: GameState): void {
     // Draw player circle
     ctx.fillStyle = 'gray';
     ctx.fill(new Path2D());
-
+    
     draw_shape(ctx, circle(player.pos, PLAYER_RADIUS), PLAYER_COLOR);
-
+    
     // Draw player name
     ctx.fillStyle = 'black';
     ctx.font = '12px Arial';
     ctx.textAlign = 'center';
     ctx.fillText(player.name, player.pos.x, player.pos.y - 20);
   });
+  draw_projectiles(ctx, gs);
+  
 }

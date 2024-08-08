@@ -32,7 +32,7 @@ export function deserialize(data: Uint8Array): Action {
       const name = decoder.decode(data.slice(13));
       return { $: "SetNick", time, pid, name };
     }
-    case 1: { // KeyEvent
+    case 1: { // SkillEvent
       const tick_buffer = new Uint8Array(8);
       tick_buffer.set(data.slice(1, 7), 0);
       const time = Number(new BigUint64Array(tick_buffer.buffer)[0]);
@@ -41,9 +41,11 @@ export function deserialize(data: Uint8Array): Action {
       const pid = Number(new BigUint64Array(pid_buffer.buffer)[0]);
       const key = String.fromCharCode(data[13]);
       const down = data[14] === 1;
-      return { $: "KeyEvent", time, pid, key, down };
+      const x = (data[15] << 8) | data[16];
+      const y = (data[17] << 8) | data[18];
+      return { $: "SkillEvent", time, pid, key, down, x, y };
     }
-    case 2: { // Mouse event
+    case 2: { // MouseClick
       const tick_buffer = new Uint8Array(8);
       tick_buffer.set(data.slice(1, 7), 0);
       const time = Number(new BigUint64Array(tick_buffer.buffer)[0]);
