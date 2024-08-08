@@ -28,9 +28,9 @@ export function when(when: Action, gs: GameState): GameState {
       pos: { x: 256, y: 128 }, 
       target_pos: { x: 256, y: 128 },
       skills: {
-        'Q': { id: 'skill1', type: 'melee', cooldown: seconds_to_ticks(0.5), duration: seconds_to_ticks(0.5), range: PLAYER_RADIUS * 2 },
-        'W': { id: 'skill2', type: 'target', cooldown: seconds_to_ticks(0.5), duration: seconds_to_ticks(0.5), range: PLAYER_RADIUS * 2 },
-        'E': { id: 'skill3', type: 'action', cooldown: seconds_to_ticks(0.25), duration: seconds_to_ticks(0.1), range: 200 },
+        'Q': { id: 'skill1', type: 'melee', cooldown: seconds_to_ticks(1), duration: 1, range: PLAYER_RADIUS * 2 },
+        'W': { id: 'skill2', type: 'target', cooldown: seconds_to_ticks(1), duration: 1, range: PLAYER_RADIUS * 2 },
+        'E': { id: 'skill3', type: 'action', cooldown: seconds_to_ticks(0.25), duration: 1, range: 200 },
       },
       activeSkills: {}
     });
@@ -47,7 +47,7 @@ export function when(when: Action, gs: GameState): GameState {
 
     case "SkillEvent": {
       if (when.down) {
-        gs = activate_skill(gs, when.pid, when.key, { x: when.x, y: when.y });
+        return activate_skill(gs, when.pid, when.key, { x: when.x, y: when.y });
       }
       break;
     }

@@ -5,10 +5,7 @@ import { draw as draw_shape } from '../Shape/draw';
 import { square } from "../Shape/square";
 import { triangle } from "../Shape/triangle";
 
-export function draw(
-  ctx: CanvasRenderingContext2D,
-  gs: GameState
-): void {
+export function draw(ctx: CanvasRenderingContext2D, gs: GameState): void {
   gs.projectileSystem.forEach((projectile) => {
     switch (projectile.skillType) {
       case "melee":
