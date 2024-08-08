@@ -37,14 +37,14 @@ export function tick(gs: GameState): GameState {
       case "melee":
         const player = players.get(projectile.ownerId);
         if (player) {
-          projectile.pos = { ...player.pos };
+          projectile.pos_proj = { ...player.pos };
         }
         break;
       case "target":
         // Target skill remains at the activated position
         break;
       case "action":
-        const distanceToTarget = distance(projectile.pos, projectile.target);
+        const distanceToTarget = distance(projectile.pos_proj, projectile.target);
 
         if (distanceToTarget > 0 && projectile.remainingDistance > 0) {
           const moveDistance = Math.min(
@@ -54,12 +54,12 @@ export function tick(gs: GameState): GameState {
           );
           const ratio = moveDistance / distanceToTarget;
 
-          projectile.pos.x += (projectile.target.x - projectile.pos.x) * ratio;
-          projectile.pos.y += (projectile.target.y - projectile.pos.y) * ratio;
+          projectile.pos_proj.x += (projectile.target.x - projectile.pos_proj.x) * ratio;
+          projectile.pos_proj.y += (projectile.target.y - projectile.pos_proj.y) * ratio;
           projectile.remainingDistance -= moveDistance;
 
           if (moveDistance >= distanceToTarget) {
-            projectile.pos = { ...projectile.target };
+            projectile.pos_proj = { ...projectile.target };
             projectile.remainingDistance = 0;
           }
         }
@@ -69,7 +69,7 @@ export function tick(gs: GameState): GameState {
     // Check collisions with players
     players.forEach((player, playerId) => {
       if (playerId !== projectile.ownerId) {
-        const dist = distance(projectile.pos, player.pos);
+        const dist = distance(projectile.pos_proj, player.pos);
         if (dist < PLAYER_RADIUS) {
           console.log(
             `Player ${playerId} hit by ${projectile.skillType} skill from ${projectile.ownerId}`
