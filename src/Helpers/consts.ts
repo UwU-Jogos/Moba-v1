@@ -20,5 +20,5 @@ export const PID = Math.floor(Math.random() * (2 ** 16));
 export const ARTIFICIAL_DELAY = 100;
 export const WALL_COLOR = 'grey';
 export const PLATFORM_COLOR = 'black';
-export const PLAYERS_LIMIT = 1;
-
+export const PLAYERS_LIMIT = 4;
+export const TIME_TO_START_GAME = 5;
