@@ -14,9 +14,11 @@ import { Map } from 'immutable';
 import { UID } from '../UID/_';
 import { Player } from '../Player/_';
 import { GameMap } from '../GameMap/_';
+import { Projectile } from '../Projectile/_';
 
 export type GameState = {
   tick: number;
   players: Map<UID, Player>;
   game_map: GameMap;
+  projectileSystem: Map<string, Projectile>;
 };

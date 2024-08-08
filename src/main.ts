@@ -101,8 +101,9 @@ async function start_game(room_id: UID, name: Name) {
   }
 
   // Set up key and mouse event listeners
-  window.addEventListener('keydown', handle_key_event);
-  window.addEventListener('keyup', handle_key_event);
+  window.addEventListener('keydown', handle_skill_event);
+  window.addEventListener('keyup', handle_skill_event);
+  window.addEventListener('mousemove', handle_mouse_move);
   window.addEventListener('click', handle_mouse_click);
 
   // Start game loop
@@ -111,22 +112,19 @@ async function start_game(room_id: UID, name: Name) {
 
 // Input Handler
 const key_state: { [key: string]: boolean } = {};
-function handle_key_event(event: KeyboardEvent) {
+function handle_skill_event(event: KeyboardEvent) {
   const key = event.key.toUpperCase();
-  if (['W', 'A', 'S', 'D'].includes(key)) {
+  if (['Q', 'W', 'E', 'R'].includes(key)) {
     const down = event.type === 'keydown';
     if (key_state[key] !== down) {
       key_state[key] = down;
       var time = client.time();
-      var act = { $: "KeyEvent", time, pid: PID, key, down } as Action;
-      // Add to own action log
+      var act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
       sm.register_action(mach, act);
-      // Send to server
       client.send(room, serialize(act));
     }
   }
 }
-
 // Mouse Click Handler
 function handle_mouse_click(event: MouseEvent) {
   if (event.button === 0 && event.target instanceof HTMLCanvasElement) {
@@ -142,9 +140,15 @@ function handle_mouse_click(event: MouseEvent) {
   }
 }
 
-window.addEventListener('keydown', handle_key_event);
-window.addEventListener('keyup', handle_key_event);
-window.addEventListener('click', handle_mouse_click);
+// Add mouse position tracking
+let mouseX = 0;
+let mouseY = 0;
+function handle_mouse_move(event: MouseEvent) {
+  if (event.target instanceof HTMLCanvasElement) {
+    mouseX = event.clientX - event.target.offsetLeft;
+    mouseY = event.clientY - event.target.offsetTop;
+  }
+}
 
 // Game Loop
 function game_loop() {

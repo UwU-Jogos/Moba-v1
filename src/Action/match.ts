@@ -15,16 +15,18 @@ export function match<R>(
   action: Action,
   handlers: {
     SetNick: (time: number, pid: number, name: string) => R;
-    KeyEvent: (time: number, pid: number, key: string, down: boolean) => R;
+    SkillEvent: (time: number, pid: number, key: string, down: boolean, x: number, y: number) => R;
     MouseClick: (time: number, pid: number, x: number, y: number) => R;
   }
 ): R {
   switch (action.$) {
     case 'SetNick':
       return handlers.SetNick(action.time, action.pid, action.name);
-    case 'KeyEvent':
-      return handlers.KeyEvent(action.time, action.pid, action.key, action.down);
+    case 'SkillEvent':
+      return handlers.SkillEvent(action.time, action.pid, action.key, action.down, action.x, action.y);
     case 'MouseClick':
       return handlers.MouseClick(action.time, action.pid, action.x, action.y);
+    default:
+      throw new Error("Unknown action type");
   }
 }

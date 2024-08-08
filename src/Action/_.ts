@@ -28,6 +28,6 @@ import { UID } from '../UID/_';
 import { Key } from '../Key/_';
 
 export type Action =
-  | { $: 'SetNick'; time: Time; pid: UID; name: string }
-  | { $: 'KeyEvent'; time: Time; pid: UID; key: Key; down: boolean }
-  | { $: 'MouseClick'; time: Time; pid: UID; x: number; y: number };
+  | { $: 'SetNick'; time: number; pid: number; name: string }
+  | { $: 'SkillEvent'; time: number; pid: number; key: string; down: boolean; x: number; y: number }
+  | { $: 'MouseClick'; time: number; pid: number; x: number; y: number };

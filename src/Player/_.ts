@@ -16,11 +16,13 @@ import { UID } from '../UID/_';
 import { Name } from '../Name/_';
 import { V2 } from '../V2/_';
 import { Key } from '../Key/_';
+import { basic } from '../Skill/basic';
 
 export type Player = {
   id: UID;
   name: Name;
   pos: V2;
   target_pos: V2;
-  key: { [key: Key]: boolean };
+  skills: { [key: Key]: basic };
+  activeSkills: { [key: string]: number }; 
 };
