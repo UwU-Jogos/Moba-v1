@@ -12,13 +12,15 @@
 import { Player } from './_';
 import { circle } from '../Shape/circle';
 import { draw as draw_shape } from '../Shape/draw';
-import { PLAYER_RADIUS, PLAYER_COLOR, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
+import { PLAYER_RADIUS, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
+import { TeamType } from '../Team/type';
 
 export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
   ctx.fillStyle = 'gray';
   ctx.fill(new Path2D());
   
-  draw_shape(ctx, circle(player.pos, PLAYER_RADIUS), PLAYER_COLOR);
+  const teamColor = player.team === TeamType.TEAM_RED ? 'red' : 'blue';
+  draw_shape(ctx, circle(player.pos, PLAYER_RADIUS), teamColor);
   
   ctx.fillStyle = 'black';
   ctx.font = '12px Arial';
