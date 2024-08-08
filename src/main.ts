@@ -14,7 +14,7 @@ import { tick } from './Game/tick';
 import { draw } from './Game/draw';
 import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
-import { ARTIFICIAL_DELAY, PLAYERS_LIMIT } from './Helpers/consts';
+import { ARTIFICIAL_DELAY, PLAYERS_LIMIT, TIME_TO_START_GAME } from './Helpers/consts';
 import { TimeDisplay } from './Helpers/time';
 
 // Types
@@ -124,12 +124,12 @@ function show_lobby() {
 function update_lobby() {
   const lobby_players = document.getElementById('lobby-players');
   if (lobby_players) {
-    lobby_players.innerHTML = `Players in lobby: ${players_in_the_room.length}/4`;
+    lobby_players.innerHTML = `Players in lobby: ${players_in_the_room.length}/${PLAYERS_LIMIT}`;
   }
 }
 
 function start_countdown() {
-  let countdown = 10;
+  let countdown = TIME_TO_START_GAME;
   const countdown_element = document.getElementById('countdown');
   if (countdown_element) {
     countdown_element.style.display = 'block';
