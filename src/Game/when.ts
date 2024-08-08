@@ -14,7 +14,7 @@ import { GameState } from '../GameState/_';
 import { Player } from '../Player/_';
 import { seconds_to_ticks } from '../Helpers/seconds_to_ticks';
 import { activate as activate_skill} from '../Skill/activate';
-import { PLAYER_RADIUS } from '../Helpers/consts';
+import { PLAYER_RADIUS, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
 
 
 export function when(when: Action, gs: GameState): GameState {
@@ -32,6 +32,7 @@ export function when(when: Action, gs: GameState): GameState {
         'W': { id: 'skill2', type: 'target', cooldown: seconds_to_ticks(1), duration: 1, range: PLAYER_RADIUS * 2 },
         'E': { id: 'skill3', type: 'action', cooldown: seconds_to_ticks(0.25), duration: 1, range: 200 },
       },
+      life: PLAYER_INITIAL_LIFE,
       activeSkills: {}
     });
   }
