@@ -6,6 +6,7 @@
 /// * `other_player` - The player we are checking collision against. 
 /// * `other_pid` - The pid of other player
 /// * `pos` - The old position
+///
 /// # Return
 /// The new position after resolving collision with any game object
 

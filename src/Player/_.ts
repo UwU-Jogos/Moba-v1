@@ -25,6 +25,6 @@ export type Player = {
   pos: V2;
   target_pos: V2;
   skills: { [key: Key]: basic };
-  activeSkills: { [key: string]: number }; 
+  active_skills: { [key: string]: number }; 
   life: Life;
 };

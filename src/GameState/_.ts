@@ -20,5 +20,5 @@ export type GameState = {
   tick: number;
   players: Map<UID, Player>;
   game_map: GameMap;
-  projectileSystem: Map<string, Projectile>;
+  projectile_system: Map<string, Projectile>;
 };
