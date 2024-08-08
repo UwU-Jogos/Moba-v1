@@ -1,16 +1,18 @@
 import { Skill } from "../Skill/_";
 import { UID } from "../UID/_";
+import { Damage } from "../Damage/_";
 import { V2 } from "../V2/_";
 
 
 export type Projectile = {
   id: string;
-  skillType: Skill;
-  ownerId: UID;
+  skill_type: Skill;
+  owner_id: UID;
   pos: V2;
   target: V2;
   speed: number;
-  remainingDistance: number;
-  remainingDuration: number;
+  remaining_distance: number;
+  remaining_duration: number;
   range: number;
+  damage: Damage;
 };
