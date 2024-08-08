@@ -36,17 +36,17 @@ export function draw(
         break;
       case "action":
         const angle = Math.atan2(
-          projectile.target.y - projectile.pos_proj.y,
-          projectile.target.x - projectile.pos_proj.x
+          projectile.target.y - projectile.pos.y,
+          projectile.target.x - projectile.pos.x
         );
-        const v1 = projectile.pos_proj;
+        const v1 = projectile.pos;
         const v2 = {
-          x: projectile.pos_proj.x + Math.cos(angle - 0.3) * PLAYER_RADIUS * 2,
-          y: projectile.pos_proj.y + Math.sin(angle - 0.3) * PLAYER_RADIUS * 2,
+          x: projectile.pos.x + Math.cos(angle - 0.3) * PLAYER_RADIUS * 2,
+          y: projectile.pos.y + Math.sin(angle - 0.3) * PLAYER_RADIUS * 2,
         };
         const v3 = {
-          x: projectile.pos_proj.x + Math.cos(angle + 0.3) * PLAYER_RADIUS * 2,
-          y: projectile.pos_proj.y + Math.sin(angle + 0.3) * PLAYER_RADIUS * 2,
+          x: projectile.pos.x + Math.cos(angle + 0.3) * PLAYER_RADIUS * 2,
+          y: projectile.pos.y + Math.sin(angle + 0.3) * PLAYER_RADIUS * 2,
         };
         draw_shape(ctx, triangle(v1, v2, v3), "rgba(0, 0, 255, 0.5)");
         break;

@@ -7,7 +7,7 @@ export type Projectile = {
   id: string;
   skillType: Skill;
   ownerId: UID;
-  pos_proj: V2;
+  pos: V2;
   target: V2;
   speed: number;
   remainingDistance: number;
