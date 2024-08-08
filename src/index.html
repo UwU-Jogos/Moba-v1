@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dancing</title>
+  <title>Taemoba</title>
   <style>
     body {
       margin: 0;
@@ -20,8 +20,10 @@
       border: 2px solid black;
     }
 
-    #login-container {
+    .container {
       display: flex;
+      flex-direction: column;
+      align-items: center;
       background-color: white;
       padding: 2rem;
       border-radius: 8px;
@@ -63,10 +65,21 @@
     button:hover {
       background-color: #0056b3;
     }
+
+    #lobby-container, #game-container {
+      display: none;
+    }
+
+    #countdown {
+      display: none;
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
-  <div id="login-container">
+  <div id="login-container" class="container">
     <form id="login-form">
       <div class="form-group">
         <label for="room-number">Room Number:</label>
@@ -79,9 +92,17 @@
       <button type="submit">Enter Room</button>
     </form>
   </div>
-  <div id="game-container" style="display: none;">
+
+  <div id="lobby-container" class="container">
+    <h2>Lobby</h2>
+    <p id="lobby-players">Players in lobby: 0/4</p>
+    <div id="countdown"></div>
+  </div>
+
+  <div id="game-container">
     <canvas id="canvas" width="1024" height="600"></canvas>
   </div>
+
   <script src="main.js"></script>
 </body>
 </html>
