@@ -14,7 +14,7 @@ import { tick } from './Game/tick';
 import { draw } from './Game/draw';
 import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
-import { ARTIFICIAL_DELAY } from './Helpers/consts';
+import { ARTIFICIAL_DELAY, PLAYERS_LIMIT } from './Helpers/consts';
 import { TimeDisplay } from './Helpers/time';
 
 // Types
@@ -28,6 +28,7 @@ console.log("PID is:", PID);
 // Main App
 // --------
 
+let players_in_the_room: UID[] = [];
 let room: UID;
 let mach: sm.Mach<GameState, Action>;
 const client = new UwUChat2Client();
@@ -74,7 +75,17 @@ async function start_game(room_id: UID, name: Name) {
 
   // Join room and handle messages
   const leave = client.recv(room, msg => {
-    try { sm.register_action(mach, deserialize(msg)); }
+    try { 
+      const deserialized_msg: Action = deserialize(msg);
+      if (deserialized_msg.$ == 'SetNick') {
+        players_in_the_room.push(deserialized_msg.pid);
+        update_lobby();
+        if (players_in_the_room.length === PLAYERS_LIMIT) {
+          start_countdown();
+        }
+      }
+      sm.register_action(mach, deserialized_msg); 
+    }
     catch (e) { console.error("Error processing message:", e); }
   });
 
@@ -88,23 +99,62 @@ async function start_game(room_id: UID, name: Name) {
   sm.register_action(mach, set_nick_action);
   client.send(room, serialize(set_nick_action));
 
-  // Hide login form and show game container
-  const login_container = document.getElementById('login-container');
-  const game_container = document.getElementById('game-container');
-  
-  if (login_container && game_container) {
-    login_container.style.display = 'none';
-    game_container.style.display = 'block';
-  } else {
-    console.error("Could not find login or game container");
-    return; 
-  }
-
   // Set up key and mouse event listeners
   window.addEventListener('keydown', handle_skill_event);
   window.addEventListener('keyup', handle_skill_event);
   window.addEventListener('mousemove', handle_mouse_move);
   window.addEventListener('click', handle_mouse_click);
+
+  // Show lobby
+  show_lobby();
+}
+
+function show_lobby() {
+  const login_container = document.getElementById('login-container');
+  const lobby_container = document.getElementById('lobby-container');
+  
+  if (login_container && lobby_container) {
+    login_container.style.display = 'none';
+    lobby_container.style.display = 'block';
+  } else {
+    console.error("Could not find login or lobby container");
+  }
+}
+
+function update_lobby() {
+  const lobby_players = document.getElementById('lobby-players');
+  if (lobby_players) {
+    lobby_players.innerHTML = `Players in lobby: ${players_in_the_room.length}/4`;
+  }
+}
+
+function start_countdown() {
+  let countdown = 10;
+  const countdown_element = document.getElementById('countdown');
+  if (countdown_element) {
+    countdown_element.style.display = 'block';
+    const timer = setInterval(() => {
+      countdown_element.textContent = `Game starting in ${countdown} seconds`;
+      countdown--;
+      if (countdown < 0) {
+        clearInterval(timer);
+        show_game_container();
+      }
+    }, 1000);
+  }
+}
+
+function show_game_container() {
+  const lobby_container = document.getElementById('lobby-container');
+  const game_container = document.getElementById('game-container');
+  
+  if (lobby_container && game_container) {
+    lobby_container.style.display = 'none';
+    game_container.style.display = 'block';
+  } else {
+    console.error("Could not find lobby or game container");
+    return; 
+  }
 
   // Start game loop
   game_loop();
@@ -170,4 +220,3 @@ function game_loop() {
 
 // Initialize TimeDisplay
 const timeDisplay = new TimeDisplay();
-
