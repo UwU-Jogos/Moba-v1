@@ -20,66 +20,33 @@ import { check_game_object_collision } from '../Player/check_game_object_collisi
 import { V2 } from '../V2/_';
 import { distance } from "../Helpers/distance";
 import { Projectile } from "../Projectile/_";
+import { move as move_projectile } from "../Projectile/move";
+import { process_player_skills } from "../Skill/process";
+import { check_player_collision as check_projectile_player_collision } from "../Projectile/check_player_collision";
 
 export function tick(gs: GameState): GameState {
   const dt = 1 / TPS;
   const { width, height } = get_canvas_dimensions();
-  const interpolationFactor = 0.1;
+  const interpolation_factor = 0.1;
 
   // Update projectiles
-  const projectileSystem = gs.projectileSystem.map((projectile, id) => {
-    projectile.remainingDuration -= dt;
+  const projectile_system = gs.projectile_system.map((projectile, id) => {
+    projectile.remaining_duration -= dt;
 
-    switch (projectile.skillType) {
-      case "melee":
-        const ownerPlayer = gs.players.get(projectile.ownerId);
-        if (ownerPlayer) {
-          projectile.pos = { ...ownerPlayer.pos };
-        }
-        break;
+    const owner_player = gs.players.get(projectile.owner_id);
 
-      case "target":
-        // Target skill remains at the activated position
-        projectile.pos = { ...projectile.target };
-        break;
-
-      case "action":
-        const distanceToTarget = distance(projectile.pos, projectile.target);
-        if (distanceToTarget > 0 && projectile.remainingDistance > 0) {
-          const moveDistance = Math.min(
-            distanceToTarget,
-            projectile.speed * dt,
-            projectile.remainingDistance
-          );
-          const ratio = moveDistance / distanceToTarget;
-
-          projectile.pos.x += (projectile.target.x - projectile.pos.x) * ratio;
-          projectile.pos.y += (projectile.target.y - projectile.pos.y) * ratio;
-          projectile.remainingDistance -= moveDistance;
-
-          if (moveDistance >= distanceToTarget) {
-            projectile.pos = { ...projectile.target };
-            projectile.remainingDistance = 0;
-          }
-        }
-        break;
-    }
+    projectile = move_projectile(projectile, owner_player, dt);
 
     // Check collisions with players
-    gs.players.forEach((player, playerId) => {
-      if (playerId !== projectile.ownerId) {
-        const dist_enemy = projectile.skillType === 'melee' ? projectile.range * 1.5 : PLAYER_RADIUS * 2;
-        const dist = parseInt(distance(projectile.pos, player.pos).toFixed(2));
-        if (dist < dist_enemy) {
-          console.log(`Player ${playerId} hit by ${projectile.skillType} skill from ${projectile.ownerId}`);
-        }
-      }
+    gs.players.forEach((player, player_id) => {
+      // TODO: review
+      const updated_player = check_projectile_player_collision(projectile, player, player_id);
+      gs.players = gs.players.set(player_id, updated_player);
     });
 
-    // Remove projectiles that have expired or reached their target
     if (
-      projectile.remainingDuration <= 0 ||
-      (projectile.skillType === "action" && projectile.remainingDistance <= 0)
+      projectile.remaining_duration <= 0 ||
+      (projectile.skill_type === "action" && projectile.remaining_distance <= 0)
     ) {
       return undefined;
     }
@@ -95,71 +62,47 @@ export function tick(gs: GameState): GameState {
     const dy = player.target_pos.y - player.pos.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
-    let newX = player.pos.x;
-    let newY = player.pos.y;
+    let new_x = player.pos.x
+    let new_y = player.pos.y;
 
     if (distance > 0) {
-      const moveDistance = Math.min(distance, PLAYER_SPEED * dt * 128);
-      const ratio = moveDistance / distance;
+      const move_distance = Math.min(distance, PLAYER_SPEED * dt * 128);
+      const ratio = move_distance / distance;
 
-      newX = player.pos.x + dx * ratio * interpolationFactor;
-      newY = player.pos.y + dy * ratio * interpolationFactor;
+      new_x = player.pos.x + dx * ratio * interpolation_factor;
+      new_y = player.pos.y + dy * ratio * interpolation_factor;
 
-      gs.players.forEach((otherPlayer, otherUid) => {
-        let result_pos = check_player_collision(uid, otherPlayer, otherUid, { x: newX, y: newY });
-        newX = result_pos.x;
-        newY = result_pos.y;
+      gs.players.forEach((other_player, other_uid) => {
+        let result_pos = check_player_collision(uid, other_player, other_uid, { x: new_x, y: new_y });
+        new_x = result_pos.x;
+        new_y = result_pos.y;
       });
 
-      newX = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, newX));
-      newY = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, newY));
+      new_x = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, new_x));
+      new_y = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, new_y));
     }
 
     // Skill logic
-    const activeSkills = { ...player.activeSkills };
-    Object.entries(activeSkills).forEach(([skillId, endTick]) => {
-      if (gs.tick >= endTick) {
-        delete activeSkills[skillId];
-      } else {
-        const skill = Object.values(player.skills).find(
-          (s) => s.id === skillId
-        );
-        if (skill) {
-          switch (skill.type) {
-            case "melee":
-              // Apply melee effect (e.g., damage nearby players)
-              // Apply melee effect (e.g., damage)
-              console.log(`Player ${uid} hit with melee skill`);
-              break;
-            case "target":
-              // Apply target effect (e.g., heal or buff self)
-              console.log(`Player ${uid} used target skill on self`);
-              break;
-            case "action":
-              // Move projectile or apply continuous effect
-              // This is a simplified example; you might want to add projectile logic
-              console.log(`Player ${uid} is using action skill`);
-              break;
-          }
-        }
-      }
+    const active_skills = { ...player.active_skills };
+    Object.entries(active_skills).forEach(([skill_id, end_tick]) => {
+      process_player_skills(gs.tick, end_tick, skill_id, player, uid);
     });
 
     // Check collision with GameObjects
     gs.game_map.objects.forEach((game_object: GameObject) => {
-      let result_pos: V2 = check_game_object_collision(player, { x: newX, y: newY }, game_object);
-      newX = result_pos.x; 
-      newY = result_pos.y; 
+      let result_pos: V2 = check_game_object_collision(player, { x: new_x, y: new_y }, game_object);
+      new_x = result_pos.x; 
+      new_y = result_pos.y; 
     });
 
     // Clamp to canvas boundaries
-    newX = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, newX));
-    newY = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, newY));
+    new_x = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, new_x));
+    new_y = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, new_y));
 
     return {
       ...player,
-      pos: { x: newX, y: newY },
-      activeSkills,
+      pos: { x: new_x, y: new_y },
+      active_skills,
     };
   }).toMap();
 
@@ -167,6 +110,6 @@ export function tick(gs: GameState): GameState {
     ...gs,
     tick: gs.tick + 1,
     players: players as Map<UID, Player>,
-    projectileSystem: projectileSystem as Map<string, Projectile>,
+    projectile_system: projectile_system as Map<string, Projectile>,
   };
 }

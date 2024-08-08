@@ -16,6 +16,7 @@ import { UID } from '../UID/_';
 import { Name } from '../Name/_';
 import { V2 } from '../V2/_';
 import { Key } from '../Key/_';
+import { Life } from '../Life/_';
 import { basic } from '../Skill/basic';
 
 export type Player = {
@@ -24,5 +25,6 @@ export type Player = {
   pos: V2;
   target_pos: V2;
   skills: { [key: Key]: basic };
-  activeSkills: { [key: string]: number }; 
+  active_skills: { [key: string]: number }; 
+  life: Life;
 };

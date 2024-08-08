@@ -6,10 +6,10 @@ import { square } from "../Shape/square";
 import { triangle } from "../Shape/triangle";
 
 export function draw(ctx: CanvasRenderingContext2D, gs: GameState): void {
-  gs.projectileSystem.forEach((projectile) => {
-    switch (projectile.skillType) {
+  gs.projectile_system.forEach((projectile) => {
+    switch (projectile.skill_type) {
       case "melee":
-        const player = gs.players.get(projectile.ownerId);
+        const player = gs.players.get(projectile.owner_id);
         if (player) {
           draw_shape(
             ctx,

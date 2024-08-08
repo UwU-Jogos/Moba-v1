@@ -20,6 +20,6 @@ export function init(): GameState {
     tick: 0,
     players: Map<UID, Player>(),
     game_map: init_map(),
-    projectileSystem: Map<string, Projectile>()
+    projectile_system: Map<string, Projectile>()
   };
 }
