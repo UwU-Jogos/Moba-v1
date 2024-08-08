@@ -33,7 +33,7 @@ export function when(when: Action, gs: GameState): GameState {
         'E': { id: 'skill3', type: 'action', cooldown: seconds_to_ticks(0.25), duration: 1, range: 200 },
       },
       life: PLAYER_INITIAL_LIFE,
-      activeSkills: {}
+      active_skills: {}
     });
   }
 
@@ -48,7 +48,7 @@ export function when(when: Action, gs: GameState): GameState {
 
     case "SkillEvent": {
       if (when.down) {
-        return activate_skill(gs, when.pid, when.key, { x: when.x, y: when.y });
+        return activate_skill(gs, when.pid, when.key, { x: when.x, y: when.y }, 10);
       }
       break;
     }
