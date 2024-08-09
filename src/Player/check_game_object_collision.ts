@@ -13,26 +13,44 @@
 import { Player } from './_';
 import { GameObject } from '../GameMap/GameObject/_';
 import { V2 } from '../V2/_';
-import { PLAYER_RADIUS } from '../Helpers/consts';
+import { PLAYER_SQUARE_SIZE } from '../Helpers/consts';
 
 export function check_game_object_collision(player: Player, pos: V2, game_object: GameObject): V2 {
   let new_x = pos.x;
   let new_y = pos.y;
 
   if (game_object.kind === 'Wall' || game_object.kind === 'Platform') {
-    const left = game_object.position.x;
-    const right = game_object.position.x + game_object.width;
-    const top = game_object.position.y;
-    const bottom = game_object.position.y + game_object.height;
+    const player_left = new_x;
+    const player_right = new_x + PLAYER_SQUARE_SIZE;
+    const player_top = new_y;
+    const player_bottom = new_y + PLAYER_SQUARE_SIZE;
+
+    const object_left = game_object.position.x;
+    const object_right = game_object.position.x + game_object.width;
+    const object_top = game_object.position.y;
+    const object_bottom = game_object.position.y + game_object.height;
 
     // Check if player is colliding with the object
-    if (new_x + PLAYER_RADIUS > left && new_x - PLAYER_RADIUS < right &&
-        new_y + PLAYER_RADIUS > top && new_y - PLAYER_RADIUS < bottom) {
+    if (player_right > object_left && player_left < object_right &&
+        player_bottom > object_top && player_top < object_bottom) {
       // Resolve collision
-      if (Math.abs(player.pos.x - left) <= PLAYER_RADIUS) new_x   = left - PLAYER_RADIUS;
-      if (Math.abs(player.pos.x - right) <= PLAYER_RADIUS) new_x  = right + PLAYER_RADIUS;
-      if (Math.abs(player.pos.y - top) <= PLAYER_RADIUS) new_y    = top - PLAYER_RADIUS;
-      if (Math.abs(player.pos.y - bottom) <= PLAYER_RADIUS) new_y = bottom + PLAYER_RADIUS;
+      const overlap_right = player_right - object_left;
+      const overlap_left = object_right - player_left;
+      const overlap_bottom = player_bottom - object_top;
+      const overlap_top = object_bottom - player_top;
+
+      // Find the smallest overlap
+      const min_overlap = Math.min(overlap_right, overlap_left, overlap_bottom, overlap_top);
+
+      if (min_overlap === overlap_right) {
+        new_x = object_left - PLAYER_SQUARE_SIZE;
+      } else if (min_overlap === overlap_left) {
+        new_x = object_right;
+      } else if (min_overlap === overlap_bottom) {
+        new_y = object_top - PLAYER_SQUARE_SIZE;
+      } else if (min_overlap === overlap_top) {
+        new_y = object_bottom;
+      }
     }
   }
   return { x: new_x, y: new_y };

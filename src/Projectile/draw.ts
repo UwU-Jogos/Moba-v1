@@ -3,7 +3,7 @@ import { GameState } from "../GameState/_";
 import { PLAYER_RADIUS } from "../Helpers/consts";
 import { draw as draw_shape } from '../Shape/draw';
 import { square } from "../Shape/square";
-import { triangle } from "../Shape/triangle";
+import { rectangle } from "../Shape/rectangle";
 
 export function draw(ctx: CanvasRenderingContext2D, gs: GameState): void {
   gs.projectile_system.forEach((projectile) => {
@@ -36,16 +36,17 @@ export function draw(ctx: CanvasRenderingContext2D, gs: GameState): void {
           projectile.target.y - projectile.pos.y,
           projectile.target.x - projectile.pos.x
         );
-        const v1 = projectile.pos;
-        const v2 = {
-          x: projectile.pos.x + Math.cos(angle - 0.3) * PLAYER_RADIUS * 2,
-          y: projectile.pos.y + Math.sin(angle - 0.3) * PLAYER_RADIUS * 2,
+        const rectWidth = 4;
+        const rectHeight = PLAYER_RADIUS / 2;
+        const rectPos = {
+          x: projectile.pos.x - (rectWidth / 2) * Math.cos(angle),
+          y: projectile.pos.y - (rectWidth / 2) * Math.sin(angle)
         };
-        const v3 = {
-          x: projectile.pos.x + Math.cos(angle + 0.3) * PLAYER_RADIUS * 2,
-          y: projectile.pos.y + Math.sin(angle + 0.3) * PLAYER_RADIUS * 2,
-        };
-        draw_shape(ctx, triangle(v1, v2, v3), "rgba(0, 0, 255, 0.5)");
+        draw_shape(
+          ctx,
+          rectangle(rectPos, rectWidth, rectHeight),
+          "rgba(0, 0, 255, 0.5)"
+        );
         break;
     }
   });
