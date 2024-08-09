@@ -1,4 +1,3 @@
-
 import { Projectile } from './_';
 import { Player } from '../Player/_';
 import { distance } from '../Helpers/distance';
@@ -25,11 +24,13 @@ export function move(projectile: Projectile, owner_player: Player | undefined, d
           updated_projectile.speed * dt,
           updated_projectile.remaining_distance
         );
-        const ratio = move_distance / distance_to_target;
 
-        updated_projectile.pos.x += (updated_projectile.target.x - updated_projectile.pos.x) * ratio;
-        updated_projectile.pos.y += (updated_projectile.target.y - updated_projectile.pos.y) * ratio;
-        updated_projectile.remaining_distance -= move_distance;
+        // Use fixed-point arithmetic to ensure consistent results across clients
+        const ratio = Math.floor((move_distance / distance_to_target) * 1000) / 1000;
+
+        updated_projectile.pos.x = Math.floor((updated_projectile.pos.x + (updated_projectile.target.x - updated_projectile.pos.x) * ratio) * 100) / 100;
+        updated_projectile.pos.y = Math.floor((updated_projectile.pos.y + (updated_projectile.target.y - updated_projectile.pos.y) * ratio) * 100) / 100;
+        updated_projectile.remaining_distance = Math.floor((updated_projectile.remaining_distance - move_distance) * 100) / 100;
 
         if (move_distance >= distance_to_target) {
           updated_projectile.pos = { ...updated_projectile.target };
