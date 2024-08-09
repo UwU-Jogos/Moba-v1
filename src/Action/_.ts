@@ -10,6 +10,7 @@
 ///   - `time` - The time of the action
 ///   - `pid` - The player's unique identifier
 ///   - `name` - The new nickname for the player
+///   - `character` - The character type of the player 
 ///
 /// * `KeyEvent` - Action for a key press or release event
 ///   - `time` - The time of the action
@@ -26,8 +27,9 @@
 import { Time } from '@uwu-games/uwu-state-machine';
 import { UID } from '../UID/_';
 import { Key } from '../Key/_';
+import { CharacterType } from '../Character/type';
 
 export type Action =
-  | { $: 'SetNick'; time: number; pid: number; name: string }
+  | { $: 'SetNick'; time: number; pid: number; name: string, character: CharacterType }
   | { $: 'SkillEvent'; time: number; pid: number; key: string; down: boolean; x: number; y: number }
   | { $: 'MouseClick'; time: number; pid: number; x: number; y: number };

@@ -11,9 +11,9 @@
 
 import { Player } from './_';
 import { circle } from '../Shape/circle';
-import { draw as draw_shape } from '../Shape/draw';
 import { PLAYER_RADIUS, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
 import { TeamType } from '../Team/type';
+import { draw as draw_character } from '../Character/draw';
 
 export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
   if (player.life <= 0) {
@@ -23,8 +23,9 @@ export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
   ctx.fillStyle = 'gray';
   ctx.fill(new Path2D());
   
-  const teamColor = player.team === TeamType.TEAM_RED ? 'red' : 'blue';
-  draw_shape(ctx, circle(player.pos, PLAYER_RADIUS), teamColor);
+  const team_color = player.team === TeamType.TEAM_RED ? 'red' : 'blue';
+
+  draw_character(ctx, player.character, player.pos, team_color);
   
   ctx.fillStyle = 'black';
   ctx.font = '12px Arial';

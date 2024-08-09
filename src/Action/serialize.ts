@@ -19,11 +19,12 @@ export function serialize(action: Action): Uint8Array {
   const encoder = new TextEncoder();
 
   return match(action, {
-    SetNick: (time: number, pid: number, name: string) => {
+    SetNick: (time: number, pid: number, name: string, character: number) => {
       let buffer: number[] = [];
       buffer.push(0); // Action type identifier for SetNick
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(time)]).buffer).slice(0, 6)); // 48-bit Time
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(pid)]).buffer).slice(0, 6)); // 48-bit UID
+      buffer.push(character); // 1-byte character type
       buffer.push(...encoder.encode(name));
       return new Uint8Array(buffer);
     },

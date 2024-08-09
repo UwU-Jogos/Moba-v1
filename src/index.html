@@ -46,7 +46,7 @@
       font-weight: bold;
     }
 
-    input {
+    input, select {
       padding: 0.5rem;
       border: 1px solid #ccc;
       border-radius: 4px;
@@ -88,6 +88,12 @@
       <div class="form-group">
         <label for="nickname">Nickname:</label>
         <input type="text" id="nickname" required>
+      </div>
+      <div class="form-group">
+        <label for="character-select">Character:</label>
+        <select id="character-select" required>
+          <!-- Options will be populated by JavaScript -->
+        </select>
       </div>
       <button type="submit">Enter Room</button>
     </form>

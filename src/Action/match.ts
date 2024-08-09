@@ -10,18 +10,19 @@
 /// The result of calling the appropriate handler function
 
 import { Action } from './_';
+import { CharacterType } from '../Character/type';
 
 export function match<R>(
   action: Action,
   handlers: {
-    SetNick: (time: number, pid: number, name: string) => R;
+    SetNick: (time: number, pid: number, name: string, character: CharacterType) => R;
     SkillEvent: (time: number, pid: number, key: string, down: boolean, x: number, y: number) => R;
     MouseClick: (time: number, pid: number, x: number, y: number) => R;
   }
 ): R {
   switch (action.$) {
     case 'SetNick':
-      return handlers.SetNick(action.time, action.pid, action.name);
+      return handlers.SetNick(action.time, action.pid, action.name, action.character);
     case 'SkillEvent':
       return handlers.SkillEvent(action.time, action.pid, action.key, action.down, action.x, action.y);
     case 'MouseClick':
