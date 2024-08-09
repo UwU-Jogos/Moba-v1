@@ -23,7 +23,6 @@ import { Projectile } from "../Projectile/_";
 import { move as move_projectile } from "../Projectile/move";
 import { process_player_skills } from "../Skill/process";
 import { check_player_collision as check_projectile_player_collision } from "../Projectile/check_player_collision";
-import { take_damage } from '../Player/take_damage';
 import { is_dead } from '../Team/is_dead';
 import { TeamType } from '../Team/type';
 import { restart } from '../GameState/restart';
@@ -38,21 +37,22 @@ export function tick(gs: GameState): GameState {
   const interpolation_factor = 0.1;
 
   // Update projectiles
+  let updated_players = gs.players;
   const projectile_system = gs.projectile_system.flatMap((projectile, id) => {
     projectile.remaining_duration -= dt;
 
-    const owner_player = gs.players.get(projectile.owner_id);
+    const owner_player = updated_players.get(projectile.owner_id);
+
+    // Check projectile collision with players
+    updated_players = updated_players.withMutations(mutable_players => {
+      mutable_players.forEach((player, player_id) => {
+        const [updated_player, updated_projectile] = check_projectile_player_collision(projectile, player, player_id);
+        mutable_players.set(player_id, updated_player);
+        projectile = updated_projectile;
+      });
+    });
 
     projectile = move_projectile(projectile, owner_player, dt);
-
-    // Check collisions with players
-    gs.players.forEach((player, player_id) => {
-      if (player_id !== projectile.owner_id) {
-        const [updated_player, updated_projectile] = check_projectile_player_collision(projectile, player, player_id);
-        gs.players = gs.players.set(player_id, updated_player);
-        projectile = updated_projectile;
-      }
-    });
 
     if (
       projectile &&
@@ -66,61 +66,65 @@ export function tick(gs: GameState): GameState {
   }).toMap() as Map<string, Projectile>;
 
   // Update players
-  const players = gs.players.map((player, uid) => {
-    if (!player) return player;
+  updated_players = updated_players.withMutations(mutable_players => {
+    mutable_players.forEach((player, uid) => {
+      if (!player) return;
 
-    const dx = player.target_pos.x - player.pos.x;
-    const dy = player.target_pos.y - player.pos.y;
-    const distance = Math.sqrt(dx * dx + dy * dy);
+      const dx = player.target_pos.x - player.pos.x;
+      const dy = player.target_pos.y - player.pos.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
 
-    let new_x = player.pos.x
-    let new_y = player.pos.y;
+      let new_x = player.pos.x;
+      let new_y = player.pos.y;
 
-    if (distance > 0) {
-      const move_distance = Math.min(distance, PLAYER_SPEED * dt * 128);
-      const ratio = move_distance / distance;
+      if (distance > 0) {
+        const move_distance = Math.min(distance, PLAYER_SPEED * dt * 128);
+        const ratio = move_distance / distance;
 
-      new_x = player.pos.x + dx * ratio * interpolation_factor;
-      new_y = player.pos.y + dy * ratio * interpolation_factor;
+        new_x = player.pos.x + dx * ratio * interpolation_factor;
+        new_y = player.pos.y + dy * ratio * interpolation_factor;
 
-      gs.players.forEach((other_player, other_uid) => {
-        let result_pos = check_player_collision(uid, other_player, other_uid, { x: new_x, y: new_y });
-        new_x = result_pos.x;
-        new_y = result_pos.y;
+        mutable_players.forEach((other_player, other_uid) => {
+          if (uid !== other_uid) {
+            let result_pos = check_player_collision(uid, other_player, other_uid, { x: new_x, y: new_y });
+            new_x = result_pos.x;
+            new_y = result_pos.y;
+          }
+        });
+
+        new_x = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, new_x));
+        new_y = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, new_y));
+      }
+
+      // Skill logic
+      const active_skills = { ...player.active_skills };
+      Object.entries(active_skills).forEach(([skill_id, end_tick]) => {
+        process_player_skills(gs.tick, end_tick, skill_id, player, uid);
       });
 
+      // Check collision with GameObjects
+      gs.game_map.objects.forEach((game_object: GameObject) => {
+        let result_pos: V2 = check_game_object_collision(player, { x: new_x, y: new_y }, game_object);
+        new_x = result_pos.x; 
+        new_y = result_pos.y; 
+      });
+
+      // Clamp to canvas boundaries
       new_x = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, new_x));
       new_y = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, new_y));
-    }
 
-    // Skill logic
-    const active_skills = { ...player.active_skills };
-    Object.entries(active_skills).forEach(([skill_id, end_tick]) => {
-      process_player_skills(gs.tick, end_tick, skill_id, player, uid);
+      mutable_players.set(uid, {
+        ...player,
+        pos: { x: Math.floor(new_x * 100) / 100, y: Math.floor(new_y * 100) / 100 },
+        active_skills,
+      });
     });
-
-    // Check collision with GameObjects
-    gs.game_map.objects.forEach((game_object: GameObject) => {
-      let result_pos: V2 = check_game_object_collision(player, { x: new_x, y: new_y }, game_object);
-      new_x = result_pos.x; 
-      new_y = result_pos.y; 
-    });
-
-    // Clamp to canvas boundaries
-    new_x = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, new_x));
-    new_y = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, new_y));
-
-    return {
-      ...player,
-      pos: { x: new_x, y: new_y },
-      active_skills,
-    };
-  }).toMap();
+  });
 
   return {
     ...gs,
     tick: gs.tick + 1,
-    players: players as Map<UID, Player>,
+    players: updated_players as Map<UID, Player>,
     projectile_system: projectile_system as Map<string, Projectile>,
   };
 }
