@@ -16,6 +16,10 @@ import { PLAYER_RADIUS, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
 import { TeamType } from '../Team/type';
 
 export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
+  if (player.life <= 0) {
+    return;
+  }
+
   ctx.fillStyle = 'gray';
   ctx.fill(new Path2D());
   
