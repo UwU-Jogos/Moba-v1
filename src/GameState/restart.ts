@@ -16,6 +16,7 @@ import { UID } from '../UID/_';
 import { Player } from '../Player/_';
 import { PLAYERS_LIMIT } from '../Helpers/consts';
 import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
+import { CharacterType } from '../Character/type';
 
 export function restart(state: GameState): GameState {
   const initial_state = init_game();
@@ -32,7 +33,8 @@ export function restart(state: GameState): GameState {
     let i = 0;
     mutable_map.forEach((player, uid) => {
       const pos = corner_positions[i % 4];
-      const new_player = init_player(uid, player.name, pos);
+
+      const new_player = init_player(uid, player.name, pos, CharacterType.TRIANGLE);
       mutable_map.set(uid, new_player);
       i++;
     });
