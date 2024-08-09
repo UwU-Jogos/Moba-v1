@@ -16,6 +16,9 @@ import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
 import { ARTIFICIAL_DELAY, PLAYERS_LIMIT, TIME_TO_START_GAME } from './Helpers/consts';
 import { TimeDisplay } from './Helpers/time';
+import { get_characters_list } from './Lobby/get_characters_list';
+import { name_to_type } from './Character/name_to_type';
+import { CharacterType } from './Character/type';
 
 // Types
 // -----
@@ -46,8 +49,24 @@ function setup_form_listener() {
   
   if (login_form) {
     login_form.addEventListener('submit', handle_form_submit);
+    populate_character_select();
   } else {
     console.error("Login form not found!");
+  }
+}
+
+function populate_character_select() {
+  const character_select = document.getElementById('character-select') as HTMLSelectElement;
+  if (character_select) {
+    const characters = get_characters_list();
+    characters.forEach(character => {
+      const option = document.createElement('option');
+      option.value = character;
+      option.textContent = character;
+      character_select.appendChild(option);
+    });
+  } else {
+    console.error("Character select not found!");
   }
 }
 
@@ -58,14 +77,15 @@ async function handle_form_submit(e: Event) {
   const room_id = parseInt(room_input.value);
   const name_input = document.getElementById('nickname') as HTMLInputElement;
   const name = name_input.value;
+  const character_select = document.getElementById('character-select') as HTMLSelectElement;
+  const character = character_select.value;
 
-
-  // Start the game with the provided room ID
-  await start_game(room_id, name);
+  // Start the game with the provided room ID, name, and character
+  await start_game(room_id, name, character);
 }
 
 // Function to start the game
-async function start_game(room_id: UID, name: Name) {
+async function start_game(room_id: UID, name: Name, character: string) {
   room = room_id;
 
   await client.init('ws://localhost:7171');
@@ -90,11 +110,13 @@ async function start_game(room_id: UID, name: Name) {
   });
 
   // Create and send SetNick action
+  const character_type : CharacterType = name_to_type(character);
   const set_nick_action: Action = {
     $: "SetNick",
     time: client.time(),
     pid: PID,
-    name: name
+    name: name,
+    character: character_type
   };
   sm.register_action(mach, set_nick_action);
   client.send(room, serialize(set_nick_action));
