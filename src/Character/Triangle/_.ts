@@ -12,6 +12,7 @@ import { Character } from '../_';
 import { CharacterType } from '../type';
 import { DEFAULT_RANGE } from '../../Helpers/consts';
 import { seconds_to_ticks } from '../../Helpers/seconds_to_ticks';
+import { Effect } from '../../Effect/_';
 
 export function Triangle(): Character {
   const triangle_range = 1.25 * DEFAULT_RANGE;
@@ -21,5 +22,8 @@ export function Triangle(): Character {
     skills: {
       'E': { id: 'skill3', type: 'action', cooldown: seconds_to_ticks(0.15), duration: 1, range: triangle_range },
     },
+    effects: [
+      { $: 'NoPlayerCollision', active: true },
+    ],
   };
 }
