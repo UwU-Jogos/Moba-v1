@@ -15,7 +15,7 @@ import { PLAYER_RADIUS } from '../Helpers/consts';
 export function check_collision(pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
   let new_x = pos.x;
   let new_y = pos.y;
-  if (pid !== other_pid) {
+  if (pid !== other_pid && other_player.life > 0) {
     const dx = new_x - other_player.pos.x;
     const dy = new_y - other_player.pos.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
