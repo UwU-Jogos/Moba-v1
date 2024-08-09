@@ -11,8 +11,17 @@ import { Player } from './_';
 import { UID } from '../UID/_';
 import { V2 } from '../V2/_';
 import { PLAYER_SQUARE_SIZE } from '../Helpers/consts';
+import { create_character } from '../Character/create_character';
 
 export function check_collision(pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
+  const player_character = create_character(other_player.character);
+  const other_character = create_character(other_player.character);
+  
+  if (player_character.effects.some(effect => effect.$ === 'NoPlayerCollision' && effect.active) || 
+      other_character.effects.some(effect => effect.$ === 'NoPlayerCollision' && effect.active)) {
+    return pos;
+  }
+
   let new_x = pos.x;
   let new_y = pos.y;
   if (pid !== other_pid && other_player.life > 0) {
