@@ -15,6 +15,7 @@ import { Player } from '../Player/_';
 import { seconds_to_ticks } from '../Helpers/seconds_to_ticks';
 import { activate as activate_skill} from '../Skill/activate';
 import { PLAYER_RADIUS, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
+import { init as init_player } from '../Player/init';
 
 
 export function when(when: Action, gs: GameState): GameState {
@@ -22,19 +23,7 @@ export function when(when: Action, gs: GameState): GameState {
 
   if (!players.has(when.pid)) {
     const initial_name = when.$ === "SetNick" ? when.name : "Anon";
-    players = players.set(when.pid, { 
-      id: when.pid, 
-      name: initial_name, 
-      pos: { x: 256, y: 128 }, 
-      target_pos: { x: 256, y: 128 },
-      skills: {
-        'Q': { id: 'skill1', type: 'melee', cooldown: seconds_to_ticks(1), duration: 1, range: PLAYER_RADIUS * 2 },
-        'W': { id: 'skill2', type: 'target', cooldown: seconds_to_ticks(1), duration: 1, range: PLAYER_RADIUS * 2 },
-        'E': { id: 'skill3', type: 'action', cooldown: seconds_to_ticks(0.25), duration: 1, range: 200 },
-      },
-      life: PLAYER_INITIAL_LIFE,
-      active_skills: {}
-    });
+    players = players.set(when.pid, init_player(when.pid, initial_name, { x: 128, y: 200 }));
   }
 
   switch (when.$) {
