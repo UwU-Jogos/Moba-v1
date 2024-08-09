@@ -23,14 +23,22 @@ import { Projectile } from "../Projectile/_";
 import { move as move_projectile } from "../Projectile/move";
 import { process_player_skills } from "../Skill/process";
 import { check_player_collision as check_projectile_player_collision } from "../Projectile/check_player_collision";
+import { take_damage } from '../Player/take_damage';
+import { is_dead } from '../Team/is_dead';
+import { TeamType } from '../Team/type';
+import { restart } from '../GameState/restart';
 
 export function tick(gs: GameState): GameState {
+  if (is_dead(gs, TeamType.TEAM_RED) || is_dead(gs, TeamType.TEAM_BLUE)) {
+    return restart(gs);
+  }
+
   const dt = 1 / TPS;
   const { width, height } = get_canvas_dimensions();
   const interpolation_factor = 0.1;
 
   // Update projectiles
-  const projectile_system = gs.projectile_system.map((projectile, id) => {
+  const projectile_system = gs.projectile_system.flatMap((projectile, id) => {
     projectile.remaining_duration -= dt;
 
     const owner_player = gs.players.get(projectile.owner_id);
@@ -39,20 +47,23 @@ export function tick(gs: GameState): GameState {
 
     // Check collisions with players
     gs.players.forEach((player, player_id) => {
-      // TODO: review
-      const updated_player = check_projectile_player_collision(projectile, player, player_id);
-      gs.players = gs.players.set(player_id, updated_player);
+      if (player_id !== projectile.owner_id) {
+        const [updated_player, updated_projectile] = check_projectile_player_collision(projectile, player, player_id);
+        gs.players = gs.players.set(player_id, updated_player);
+        projectile = updated_projectile;
+      }
     });
 
     if (
-      projectile.remaining_duration <= 0 ||
-      (projectile.skill_type === "action" && projectile.remaining_distance <= 0)
+      projectile &&
+      (projectile.remaining_duration <= 0 ||
+      (projectile.skill_type === "action" && projectile.remaining_distance <= 0))
     ) {
-      return undefined;
+      return [];
     }
 
-    return projectile;
-  }).filter(proj => proj !== undefined).toMap() as Map<string, Projectile>;
+    return [[id, projectile]];
+  }).toMap() as Map<string, Projectile>;
 
   // Update players
   const players = gs.players.map((player, uid) => {
