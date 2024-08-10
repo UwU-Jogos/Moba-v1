@@ -14,8 +14,16 @@
 ///
 /// * `NoWallCollision` - Determines if an entity can pass through walls
 ///   - `active` - Whether the effect is active (true) or not (false)
+///
+/// * `Immune` - Determines if an entity is immune to damage
+///   - `active` - Whether the effect is active (true) or not (false)
+///
+/// * `MultipleShot` - Allows an entity to fire multiple shots
+///   - `shots_number` - The number of shots to fire
 
 export type Effect =
   | { $: 'RangeAlter'; multiplier: number }
   | { $: 'NoPlayerCollision'; active: boolean }
-  | { $: 'NoWallCollision'; active: boolean };
+  | { $: 'NoWallCollision'; active: boolean }
+  | { $: 'Immune'; active: boolean }
+  | { $: 'MultipleShot'; shots_number: number };
