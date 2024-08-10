@@ -18,6 +18,7 @@ export function match<R>(
     Wall: (position: V2, width: number, height: number) => R;
     Platform: (position: V2, width: number, height: number) => R;
     PushWall: (position: V2, width: number, height: number, force: number) => R;
+    RespawnArea: (position: V2, width: number, height: number, active: number) => R;
   }
 ): R {
   switch (game_obj.kind) {
@@ -27,5 +28,7 @@ export function match<R>(
       return handlers.Platform(game_obj.position, game_obj.width, game_obj.height);
     case 'PushWall':
       return handlers.PushWall(game_obj.position, game_obj.width, game_obj.height, game_obj.force);
+    case 'RespawnArea':
+      return handlers.RespawnArea(game_obj.position, game_obj.width, game_obj.height, game_obj.active);
   }
 }

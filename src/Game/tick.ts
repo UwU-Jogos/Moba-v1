@@ -26,12 +26,10 @@ import { check_player_collision as check_projectile_player_collision } from "../
 import { is_dead } from '../Team/is_dead';
 import { TeamType } from '../Team/type';
 import { restart } from '../GameState/restart';
+import { is_dead as is_player_dead } from '../Player/is_dead';
+import { respawn } from '../Player/respawn';
 
 export function tick(gs: GameState): GameState {
-  if (is_dead(gs, TeamType.TEAM_RED) || is_dead(gs, TeamType.TEAM_BLUE)) {
-    return restart(gs);
-  }
-
   const dt = 1 / TPS;
   const { width, height } = get_canvas_dimensions();
   const interpolation_factor = 0.1;
@@ -78,9 +76,28 @@ export function tick(gs: GameState): GameState {
   }).toMap() as Map<string, Projectile>;
 
   // Update players
+  let updated_game_map = gs.game_map;
+  let new_respawn_areas: GameObject[] = [];
   updated_players = updated_players.withMutations(mutable_players => {
     mutable_players.forEach((player, uid) => {
       if (!player) return;
+
+      // Check if player is dead and respawn if necessary
+      if (is_player_dead(player) && player.stats.lifes > 0) {
+        const respawned_player = respawn(player);
+        mutable_players.set(uid, respawned_player);
+        
+        // Create respawn area
+        const respawn_area: GameObject = {
+          kind: 'RespawnArea',
+          position: player.team === TeamType.TEAM_RED ? { x: 0, y: 0 } : { x: width - PLAYER_RADIUS * 4, y: height - PLAYER_RADIUS * 4 },
+          width: PLAYER_RADIUS * 4,
+          height: PLAYER_RADIUS * 4,
+          active: 5 * TPS // 5 seconds of active time
+        };
+        new_respawn_areas.push(respawn_area);
+        return;
+      }
 
       const dx = ((player.key["D"] ? PLAYER_SPEED : 0) + (player.key["A"] ? -PLAYER_SPEED : 0)) * dt * 90;
       const dy = ((player.key["S"] ? PLAYER_SPEED : 0) + (player.key["W"] ? -PLAYER_SPEED : 0)) * dt * 90;
@@ -114,18 +131,46 @@ export function tick(gs: GameState): GameState {
       new_x = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, new_x));
       new_y = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, new_y));
 
+      // Update Immune effect
+      const updated_effects = player.effects.map(effect => {
+        if (effect.$ === 'Immune' && effect.active > 0) {
+          return { ...effect, active: effect.active - 1 };
+        }
+        return effect;
+      }).filter(effect => effect.$ !== 'Immune' || effect.active > 0);
+
       mutable_players.set(uid, {
         ...player,
         pos: { x: new_x, y: new_y },
         active_skills,
+        effects: updated_effects,
       });
     });
   });
+
+  // Update respawn areas
+  updated_game_map = {
+    ...updated_game_map,
+    objects: [
+      ...updated_game_map.objects.filter(obj => obj.kind !== 'RespawnArea' || (obj.kind === 'RespawnArea' && obj.active > 0))
+        .map(obj => {
+          if (obj.kind === 'RespawnArea') {
+            return {
+              ...obj,
+              active: obj.active - 1
+            };
+          }
+          return obj;
+        }),
+      ...new_respawn_areas
+    ]
+  };
 
   return {
     ...gs,
     tick: gs.tick + 1,
     players: updated_players as Map<UID, Player>,
     projectile_system: projectile_system as Map<string, Projectile>,
+    game_map: updated_game_map,
   };
 }

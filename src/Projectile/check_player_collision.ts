@@ -11,8 +11,9 @@ export function check_player_collision(projectile: Projectile, player: Player, p
   }
 
   const dist = distance(projectile.pos, player.pos);
+
   if (dist <= PLAYER_RADIUS) {
-    const damaged_player = take_damage(player, projectile.damage);
+    const immune_effect = player.effects.find(effect => effect.$ === 'Immune' && effect.active > 0);
     const useless_projectile: Projectile = {
       ...projectile,
       remaining_distance: 0,
@@ -20,7 +21,13 @@ export function check_player_collision(projectile: Projectile, player: Player, p
       speed: 0,
       damage: 0
     };
-    return [damaged_player, useless_projectile];
+
+    if (immune_effect) {
+      return [player, useless_projectile];
+    } else {
+      const damaged_player = take_damage(player, projectile.damage);
+      return [damaged_player, useless_projectile];
+    }
   }
 
   return [player, projectile];

@@ -14,6 +14,7 @@ import { PLAYER_INITIAL_LIFE } from '../Helpers/consts';
 export function init_stats(): Stats {
   return {
     kills: 0,
-    max_life: PLAYER_INITIAL_LIFE
+    max_life: PLAYER_INITIAL_LIFE,
+    lifes: 3
   };
 }

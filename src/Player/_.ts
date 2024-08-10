@@ -18,6 +18,7 @@
 /// * `life` - The current life of the player
 /// * `key` - An object representing the state of various keys (pressed or not)
 /// * `stats` - An object representing the player's stats
+/// * `effects` - An array of active effects on the player
 
 import { UID } from '../UID/_';
 import { Name } from '../Name/_';
@@ -28,6 +29,7 @@ import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
 import { basic } from '../Skill/basic';
 import { Stats } from '../Stats/_';
+import { Effect } from '../Effect/_';
 
 export type Player = {
   id: UID;
@@ -41,4 +43,5 @@ export type Player = {
   character: CharacterType;
   key: { [key: Key]: boolean };
   stats: Stats;
+  effects: Effect[]; 
 };

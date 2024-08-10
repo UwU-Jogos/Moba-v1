@@ -25,5 +25,5 @@ export type Effect =
   | { $: 'RangeAlter'; multiplier: number }
   | { $: 'NoPlayerCollision'; active: boolean }
   | { $: 'NoWallCollision'; active: boolean }
-  | { $: 'Immune'; active: boolean }
+  | { $: 'Immune'; active: number }
   | { $: 'MultipleShot'; shots_number: number };
