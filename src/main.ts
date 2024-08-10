@@ -19,6 +19,7 @@ import { TimeDisplay } from './Helpers/time';
 import { get_characters_list } from './Lobby/get_characters_list';
 import { name_to_type } from './Character/name_to_type';
 import { CharacterType } from './Character/type';
+import { Finished, game_finished } from './GameState/finished';
 
 // Types
 // -----
@@ -244,6 +245,14 @@ function game_loop() {
   // Compute the current state
   const state = sm.compute(mach, { init, tick, when }, client.time());
 
+  // Check if the game has finished
+  let finished: Finished | null = game_finished(state);
+  if (finished) {
+    // Stop the game loop
+    show_game_result(finished, state);
+    return;
+  }
+
   // Draw the current state
   draw(state);
 
@@ -255,6 +264,28 @@ function game_loop() {
 
   // Schedule the next frame
   requestAnimationFrame(game_loop);
+}
+
+function show_game_result(finished: Finished, state: GameState) {
+  const game_container = document.getElementById('game-container');
+  const result_container = document.getElementById('result-container');
+  const result_message = document.getElementById('result-message');
+
+  if (game_container && result_container && result_message) {
+    game_container.style.display = 'none';
+    result_container.style.display = 'block';
+    
+    const playerTeam = state.players.get(PID)?.team;
+    if (playerTeam === finished.winner) {
+      result_message.textContent = 'You Won!';
+    } else if (playerTeam === finished.loser) {
+      result_message.textContent = 'You Lost!';
+    } else {
+      result_message.textContent = 'Game Finished!';
+    }
+  } else {
+    console.error("Could not find game or result container");
+  }
 }
 
 // Initialize TimeDisplay
