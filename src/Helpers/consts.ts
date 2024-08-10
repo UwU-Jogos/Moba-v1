@@ -10,6 +10,7 @@
 /// * `ARTIFICIAL_DELAY` - An artificial delay added to actions (in milliseconds)
 /// * `WALL_COLOR` - The color used for walls
 /// * `PLATFORM_COLOR` - The color used for platforms
+/// * `RESPAWN_COLOR` - The color used for respawn area
 
 export const TPS = 32;
 export const PLAYER_SPEED = 2;
@@ -23,3 +24,4 @@ export const PLATFORM_COLOR = 'black';
 export const PLAYERS_LIMIT = 2;
 export const TIME_TO_START_GAME = 5;
 export const DEFAULT_RANGE = 150;
+export const RESPAWN_AREA_COLOR = 'green';
