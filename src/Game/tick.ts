@@ -47,6 +47,18 @@ export function tick(gs: GameState): GameState {
     updated_players = updated_players.withMutations(mutable_players => {
       mutable_players.forEach((player, player_id) => {
         const [updated_player, updated_projectile] = check_projectile_player_collision(projectile, player, player_id);
+        
+        // Check if the player was killed by this projectile
+        if (player.life > 0 && updated_player.life <= 0 && owner_player) {
+          mutable_players.set(projectile.owner_id, {
+            ...owner_player,
+            stats: {
+              ...owner_player.stats,
+              kills: owner_player.stats.kills + 1
+            }
+          });
+        }
+        
         mutable_players.set(player_id, updated_player);
         projectile = updated_projectile;
       });

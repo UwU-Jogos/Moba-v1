@@ -14,6 +14,7 @@ import { circle } from '../Shape/circle';
 import { PLAYER_RADIUS, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
 import { TeamType } from '../Team/type';
 import { draw as draw_character } from '../Character/draw';
+import { draw as draw_stats } from '../Stats/draw';
 
 export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
   if (player.life <= 0) {
@@ -43,4 +44,6 @@ export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
 
   ctx.fillStyle = 'green';
   ctx.fillRect(life_bar_x, life_bar_y, life_bar_width * life_percentage, life_bar_height);
+
+  draw_stats(ctx, player.stats, player.pos);
 }

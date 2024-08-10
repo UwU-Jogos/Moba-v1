@@ -35,6 +35,7 @@ export function restart(state: GameState): GameState {
       const pos = corner_positions[i % 4];
 
       const new_player = init_player(uid, player.name, pos, CharacterType.TRIANGLE);
+      new_player.stats = player.stats;
       mutable_map.set(uid, new_player);
       i++;
     });
