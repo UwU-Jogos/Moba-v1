@@ -19,7 +19,7 @@ export function check_game_object_collision(player: Player, pos: V2, game_object
   let new_x = pos.x;
   let new_y = pos.y;
 
-  if (game_object.kind === 'Wall' || game_object.kind === 'Platform' || game_object.kind === 'PushWall') {
+  if (game_object.kind === 'Wall' || game_object.kind === 'Platform' || game_object.kind === 'PushWall' || game_object.kind === 'RespawnArea') {
     const left = game_object.position.x;
     const right = game_object.position.x + game_object.width;
     const top = game_object.position.y;
