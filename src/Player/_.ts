@@ -17,6 +17,7 @@
 /// * `active_skills` - An object tracking active skills and their durations
 /// * `life` - The current life of the player
 /// * `key` - An object representing the state of various keys (pressed or not)
+/// * `stats` - An object representing the player's stats
 
 import { UID } from '../UID/_';
 import { Name } from '../Name/_';
@@ -26,6 +27,7 @@ import { Life } from '../Life/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
 import { basic } from '../Skill/basic';
+import { Stats } from '../Stats/_';
 
 export type Player = {
   id: UID;
@@ -38,4 +40,5 @@ export type Player = {
   team: TeamType;
   character: CharacterType;
   key: { [key: Key]: boolean };
+  stats: Stats;
 };
