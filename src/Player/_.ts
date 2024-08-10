@@ -13,6 +13,10 @@
 /// * `key` - An object representing the state of various keys
 /// * `team` - the Team the player was assigned in the lobby
 /// * `character` - The character type of the player
+/// * `skills` - An object mapping keys to basic skills
+/// * `active_skills` - An object tracking active skills and their durations
+/// * `life` - The current life of the player
+/// * `key` - An object representing the state of various keys (pressed or not)
 
 import { UID } from '../UID/_';
 import { Name } from '../Name/_';
@@ -33,4 +37,5 @@ export type Player = {
   life: Life;
   team: TeamType;
   character: CharacterType;
+  key: { [key: Key]: boolean };
 };
