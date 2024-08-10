@@ -27,4 +27,5 @@ export function draw(ctx: CanvasRenderingContext2D, stats: Stats, position: V2):
   ctx.font = '12px Arial';
   ctx.textAlign = 'left';
   ctx.fillText(`Kills: ${stats.kills}`, position.x + padding, position.y + padding + 12);
+  ctx.fillText(`Lives: ${stats.lifes}`, position.x + padding, position.y + padding + 26);
 }
