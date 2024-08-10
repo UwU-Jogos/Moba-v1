@@ -12,7 +12,7 @@
 /// * `PLATFORM_COLOR` - The color used for platforms
 
 export const TPS = 32;
-export const PLAYER_SPEED = 5;
+export const PLAYER_SPEED = 2;
 export const PLAYER_RADIUS = 10;
 export const PLAYER_COLOR = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
 export const PLAYER_INITIAL_LIFE = 200;
