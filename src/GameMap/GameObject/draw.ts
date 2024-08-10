@@ -28,5 +28,9 @@ export function draw(ctx: CanvasRenderingContext2D, gameObject: GameObject): voi
       let line_shape : Shape = line(position, { x: position.x + width, y: position.y + height });
       shape_draw(ctx, line_shape, WALL_COLOR);
     },
+    PushWall: (position: V2, width: number, height: number) => {
+      let line_shape : Shape = line(position, { x: position.x + width, y: position.y + height });
+      shape_draw(ctx, line_shape, WALL_COLOR);
+    },
   });
 }

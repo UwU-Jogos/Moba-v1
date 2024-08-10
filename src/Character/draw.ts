@@ -18,23 +18,23 @@ import { triangle } from '../Shape/triangle';
 import { circle } from '../Shape/circle';
 import { draw as shape_draw } from '../Shape/draw';
 import { CharacterType } from './type';
-import { PLAYER_SQUARE_SIZE } from '../Helpers/consts';
+import { PLAYER_RADIUS } from '../Helpers/consts';
 
 export function draw(ctx: CanvasRenderingContext2D, character: CharacterType, position: V2, color: string): void {
   let shape: Shape;
 
   switch (character) {
     case CharacterType.TRIANGLE:
-      const halfSize = PLAYER_SQUARE_SIZE / 2;
+      const halfSide = PLAYER_RADIUS * Math.sqrt(3) / 2;
+      const height = PLAYER_RADIUS * 1.5;
       shape = triangle(
-        { x: position.x, y: position.y - halfSize },
-        { x: position.x - halfSize, y: position.y + halfSize },
-        { x: position.x + halfSize, y: position.y + halfSize }
+        { x: position.x, y: position.y - height / 2 },
+        { x: position.x - halfSide, y: position.y + height / 2 },
+        { x: position.x + halfSide, y: position.y + height / 2 }
       );
       break;
     default:
-      // Default to a circle for any unhandled character types
-      shape = circle(position, PLAYER_SQUARE_SIZE / 2);
+      shape = circle(position, PLAYER_RADIUS / 2);
   }
 
   shape_draw(ctx, shape, color);

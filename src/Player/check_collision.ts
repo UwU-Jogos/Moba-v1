@@ -10,7 +10,7 @@
 import { Player } from './_';
 import { UID } from '../UID/_';
 import { V2 } from '../V2/_';
-import { PLAYER_SQUARE_SIZE } from '../Helpers/consts';
+import { PLAYER_RADIUS } from '../Helpers/consts';
 import { create_character } from '../Character/create_character';
 
 export function check_collision(pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
@@ -27,12 +27,11 @@ export function check_collision(pid: UID, other_player: Player, other_pid: UID, 
   if (pid !== other_pid && other_player.life > 0) {
     const dx = new_x - other_player.pos.x;
     const dy = new_y - other_player.pos.y;
-    if (Math.abs(dx) < PLAYER_SQUARE_SIZE && Math.abs(dy) < PLAYER_SQUARE_SIZE) {
-      if (Math.abs(dx) > Math.abs(dy)) {
-        new_x = other_player.pos.x + Math.sign(dx) * PLAYER_SQUARE_SIZE;
-      } else {
-        new_y = other_player.pos.y + Math.sign(dy) * PLAYER_SQUARE_SIZE;
-      }
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    if (distance < PLAYER_RADIUS * 2) {
+      const angle = Math.atan2(dy, dx);
+      new_x = other_player.pos.x + Math.cos(angle) * PLAYER_RADIUS * 2;
+      new_y = other_player.pos.y + Math.sin(angle) * PLAYER_RADIUS * 2;
     }
   }
   return { x: new_x, y: new_y };

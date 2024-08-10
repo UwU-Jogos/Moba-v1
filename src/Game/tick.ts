@@ -70,31 +70,20 @@ export function tick(gs: GameState): GameState {
     mutable_players.forEach((player, uid) => {
       if (!player) return;
 
-      const dx = player.target_pos.x - player.pos.x;
-      const dy = player.target_pos.y - player.pos.y;
-      const distance = Math.sqrt(dx * dx + dy * dy);
+      const dx = ((player.key["D"] ? PLAYER_SPEED : 0) + (player.key["A"] ? -PLAYER_SPEED : 0)) * dt * 90;
+      const dy = ((player.key["S"] ? PLAYER_SPEED : 0) + (player.key["W"] ? -PLAYER_SPEED : 0)) * dt * 90;
 
-      let new_x = player.pos.x;
-      let new_y = player.pos.y;
+      let new_x = player.pos.x + dx;
+      let new_y = player.pos.y + dy;
 
-      if (distance > 0) {
-        const move_distance = Math.min(distance, PLAYER_SPEED * dt * 128);
-        const ratio = move_distance / distance;
-
-        new_x = player.pos.x + dx * ratio * interpolation_factor;
-        new_y = player.pos.y + dy * ratio * interpolation_factor;
-
-        mutable_players.forEach((other_player, other_uid) => {
-          if (uid !== other_uid) {
-            let result_pos = check_player_collision(uid, other_player, other_uid, { x: new_x, y: new_y });
-            new_x = result_pos.x;
-            new_y = result_pos.y;
-          }
-        });
-
-        new_x = Math.max(PLAYER_RADIUS, Math.min(width - PLAYER_RADIUS, new_x));
-        new_y = Math.max(PLAYER_RADIUS, Math.min(height - PLAYER_RADIUS, new_y));
-      }
+      // Check collision with other players
+      mutable_players.forEach((other_player, other_uid) => {
+        if (uid !== other_uid) {
+          let result_pos = check_player_collision(uid, other_player, other_uid, { x: new_x, y: new_y });
+          new_x = result_pos.x;
+          new_y = result_pos.y;
+        }
+      });
 
       // Skill logic
       const active_skills = { ...player.active_skills };
@@ -102,7 +91,7 @@ export function tick(gs: GameState): GameState {
         process_player_skills(gs.tick, end_tick, skill_id, player, uid);
       });
 
-      // Check collision with GameObjects
+      //Check collision with GameObjects
       gs.game_map.objects.forEach((game_object: GameObject) => {
         let result_pos: V2 = check_game_object_collision(player, { x: new_x, y: new_y }, game_object);
         new_x = result_pos.x; 
@@ -115,7 +104,7 @@ export function tick(gs: GameState): GameState {
 
       mutable_players.set(uid, {
         ...player,
-        pos: { x: Math.floor(new_x * 100) / 100, y: Math.floor(new_y * 100) / 100 },
+        pos: { x: new_x, y: new_y },
         active_skills,
       });
     });

@@ -48,6 +48,13 @@ export function when(when: Action, gs: GameState): GameState {
       });
       break;
     }
+    case "MovementEvent": {
+      players = players.update(when.pid, player => {
+        if (!player) return player;
+        return { ...player, key: { ...player.key, [when.key]: when.down } } as Player;
+      });
+      break;
+    }
   }
   return { ...gs, players };
 }

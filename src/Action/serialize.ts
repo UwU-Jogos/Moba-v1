@@ -54,6 +54,16 @@ export function serialize(action: Action): Uint8Array {
       buffer.push((y >> 8) & 0xFF);  // High byte
       buffer.push(y & 0xFF);         // Low byte
       return new Uint8Array(buffer);
+    },
+
+    MovementEvent: (time: number, pid: number, key: string, down: boolean) => {
+      let buffer: number[] = [];
+      buffer.push(3); // Action type identifier for KeyEvent
+      buffer.push(...new Uint8Array(new BigUint64Array([BigInt(time)]).buffer).slice(0, 6)); // 48-bit Time
+      buffer.push(...new Uint8Array(new BigUint64Array([BigInt(pid)]).buffer).slice(0, 6)); // 48-bit UID
+      buffer.push(key.charCodeAt(0)); // 8-bit Key
+      buffer.push(down ? 1 : 0); // Boolean as 1 or 0
+      return new Uint8Array(buffer);
     }
   });
 }
