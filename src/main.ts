@@ -122,8 +122,8 @@ async function start_game(room_id: UID, name: Name, character: string) {
   client.send(room, serialize(set_nick_action));
 
   // Set up key and mouse event listeners
-  window.addEventListener('keydown', handle_skill_event);
-  window.addEventListener('keyup', handle_skill_event);
+  window.addEventListener('keydown', handle_key_event);
+  window.addEventListener('keyup', handle_key_event);
   window.addEventListener('mousemove', handle_mouse_move);
   window.addEventListener('click', handle_mouse_click);
 
@@ -184,19 +184,36 @@ function show_game_container() {
 
 // Input Handler
 const key_state: { [key: string]: boolean } = {};
-function handle_skill_event(event: KeyboardEvent) {
+function handle_key_event(event: KeyboardEvent) {
   const key = event.key.toUpperCase();
-  if (['Q', 'W', 'E', 'R'].includes(key)) {
-    const down = event.type === 'keydown';
-    if (key_state[key] !== down) {
-      key_state[key] = down;
-      var time = client.time();
-      var act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
-      sm.register_action(mach, act);
-      client.send(room, serialize(act));
-    }
+  const down = event.type === 'keydown';
+  if (['W', 'A', 'S', 'D'].includes(key)) {
+    handle_movement_event(key, down);
+  } else if (['Q', 'W', 'E', 'R'].includes(key)) {
+    handle_skill_event(key, down);
   }
 }
+
+function handle_movement_event(key: string, down: boolean) {
+  if (key_state[key] !== down) {
+    key_state[key] = down;
+    var time = client.time();
+    var act = { $: "MovementEvent", time, pid: PID, key, down } as Action;
+    sm.register_action(mach, act);
+    client.send(room, serialize(act));
+  }
+}
+
+function handle_skill_event(key: string, down: boolean) {
+  if (key_state[key] !== down) {
+    key_state[key] = down;
+    var time = client.time();
+    var act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
+    sm.register_action(mach, act);
+    client.send(room, serialize(act));
+  }
+}
+
 // Mouse Click Handler
 function handle_mouse_click(event: MouseEvent) {
   if (event.button === 0 && event.target instanceof HTMLCanvasElement) {
