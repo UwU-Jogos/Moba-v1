@@ -25,7 +25,8 @@ export function check_player_collision(projectile: Projectile, player: Player, p
     if (immune_effect) {
       return [player, useless_projectile];
     } else {
-      const damaged_player = take_damage(player, projectile.damage);
+      const damage_to_take = projectile.damage * player.stats.damage_multiplier;
+      const damaged_player = take_damage(player, damage_to_take);
       return [damaged_player, useless_projectile];
     }
   }
