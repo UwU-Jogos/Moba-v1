@@ -59,6 +59,7 @@ function setup_form_listener() {
 function populate_character_select() {
   const character_select = document.getElementById('character-select') as HTMLSelectElement;
   if (character_select) {
+    character_select.innerHTML = ''; // Clear existing options
     const characters = get_characters_list();
     characters.forEach(character => {
       const option = document.createElement('option');
