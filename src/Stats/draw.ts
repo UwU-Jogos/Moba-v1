@@ -15,7 +15,7 @@ import { V2 } from '../V2/_';
 
 export function draw(ctx: CanvasRenderingContext2D, stats: Stats, position: V2): void {
   const boxWidth = 100;
-  const boxHeight = 80;
+  const boxHeight = 95;
   const padding = 5;
 
   // Draw the box
@@ -30,4 +30,5 @@ export function draw(ctx: CanvasRenderingContext2D, stats: Stats, position: V2):
   ctx.fillText(`Lives: ${stats.lifes}`, position.x + padding, position.y + padding + 26);
   ctx.fillText(`Orbs: ${stats.destroyed_orbs}`, position.x + padding, position.y + padding + 40);
   ctx.fillText(`Dmg Mult: ${stats.damage_multiplier.toFixed(2)}`, position.x + padding, position.y + padding + 54);
+  ctx.fillText(`Max Life: ${stats.max_life}`, position.x + padding, position.y + padding + 68);
 }

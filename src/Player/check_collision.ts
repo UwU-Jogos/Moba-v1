@@ -13,12 +13,16 @@ import { V2 } from '../V2/_';
 import { PLAYER_RADIUS } from '../Helpers/consts';
 import { create_character } from '../Character/create_character';
 
-export function check_collision(pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
-  const player_character = create_character(other_player.character);
+export function check_collision(player: Player, pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
+  if (pid === other_pid) { return pos; }
+
+  const player_character = create_character(player.character);
   const other_character = create_character(other_player.character);
-  
-  if (player_character.effects.some(effect => effect.$ === 'NoPlayerCollision' && effect.active) || 
-      other_character.effects.some(effect => effect.$ === 'NoPlayerCollision' && effect.active)) {
+
+  const no_collision_player = player_character.effects.some(effect => effect.$ === 'NoPlayerCollision');
+  const no_collision_other_player = other_character.effects.some(effect => effect.$ === 'NoPlayerCollision');
+
+  if (no_collision_player || no_collision_other_player) {
     return pos;
   }
 

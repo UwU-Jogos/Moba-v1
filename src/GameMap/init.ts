@@ -16,12 +16,8 @@ export function init(): GameMap {
   const { width, height } = get_canvas_dimensions();
 
   const objects: GameObject[] = [
-    { kind: 'Wall', position: { x: 100, y: 200 }, width: width - 400, height: 10 },
-    { kind: 'Platform', position: { x: 100, y: height - 100 }, width: 100, height: 20 },
-    { kind: 'PushWall', position: { x: 100, y: height - 300 }, width: 100, height: 20, force: 60 },
-  ];
-
-  return {
+  ]
+   return {
     width: width,
     height: height,
     objects: objects

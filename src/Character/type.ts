@@ -7,7 +7,9 @@
 /// # Values
 ///
 /// * `TRIANGLE` - Represents a triangle character type (0)
+/// * `CIRCLE` - Represents a circle character type (0)
 
 export enum CharacterType {
   TRIANGLE = 0,
+  CIRCLE = 1,
 }

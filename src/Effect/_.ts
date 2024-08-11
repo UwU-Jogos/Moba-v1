@@ -20,10 +20,14 @@
 ///
 /// * `MultipleShot` - Allows an entity to fire multiple shots
 ///   - `shots_number` - The number of shots to fire
+///
+/// * `OrbGivesMaxLife` - Gives maximum life when collecting an orb
+///   - `life` - The amount of life to give
 
 export type Effect =
   | { $: 'RangeAlter'; multiplier: number }
   | { $: 'NoPlayerCollision'; active: boolean }
   | { $: 'NoWallCollision'; active: boolean }
   | { $: 'Immune'; active: number }
-  | { $: 'MultipleShot'; shots_number: number };
+  | { $: 'MultipleShot'; shots_number: number }
+  | { $: 'OrbGivesMaxLife'; life: number };

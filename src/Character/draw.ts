@@ -33,6 +33,10 @@ export function draw(ctx: CanvasRenderingContext2D, character: CharacterType, po
         { x: position.x + halfSide, y: position.y + height / 2 }
       );
       break;
+
+    case CharacterType.CIRCLE:
+      shape = circle(position, PLAYER_RADIUS);
+      break;
     default:
       shape = circle(position, PLAYER_RADIUS / 2);
   }
