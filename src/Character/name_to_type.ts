@@ -23,6 +23,8 @@ export function name_to_type(name: string): CharacterType {
   switch (name) {
     case 'Triangle':
       return CharacterType.TRIANGLE;
+    case 'Circle':
+      return CharacterType.CIRCLE;
     default:
       throw new Error(`Unknown character name: ${name}`);
   }
