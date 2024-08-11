@@ -15,6 +15,8 @@ export function init_stats(): Stats {
   return {
     kills: 0,
     max_life: PLAYER_INITIAL_LIFE,
-    lifes: 3
-  };
+    lifes: 3,
+    destroyed_orbs: 0,
+    damage_multiplier: 1 
+  }
 }
