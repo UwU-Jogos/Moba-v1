@@ -24,7 +24,17 @@ export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
   ctx.fillStyle = 'gray';
   ctx.fill(new Path2D());
   
-  const team_color = player.team === TeamType.TEAM_RED ? 'red' : 'blue';
+  let team_color: string;
+  if (player.stats.destroyed_orbs >= 5) {
+    team_color = 'rgb(0, 0, 0)'; // Black
+  } else {
+    const base_color = player.team === TeamType.TEAM_RED ? [255, 100, 100] : [100, 100, 255];
+    const darkness = Math.min(player.stats.destroyed_orbs / 5, 1);
+    const r = Math.floor(base_color[0] * (1 - darkness));
+    const g = Math.floor(base_color[1] * (1 - darkness));
+    const b = Math.floor(base_color[2] * (1 - darkness));
+    team_color = `rgb(${r}, ${g}, ${b})`;
+  }
 
   draw_character(ctx, player.character, player.pos, team_color);
   

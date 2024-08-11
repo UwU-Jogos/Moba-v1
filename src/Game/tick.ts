@@ -28,6 +28,7 @@ import { TeamType } from '../Team/type';
 import { restart } from '../GameState/restart';
 import { is_dead as is_player_dead } from '../Player/is_dead';
 import { respawn } from '../Player/respawn';
+import { check_game_object_collision as check_projectile_game_object_collision } from '../Projectile/check_game_object_collision';
 
 export function tick(gs: GameState): GameState {
   const dt = 1 / TPS;
@@ -36,32 +37,65 @@ export function tick(gs: GameState): GameState {
 
   // Update projectiles
   let updated_players = gs.players;
+  let updated_game_map = gs.game_map;
   const projectile_system = gs.projectile_system.flatMap((projectile, id) => {
     projectile.remaining_duration -= dt;
 
     const owner_player = updated_players.get(projectile.owner_id);
 
-    // Check projectile collision with players
     updated_players = updated_players.withMutations(mutable_players => {
       mutable_players.forEach((player, player_id) => {
-        const [updated_player, updated_projectile] = check_projectile_player_collision(projectile, player, player_id);
+        const [collision_player, collision_projectile] = check_projectile_player_collision(projectile, player, player_id);
         
-        // Check if the player was killed by this projectile
-        if (player.life > 0 && updated_player.life <= 0 && owner_player) {
-          mutable_players.set(projectile.owner_id, {
+        // If the projectile hit the player
+        if (collision_player !== player) {
+          mutable_players.set(player_id, collision_player);
+          projectile = collision_projectile;
+
+          // Check if the player was killed by this projectile
+          if (collision_player.life <= 0 && player_id !== projectile.owner_id) {
+            const owner_player = mutable_players.get(projectile.owner_id);
+            if (owner_player) {
+              const updated_owner = {
+                ...owner_player,
+                stats: {
+                  ...owner_player.stats,
+                  kills: (owner_player.stats.kills || 0) + 1
+                }
+              };
+              mutable_players.set(projectile.owner_id, updated_owner);
+              
+              console.log(`Player ${player_id} killed by ${projectile.owner_id}`);
+              console.log(`Updated owner player:`, updated_owner);
+            }
+          }
+        }
+      });
+    });
+
+    // Check projectile collision with game objects
+    updated_game_map = {
+      ...updated_game_map,
+      objects: updated_game_map.objects.map(game_object => {
+        const [updated_game_object, updated_projectile] = check_projectile_game_object_collision(projectile, game_object);
+        
+        // Check if the orb was destroyed
+       if (game_object.kind === 'Orb' && game_object.life > 0 && updated_game_object.kind === 'Orb' && updated_game_object.life <= 0 && owner_player) {
+          updated_players = updated_players.set(projectile.owner_id, {
             ...owner_player,
             stats: {
               ...owner_player.stats,
-              kills: owner_player.stats.kills + 1
+              destroyed_orbs: owner_player.stats.destroyed_orbs + 1,
+              damage_multiplier: owner_player.stats.damage_multiplier + 0.1
             }
           });
         }
         
-        mutable_players.set(player_id, updated_player);
         projectile = updated_projectile;
-      });
-    });
-
+        return updated_game_object;
+      })
+    };
+    
     projectile = move_projectile(projectile, owner_player, dt);
 
     if (
@@ -76,8 +110,8 @@ export function tick(gs: GameState): GameState {
   }).toMap() as Map<string, Projectile>;
 
   // Update players
-  let updated_game_map = gs.game_map;
   let new_respawn_areas: GameObject[] = [];
+  let new_orbs: GameObject[] = [];
   updated_players = updated_players.withMutations(mutable_players => {
     mutable_players.forEach((player, uid) => {
       if (!player) return;
@@ -96,6 +130,16 @@ export function tick(gs: GameState): GameState {
           active: 5 * TPS // 5 seconds of active time
         };
         new_respawn_areas.push(respawn_area);
+
+        // Create Orb in the center of the map
+        const orb: GameObject = {
+          kind: 'Orb',
+          position: { x: width / 2, y: height / 2 },
+          radius: PLAYER_RADIUS,
+          life: 100,
+          active: 30 * TPS // 30 seconds of active time
+        };
+        new_orbs.push(orb);
         return;
       }
 
@@ -148,21 +192,24 @@ export function tick(gs: GameState): GameState {
     });
   });
 
-  // Update respawn areas
+  // Update respawn areas and orbs
   updated_game_map = {
     ...updated_game_map,
     objects: [
-      ...updated_game_map.objects.filter(obj => obj.kind !== 'RespawnArea' || (obj.kind === 'RespawnArea' && obj.active > 0))
-        .map(obj => {
-          if (obj.kind === 'RespawnArea') {
-            return {
-              ...obj,
-              active: obj.active - 1
-            };
-          }
-          return obj;
-        }),
-      ...new_respawn_areas
+      ...updated_game_map.objects.filter(obj => 
+        (obj.kind !== 'RespawnArea' && obj.kind !== 'Orb') || 
+        ((obj.kind === 'RespawnArea' || obj.kind === 'Orb') && obj.active > 0)
+      ).map(obj => {
+        if (obj.kind === 'RespawnArea' || obj.kind === 'Orb') {
+          return {
+            ...obj,
+            active: obj.active - 1
+          };
+        }
+        return obj;
+      }),
+      ...new_respawn_areas,
+      ...new_orbs
     ]
   };
 
