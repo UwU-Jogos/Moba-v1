@@ -29,6 +29,7 @@ import { restart } from '../GameState/restart';
 import { is_dead as is_player_dead } from '../Player/is_dead';
 import { respawn } from '../Player/respawn';
 import { check_game_object_collision as check_projectile_game_object_collision } from '../Projectile/check_game_object_collision';
+import { create_character } from '../Character/create_character';
 
 export function tick(gs: GameState): GameState {
   const dt = 1 / TPS;
@@ -65,8 +66,6 @@ export function tick(gs: GameState): GameState {
               };
               mutable_players.set(projectile.owner_id, updated_owner);
               
-              console.log(`Player ${player_id} killed by ${projectile.owner_id}`);
-              console.log(`Updated owner player:`, updated_owner);
             }
           }
         }
@@ -81,12 +80,18 @@ export function tick(gs: GameState): GameState {
         
         // Check if the orb was destroyed
        if (game_object.kind === 'Orb' && game_object.life > 0 && updated_game_object.kind === 'Orb' && updated_game_object.life <= 0 && owner_player) {
+
+          const owner_player_character = create_character(owner_player.character);
+          const max_life_increase = owner_player_character.effects.find(effect => effect.$ === 'OrbGivesMaxLife')?.life || 0;
+          console.log(max_life_increase);
+
           updated_players = updated_players.set(projectile.owner_id, {
             ...owner_player,
             stats: {
               ...owner_player.stats,
               destroyed_orbs: owner_player.stats.destroyed_orbs + 1,
-              damage_multiplier: owner_player.stats.damage_multiplier + 0.1
+              damage_multiplier: owner_player.stats.damage_multiplier + 0.1,
+              max_life: owner_player.stats.max_life + max_life_increase
             }
           });
         }
@@ -152,7 +157,7 @@ export function tick(gs: GameState): GameState {
       // Check collision with other players
       mutable_players.forEach((other_player, other_uid) => {
         if (uid !== other_uid) {
-          let result_pos = check_player_collision(uid, other_player, other_uid, { x: new_x, y: new_y });
+          let result_pos = check_player_collision(player, uid, other_player, other_uid, { x: new_x, y: new_y });
           new_x = result_pos.x;
           new_y = result_pos.y;
         }
