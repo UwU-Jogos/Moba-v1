@@ -16,5 +16,5 @@ export function get_characters_list(): string[] {
   // Instead, we'll return a hardcoded list based on the known Character subdirectories.
   
   // This list should be manually updated when new characters are added.
-  return ['Triangle'];
+  return ['Triangle', 'Circle'];
 }
