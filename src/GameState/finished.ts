@@ -12,6 +12,8 @@
 /// # Function: game_finished
 ///
 /// Checks if the game has finished by verifying if all players of a team have no lives left.
+/// If there's a Pentagon character, the game finishes if all other players on that team have no lives left.
+/// In a 1v1 scenario with a Pentagon character, the game ends immediately.
 ///
 /// # Input
 ///
@@ -23,6 +25,8 @@
 
 import { GameState } from './_';
 import { TeamType } from '../Team/type';
+import { create_character } from '../Character/create_character';
+import { CharacterType } from '../Character/type';
 
 export type Finished = {
   winner: TeamType;
@@ -30,11 +34,36 @@ export type Finished = {
 };
 
 export function game_finished(state: GameState): Finished | null {
-  const redTeamFinished = state.players
+  const players = Array.from(state.players.values());
+  const pentagonPlayer = players.find(player => create_character(player.character).type === CharacterType.PENTAGON);
+
+  if (pentagonPlayer) {
+    if (players.length === 2) {
+      // 1v1 scenario with Pentagon, game ends immediately
+      return {
+        winner: pentagonPlayer.team === TeamType.TEAM_RED ? TeamType.TEAM_BLUE : TeamType.TEAM_RED,
+        loser: pentagonPlayer.team
+      };
+    }
+
+    const pentagonTeamPlayers = players.filter(player => player.team === pentagonPlayer.team && player.id !== pentagonPlayer.id);
+    const pentagonTeamFinished = pentagonTeamPlayers.every(player => player.stats.lifes === 0);
+
+    if (pentagonTeamFinished) {
+      return {
+        winner: pentagonPlayer.team === TeamType.TEAM_RED ? TeamType.TEAM_BLUE : TeamType.TEAM_RED,
+        loser: pentagonPlayer.team
+      };
+    }
+
+    return null; // Game continues if Pentagon's teammates are still alive
+  }
+
+  const redTeamFinished = players
     .filter(player => player.team === TeamType.TEAM_RED)
     .every(player => player.stats.lifes === 0);
 
-  const blueTeamFinished = state.players
+  const blueTeamFinished = players
     .filter(player => player.team === TeamType.TEAM_BLUE)
     .every(player => player.stats.lifes === 0);
 
