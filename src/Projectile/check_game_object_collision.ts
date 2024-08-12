@@ -34,7 +34,8 @@ export function check_game_object_collision(projectile: Projectile, game_object:
         ];
       }
       return [game_object, projectile];
-    }
+    },
+    LineWall: (ini, end) => check_line_wall_collision(projectile, game_object, ini, end)
   });
 }
 
@@ -55,6 +56,45 @@ function check_rectangle_collision(projectile: Projectile, game_object: GameObje
         remaining_duration: 0
       }
     ];
+  }
+
+  return [game_object, projectile];
+}
+
+function check_line_wall_collision(projectile: Projectile, game_object: GameObject, ini: V2, end: V2): [GameObject, Projectile] {
+  const dx = end.x - ini.x;
+  const dy = end.y - ini.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+  const normalX = -dy / length;
+  const normalY = dx / length;
+
+  const projectileToWallX = projectile.pos.x - ini.x;
+  const projectileToWallY = projectile.pos.y - ini.y;
+
+  const projection = projectileToWallX * normalX + projectileToWallY * normalY;
+
+  if (Math.abs(projection) < 5) { // Increased collision threshold
+    const closestX = ini.x + ((projectile.pos.x - ini.x) * dx + (projectile.pos.y - ini.y) * dy) / (length * length) * dx;
+    const closestY = ini.y + ((projectile.pos.x - ini.x) * dx + (projectile.pos.y - ini.y) * dy) / (length * length) * dy;
+
+    const distanceToLine = Math.sqrt(
+      (projectile.pos.x - closestX) * (projectile.pos.x - closestX) +
+      (projectile.pos.y - closestY) * (projectile.pos.y - closestY)
+    );
+
+    if (distanceToLine < 5 && // Increased collision threshold
+        closestX >= Math.min(ini.x, end.x) && closestX <= Math.max(ini.x, end.x) &&
+        closestY >= Math.min(ini.y, end.y) && closestY <= Math.max(ini.y, end.y)) {
+      // Collision detected, make projectile useless
+      return [
+        game_object,
+        {
+          ...projectile,
+          remaining_distance: 0,
+          remaining_duration: 0
+        }
+      ];
+    }
   }
 
   return [game_object, projectile];
