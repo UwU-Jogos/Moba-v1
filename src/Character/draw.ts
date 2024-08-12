@@ -16,6 +16,11 @@ import { V2 } from '../V2/_';
 import { Shape } from '../Shape/_';
 import { triangle } from '../Shape/triangle';
 import { circle } from '../Shape/circle';
+import { diamond } from '../Shape/diamond';
+import { square } from '../Shape/square';
+import { rectangle } from '../Shape/rectangle';
+import { pentagon } from '../Shape/pentagon';
+import { star } from '../Shape/star';
 import { draw as shape_draw } from '../Shape/draw';
 import { CharacterType } from './type';
 import { PLAYER_RADIUS } from '../Helpers/consts';
@@ -37,6 +42,23 @@ export function draw(ctx: CanvasRenderingContext2D, character: CharacterType, po
     case CharacterType.CIRCLE:
       shape = circle(position, PLAYER_RADIUS);
       break;
+
+    case CharacterType.DIAMOND:
+      shape = diamond(position, PLAYER_RADIUS * 2, PLAYER_RADIUS * 2);
+      break;
+
+    case CharacterType.FLAG:
+      shape = rectangle(position, PLAYER_RADIUS * 2, PLAYER_RADIUS * 2);
+      break;
+
+    case CharacterType.PENTAGON:
+      shape = pentagon(position, PLAYER_RADIUS - 0.5);
+      break;
+
+    case CharacterType.STAR:
+      shape = star(position, PLAYER_RADIUS, PLAYER_RADIUS / 2);
+      break;
+
     default:
       shape = circle(position, PLAYER_RADIUS / 2);
   }
