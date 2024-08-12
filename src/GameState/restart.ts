@@ -20,24 +20,12 @@ import { CharacterType } from '../Character/type';
 
 export function restart(state: GameState): GameState {
   const initial_state = init_game();
-  const { width, height } = get_canvas_dimensions();
-
-  const corner_positions = [
-    { x: 0, y: 0 },
-    { x: width, y: 0 },
-    { x: 0, y: height },
-    { x: width, y: height }
-  ];
 
   const players = state.players.withMutations(mutable_map => {
-    let i = 0;
     mutable_map.forEach((player, uid) => {
-      const pos = corner_positions[i % 4];
-
-      const new_player = init_player(uid, player.name, pos, CharacterType.TRIANGLE);
+      const new_player = init_player(uid, player.name, player.character);
       new_player.stats = player.stats;
       mutable_map.set(uid, new_player);
-      i++;
     });
   });
 

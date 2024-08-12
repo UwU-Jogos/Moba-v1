@@ -130,9 +130,9 @@ export function tick(gs: GameState): GameState {
         const respawn_area: GameObject = {
           kind: 'RespawnArea',
           position: player.team === TeamType.TEAM_RED ? { x: 0, y: 0 } : { x: width - PLAYER_RADIUS * 4, y: height - PLAYER_RADIUS * 4 },
-          width: PLAYER_RADIUS * 4,
-          height: PLAYER_RADIUS * 4,
-          active: 5 * TPS // 5 seconds of active time
+          width: PLAYER_RADIUS * 6,
+          height: PLAYER_RADIUS * 6,
+          active: 3 * TPS // 3 seconds of active time
         };
         new_respawn_areas.push(respawn_area);
 

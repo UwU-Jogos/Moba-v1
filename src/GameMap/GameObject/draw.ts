@@ -33,10 +33,20 @@ export function draw(ctx: CanvasRenderingContext2D, gameObject: GameObject): voi
       let line_shape : Shape = line(position, { x: position.x + width, y: position.y + height });
       shape_draw(ctx, line_shape, WALL_COLOR);
     },
+    LineWall: (ini: V2, end: V2) => {
+      let line_shape : Shape = line(ini, end);
+      shape_draw(ctx, line_shape, WALL_COLOR);
+    },
     RespawnArea: (position: V2, width: number, height: number, active: number) => {
       if (active == 0) return;
-      let rectangle_shape : Shape = rectangle(position, width, height);
-      shape_draw(ctx, rectangle_shape, RESPAWN_AREA_COLOR);
+      let top_line : Shape = line(position, { x: position.x + width, y: position.y });
+      let right_line : Shape = line({ x: position.x + width, y: position.y }, { x: position.x + width, y: position.y + height });
+      let bottom_line : Shape = line({ x: position.x, y: position.y + height }, { x: position.x + width, y: position.y + height });
+      let left_line : Shape = line(position, { x: position.x, y: position.y + height });
+      shape_draw(ctx, top_line, RESPAWN_AREA_COLOR);
+      shape_draw(ctx, right_line, RESPAWN_AREA_COLOR);
+      shape_draw(ctx, bottom_line, RESPAWN_AREA_COLOR);
+      shape_draw(ctx, left_line, RESPAWN_AREA_COLOR);
     },
     Orb: (position: V2, radius: number, life: number, active: number) => {
       if (active == 0 || life <= 0) return;

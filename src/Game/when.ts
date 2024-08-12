@@ -24,7 +24,7 @@ export function when(when: Action, gs: GameState): GameState {
   if (!players.has(when.pid)) {
     const initial_name = when.$ === "SetNick" ? when.name : "Anon";
     const character_type = when.$ === "SetNick" ? when.character : CharacterType.TRIANGLE;
-    players = players.set(when.pid, init_player(when.pid, initial_name, { x: 128, y: 200 }, character_type));
+    players = players.set(when.pid, init_player(when.pid, initial_name, character_type));
   }
 
   switch (when.$) {
