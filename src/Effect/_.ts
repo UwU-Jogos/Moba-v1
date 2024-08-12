@@ -23,6 +23,10 @@
 ///
 /// * `OrbGivesMaxLife` - Gives maximum life when collecting an orb
 ///   - `life` - The amount of life to give
+///
+/// * `IncreaseMoveSpeed` - Gives move speed
+///   - `percentage` - percentage of move speed increase
+
 
 export type Effect =
   | { $: 'RangeAlter'; multiplier: number }
@@ -30,4 +34,5 @@ export type Effect =
   | { $: 'NoWallCollision'; active: boolean }
   | { $: 'Immune'; active: number }
   | { $: 'MultipleShot'; shots_number: number }
-  | { $: 'OrbGivesMaxLife'; life: number };
+  | { $: 'OrbGivesMaxLife'; life: number }
+  | { $: 'IncreaseMoveSpeed'; percentage: number }
