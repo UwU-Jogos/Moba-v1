@@ -10,6 +10,8 @@
 /// * `max_life` - The maximum life of the player
 /// * `lifes` - How many times it will respawn if dies 
 /// * `destroyed_orbs` - How many times the player destroyed the orb 
+/// * `damage_multiplier`  
+/// * `movement_multiplier`  
 ///
 /// # Type Definition
 ///

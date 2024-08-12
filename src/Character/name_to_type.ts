@@ -25,6 +25,14 @@ export function name_to_type(name: string): CharacterType {
       return CharacterType.TRIANGLE;
     case 'Circle':
       return CharacterType.CIRCLE;
+    case 'Diamond':
+      return CharacterType.DIAMOND;
+    case 'Flag':
+      return CharacterType.FLAG;
+    case 'Pentagon':
+      return CharacterType.PENTAGON;
+    case 'Star':
+      return CharacterType.STAR;
     default:
       throw new Error(`Unknown character name: ${name}`);
   }

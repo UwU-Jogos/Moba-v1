@@ -34,6 +34,12 @@ export function init(id: UID, name: Name, character_type: CharacterType): Player
 
   let character = create_character(character_type);
   let stats: Stats = init_stats();
+  
+  // TODO: REFACTOR
+  if (character_type === CharacterType.DIAMOND) {
+    stats.max_life *= 0.75;
+  }
+
   let initial_player : Player = {
     id,
     name,

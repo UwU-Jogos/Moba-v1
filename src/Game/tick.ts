@@ -57,6 +57,7 @@ export function tick(gs: GameState): GameState {
           if (collision_player.life <= 0 && player_id !== projectile.owner_id) {
             const owner_player = mutable_players.get(projectile.owner_id);
             if (owner_player) {
+
               const updated_owner = {
                 ...owner_player,
                 stats: {
@@ -83,7 +84,12 @@ export function tick(gs: GameState): GameState {
 
           const owner_player_character = create_character(owner_player.character);
           const max_life_increase = owner_player_character.effects.find(effect => effect.$ === 'OrbGivesMaxLife')?.life || 0;
-          console.log(max_life_increase);
+          const movement_speed = owner_player_character.effects.find(effect => effect.$ === 'IncreaseMoveSpeed');
+
+          if (movement_speed) {
+            movement_speed.percentage += movement_speed.percentage;
+          }
+          
 
           updated_players = updated_players.set(projectile.owner_id, {
             ...owner_player,
@@ -91,7 +97,7 @@ export function tick(gs: GameState): GameState {
               ...owner_player.stats,
               destroyed_orbs: owner_player.stats.destroyed_orbs + 1,
               damage_multiplier: owner_player.stats.damage_multiplier + 0.1,
-              max_life: owner_player.stats.max_life + max_life_increase
+              max_life: owner_player.stats.max_life + max_life_increase,
             }
           });
         }
@@ -148,8 +154,13 @@ export function tick(gs: GameState): GameState {
         return;
       }
 
-      const dx = ((player.key["D"] ? PLAYER_SPEED : 0) + (player.key["A"] ? -PLAYER_SPEED : 0)) * dt * 90;
-      const dy = ((player.key["S"] ? PLAYER_SPEED : 0) + (player.key["W"] ? -PLAYER_SPEED : 0)) * dt * 90;
+      const char = create_character(player.character);
+      const move_speed_mult = char.effects.find(effect => effect.$ === 'IncreaseMoveSpeed')?.percentage || 0; 
+
+      const speed = PLAYER_SPEED + (PLAYER_SPEED * move_speed_mult);
+
+      const dx = ((player.key["D"] ? speed : 0) + (player.key["A"] ? -speed : 0)) * dt * 90;
+      const dy = ((player.key["S"] ? speed : 0) + (player.key["W"] ? -speed : 0)) * dt * 90;
 
       let new_x = player.pos.x + dx;
       let new_y = player.pos.y + dy;

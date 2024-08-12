@@ -14,8 +14,14 @@ import { Player } from './_';
 import { GameObject } from '../GameMap/GameObject/_';
 import { V2 } from '../V2/_';
 import { PLAYER_RADIUS } from '../Helpers/consts';
+import { create_character } from '../Character/create_character';
 
 export function check_game_object_collision(player: Player, pos: V2, game_object: GameObject): V2 {
+  const character = create_character(player.character);
+  if (character.effects.some(effect => effect.$ === 'NoWallCollision')) {
+    return pos;
+  }
+
   let new_x = pos.x;
   let new_y = pos.y;
 

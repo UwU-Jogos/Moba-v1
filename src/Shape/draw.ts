@@ -40,7 +40,47 @@ export function draw(canvas: CanvasRenderingContext2D, shape: Shape, color: stri
       canvas.fill();
     },
     rectangle: (pos: V2, width: number, height: number) => {
-      canvas.fillRect(pos.x, pos.y, width, height);
+      canvas.fillRect(pos.x - width / 2, pos.y - height / 2, width, height);
+    },
+    diamond: (pos: V2, width: number, height: number) => {
+      canvas.beginPath();
+      canvas.moveTo(pos.x, pos.y - height / 2);
+      canvas.lineTo(pos.x + width / 2, pos.y);
+      canvas.lineTo(pos.x, pos.y + height / 2);
+      canvas.lineTo(pos.x - width / 2, pos.y);
+      canvas.closePath();
+      canvas.fill();
+    },
+   pentagon: (pos: V2, radius: number) => {
+      const angle = Math.PI * 2 / 5;
+      canvas.beginPath();
+      for (let i = 0; i < 5; i++) {
+        const x = pos.x + radius * Math.cos(i * angle - Math.PI / 2);
+        const y = pos.y + radius * Math.sin(i * angle - Math.PI / 2);
+        if (i === 0) {
+          canvas.moveTo(x, y);
+        } else {
+          canvas.lineTo(x, y);
+        }
+      }
+      canvas.closePath();
+      canvas.fill();
+    },
+    star: (pos: V2, outer_radius: number, inner_radius: number) => {
+      const angle = Math.PI / 5;
+      canvas.beginPath();
+      for (let i = 0; i < 10; i++) {
+        const r = (i % 2 === 0) ? outer_radius : inner_radius;
+        const x = pos.x + r * Math.cos(i * angle - Math.PI / 2);
+        const y = pos.y + r * Math.sin(i * angle - Math.PI / 2);
+        if (i === 0) {
+          canvas.moveTo(x, y);
+        } else {
+          canvas.lineTo(x, y);
+        }
+      }
+      canvas.closePath();
+      canvas.fill();
     }
   });
 }
