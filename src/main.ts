@@ -90,8 +90,8 @@ async function handle_form_submit(e: Event) {
 async function start_game(room_id: UID, name: Name, character: string) {
   room = room_id;
 
-  await client.init('ws://localhost:7171');
-  //await client.init('ws://server.uwu.games');
+  //await client.init('ws://localhost:7171');
+  await client.init('ws://server.uwu.games');
 
   mach = sm.new_mach(TPS);
 
@@ -199,7 +199,7 @@ function handle_key_event(event: KeyboardEvent) {
 function handle_movement_event(key: string, down: boolean) {
   if (key_state[key] !== down) {
     key_state[key] = down;
-    var time = client.time();
+    var time = client.time() + ARTIFICIAL_DELAY;
     var act = { $: "MovementEvent", time, pid: PID, key, down } as Action;
     sm.register_action(mach, act);
     client.send(room, serialize(act));
@@ -209,7 +209,7 @@ function handle_movement_event(key: string, down: boolean) {
 function handle_skill_event(key: string, down: boolean) {
   if (key_state[key] !== down) {
     key_state[key] = down;
-    var time = client.time();
+    var time = client.time() + ARTIFICIAL_DELAY;
     var act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
     sm.register_action(mach, act);
     client.send(room, serialize(act));

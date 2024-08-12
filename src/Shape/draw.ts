@@ -51,8 +51,8 @@ export function draw(canvas: CanvasRenderingContext2D, shape: Shape, color: stri
       canvas.closePath();
       canvas.fill();
     },
-   pentagon: (pos: V2, radius: number) => {
-      const angle = Math.PI * 2 / 5;
+    pentagon: (pos: V2, radius: number) => {
+      const angle = (2 * Math.PI) / 5;
       canvas.beginPath();
       for (let i = 0; i < 5; i++) {
         const x = pos.x + radius * Math.cos(i * angle - Math.PI / 2);

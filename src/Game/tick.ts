@@ -147,7 +147,7 @@ export function tick(gs: GameState): GameState {
           kind: 'Orb',
           position: { x: width / 2, y: height / 2 },
           radius: PLAYER_RADIUS,
-          life: 100,
+          life: 200,
           active: 30 * TPS // 30 seconds of active time
         };
         new_orbs.push(orb);

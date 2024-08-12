@@ -22,7 +22,7 @@ export function Circle(): Character {
       'E': { id: 'skill3', type: 'action', cooldown: seconds_to_ticks(0.15), duration: 1, range: DEFAULT_RANGE },
     },
     effects: [
-      { $: 'OrbGivesMaxLife', life: 150 },
+      { $: 'OrbGivesMaxLife', life: 35 },
     ]
   };
 }

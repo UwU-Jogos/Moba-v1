@@ -58,7 +58,7 @@ export function draw(ctx: CanvasRenderingContext2D, gameObject: GameObject): voi
       const lifeBarHeight = 5;
       const lifeBarY = position.y - radius - 10;
       const lifeBarX = position.x - radius;
-      const currentLifeWidth = (life / 100) * lifeBarWidth; // Assuming max life is 100
+      const currentLifeWidth = (life / 200) * lifeBarWidth; // Assuming max life is 100
       
       ctx.fillStyle = 'red';
       ctx.fillRect(lifeBarX, lifeBarY, lifeBarWidth, lifeBarHeight);
