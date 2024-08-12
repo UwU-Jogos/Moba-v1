@@ -26,7 +26,12 @@ import { Stats } from '../Stats/_';
 
 var next_team : TeamType = TeamType.TEAM_RED;
 
-export function init(id: UID, name: Name, pos: V2, character_type: CharacterType): Player {
+export function init(id: UID, name: Name, character_type: CharacterType): Player {
+  const blue_team_spawn = { x: 400, y: 550 };
+  const red_team_spawn = { x: 400, y: 50 };
+
+  const pos = next_team == TeamType.TEAM_RED ? red_team_spawn : blue_team_spawn;
+
   let character = create_character(character_type);
   let stats: Stats = init_stats();
   let initial_player : Player = {

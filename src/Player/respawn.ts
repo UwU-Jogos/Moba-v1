@@ -16,7 +16,7 @@ import { TPS } from '../Helpers/consts';
 
 export function respawn(player: Player): Player {
   const { width, height } = get_canvas_dimensions();
-  
+
   const corners: V2[] = [
     { x: 0, y: 0 },
     { x: width, y: 0 },
