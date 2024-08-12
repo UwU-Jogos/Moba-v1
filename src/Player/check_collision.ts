@@ -12,6 +12,7 @@ import { UID } from '../UID/_';
 import { V2 } from '../V2/_';
 import { PLAYER_RADIUS } from '../Helpers/consts';
 import { create_character } from '../Character/create_character';
+import { CharacterType } from '../Character/type';
 
 export function check_collision(player: Player, pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
   if (pid === other_pid) { return pos; }
@@ -34,8 +35,9 @@ export function check_collision(player: Player, pid: UID, other_player: Player, 
     const distance = Math.sqrt(dx * dx + dy * dy);
     if (distance < PLAYER_RADIUS * 2) {
       const angle = Math.atan2(dy, dx);
-      new_x = other_player.pos.x + Math.cos(angle) * PLAYER_RADIUS * 2;
-      new_y = other_player.pos.y + Math.sin(angle) * PLAYER_RADIUS * 2;
+      const push_factor = player.character === CharacterType.PENTAGON ? 0.9 : 1;
+      new_x = other_player.pos.x + Math.cos(angle) * PLAYER_RADIUS * 2 * push_factor;
+      new_y = other_player.pos.y + Math.sin(angle) * PLAYER_RADIUS * 2 * push_factor;
     }
   }
   return { x: new_x, y: new_y };
