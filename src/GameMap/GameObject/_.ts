@@ -7,6 +7,7 @@
 /// * `PushWall` - A wall that pushes the player in the opposite direction when hit.
 /// * `RespawnArea` - An area where players can respawn, with activation state and duration.
 /// * `Orb` - An orb object with position, radius, and active state, as well as life
+/// * `LineWall` - A wall object defined by its start and end points
 ///
 /// # Fields
 ///
@@ -18,4 +19,5 @@ export type GameObject =
   | { kind: 'Platform', position: V2, width: number, height: number }
   | { kind: 'PushWall', position: V2, width: number, height: number, force: number }
   | { kind: 'RespawnArea', position: V2, width: number, height: number, active: number }
-  | { kind: 'Orb', position: V2, radius: number, life: number, active: number };
+  | { kind: 'Orb', position: V2, radius: number, life: number, active: number }
+  | { kind: 'LineWall', ini: V2, end: V2 };
