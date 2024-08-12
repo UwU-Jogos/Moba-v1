@@ -48,6 +48,7 @@ export function tick(gs: GameState): GameState {
       mutable_players.forEach((player, player_id) => {
         const [collision_player, collision_projectile] = check_projectile_player_collision(projectile, player, player_id);
         
+        projectile = collision_projectile;
         // If the projectile hit the player
         if (collision_player !== player) {
           mutable_players.set(player_id, collision_player);
