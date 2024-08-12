@@ -29,8 +29,9 @@ export function deserialize(data: Uint8Array): Action {
       const pid_buffer = new Uint8Array(8);
       pid_buffer.set(data.slice(7, 13), 0);
       const pid = Number(new BigUint64Array(pid_buffer.buffer)[0]);
-      const name = decoder.decode(data.slice(13));
-      return { $: "SetNick", time, pid, name };
+      const character = data[13];
+      const name = decoder.decode(data.slice(14));
+      return { $: "SetNick", time, pid, name, character };
     }
     case 1: { // SkillEvent
       const tick_buffer = new Uint8Array(8);
@@ -55,6 +56,17 @@ export function deserialize(data: Uint8Array): Action {
       const x = (data[13] << 8) | data[14];
       const y = (data[15] << 8) | data[16];
       return { $: "MouseClick", time, pid, x, y };
+    }
+    case 3: { // MovementEvent
+      const tick_buffer = new Uint8Array(8);
+      tick_buffer.set(data.slice(1, 7), 0);
+      const time = Number(new BigUint64Array(tick_buffer.buffer)[0]);
+      const pid_buffer = new Uint8Array(8);
+      pid_buffer.set(data.slice(7, 13), 0);
+      const pid = Number(new BigUint64Array(pid_buffer.buffer)[0]);
+      const key = String.fromCharCode(data[13]);
+      const down = data[14] === 1;
+      return { $: "MovementEvent", time, pid, key, down };
     }
     default: {
       throw new Error("Unknown action type");

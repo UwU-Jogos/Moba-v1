@@ -11,8 +11,21 @@ import { Player } from './_';
 import { UID } from '../UID/_';
 import { V2 } from '../V2/_';
 import { PLAYER_RADIUS } from '../Helpers/consts';
+import { create_character } from '../Character/create_character';
 
-export function check_collision(pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
+export function check_collision(player: Player, pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
+  if (pid === other_pid) { return pos; }
+
+  const player_character = create_character(player.character);
+  const other_character = create_character(other_player.character);
+
+  const no_collision_player = player_character.effects.some(effect => effect.$ === 'NoPlayerCollision');
+  const no_collision_other_player = other_character.effects.some(effect => effect.$ === 'NoPlayerCollision');
+
+  if (no_collision_player || no_collision_other_player) {
+    return pos;
+  }
+
   let new_x = pos.x;
   let new_y = pos.y;
   if (pid !== other_pid && other_player.life > 0) {

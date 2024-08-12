@@ -16,14 +16,15 @@ import { seconds_to_ticks } from '../Helpers/seconds_to_ticks';
 import { activate as activate_skill} from '../Skill/activate';
 import { PLAYER_RADIUS, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
 import { init as init_player } from '../Player/init';
-
+import { CharacterType } from '../Character/type';
 
 export function when(when: Action, gs: GameState): GameState {
   let players = gs.players;
 
   if (!players.has(when.pid)) {
     const initial_name = when.$ === "SetNick" ? when.name : "Anon";
-    players = players.set(when.pid, init_player(when.pid, initial_name, { x: 128, y: 200 }));
+    const character_type = when.$ === "SetNick" ? when.character : CharacterType.TRIANGLE;
+    players = players.set(when.pid, init_player(when.pid, initial_name, character_type));
   }
 
   switch (when.$) {
@@ -45,6 +46,13 @@ export function when(when: Action, gs: GameState): GameState {
       players = players.update(when.pid, player => {
         if (!player) return player;
         return { ...player, target_pos: { x: when.x, y: when.y } } as Player;
+      });
+      break;
+    }
+    case "MovementEvent": {
+      players = players.update(when.pid, player => {
+        if (!player) return player;
+        return { ...player, key: { ...player.key, [when.key]: when.down } } as Player;
       });
       break;
     }

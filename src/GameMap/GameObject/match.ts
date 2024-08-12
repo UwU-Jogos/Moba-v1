@@ -17,6 +17,10 @@ export function match<R>(
   handlers: {
     Wall: (position: V2, width: number, height: number) => R;
     Platform: (position: V2, width: number, height: number) => R;
+    PushWall: (position: V2, width: number, height: number, force: number) => R;
+    RespawnArea: (position: V2, width: number, height: number, active: number) => R;
+    Orb: (position: V2, radius: number, life: number, active: number) => R;
+    LineWall: (ini: V2, end: V2) => R;
   }
 ): R {
   switch (game_obj.kind) {
@@ -24,5 +28,13 @@ export function match<R>(
       return handlers.Wall(game_obj.position, game_obj.width, game_obj.height);
     case 'Platform':
       return handlers.Platform(game_obj.position, game_obj.width, game_obj.height);
+    case 'PushWall':
+      return handlers.PushWall(game_obj.position, game_obj.width, game_obj.height, game_obj.force);
+    case 'RespawnArea':
+      return handlers.RespawnArea(game_obj.position, game_obj.width, game_obj.height, game_obj.active);
+    case 'Orb':
+      return handlers.Orb(game_obj.position, game_obj.radius, game_obj.life, game_obj.active);
+    case 'LineWall':
+      return handlers.LineWall(game_obj.ini, game_obj.end);
   }
 }

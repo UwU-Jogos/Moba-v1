@@ -16,6 +16,10 @@ import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
 import { ARTIFICIAL_DELAY, PLAYERS_LIMIT, TIME_TO_START_GAME } from './Helpers/consts';
 import { TimeDisplay } from './Helpers/time';
+import { get_characters_list } from './Lobby/get_characters_list';
+import { name_to_type } from './Character/name_to_type';
+import { CharacterType } from './Character/type';
+import { Finished, game_finished } from './GameState/finished';
 
 // Types
 // -----
@@ -46,8 +50,25 @@ function setup_form_listener() {
   
   if (login_form) {
     login_form.addEventListener('submit', handle_form_submit);
+    populate_character_select();
   } else {
     console.error("Login form not found!");
+  }
+}
+
+function populate_character_select() {
+  const character_select = document.getElementById('character-select') as HTMLSelectElement;
+  if (character_select) {
+    character_select.innerHTML = ''; // Clear existing options
+    const characters = get_characters_list();
+    characters.forEach(character => {
+      const option = document.createElement('option');
+      option.value = character;
+      option.textContent = character;
+      character_select.appendChild(option);
+    });
+  } else {
+    console.error("Character select not found!");
   }
 }
 
@@ -58,14 +79,15 @@ async function handle_form_submit(e: Event) {
   const room_id = parseInt(room_input.value);
   const name_input = document.getElementById('nickname') as HTMLInputElement;
   const name = name_input.value;
+  const character_select = document.getElementById('character-select') as HTMLSelectElement;
+  const character = character_select.value;
 
-
-  // Start the game with the provided room ID
-  await start_game(room_id, name);
+  // Start the game with the provided room ID, name, and character
+  await start_game(room_id, name, character);
 }
 
 // Function to start the game
-async function start_game(room_id: UID, name: Name) {
+async function start_game(room_id: UID, name: Name, character: string) {
   room = room_id;
 
   await client.init('ws://localhost:7171');
@@ -90,18 +112,20 @@ async function start_game(room_id: UID, name: Name) {
   });
 
   // Create and send SetNick action
+  const character_type : CharacterType = name_to_type(character);
   const set_nick_action: Action = {
     $: "SetNick",
     time: client.time(),
     pid: PID,
-    name: name
+    name: name,
+    character: character_type
   };
   sm.register_action(mach, set_nick_action);
   client.send(room, serialize(set_nick_action));
 
   // Set up key and mouse event listeners
-  window.addEventListener('keydown', handle_skill_event);
-  window.addEventListener('keyup', handle_skill_event);
+  window.addEventListener('keydown', handle_key_event);
+  window.addEventListener('keyup', handle_key_event);
   window.addEventListener('mousemove', handle_mouse_move);
   window.addEventListener('click', handle_mouse_click);
 
@@ -162,19 +186,36 @@ function show_game_container() {
 
 // Input Handler
 const key_state: { [key: string]: boolean } = {};
-function handle_skill_event(event: KeyboardEvent) {
+function handle_key_event(event: KeyboardEvent) {
   const key = event.key.toUpperCase();
-  if (['Q', 'W', 'E', 'R'].includes(key)) {
-    const down = event.type === 'keydown';
-    if (key_state[key] !== down) {
-      key_state[key] = down;
-      var time = client.time();
-      var act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
-      sm.register_action(mach, act);
-      client.send(room, serialize(act));
-    }
+  const down = event.type === 'keydown';
+  if (['W', 'A', 'S', 'D'].includes(key)) {
+    handle_movement_event(key, down);
+  } else if (['Q', 'W', 'E', 'R'].includes(key)) {
+    handle_skill_event(key, down);
   }
 }
+
+function handle_movement_event(key: string, down: boolean) {
+  if (key_state[key] !== down) {
+    key_state[key] = down;
+    var time = client.time();
+    var act = { $: "MovementEvent", time, pid: PID, key, down } as Action;
+    sm.register_action(mach, act);
+    client.send(room, serialize(act));
+  }
+}
+
+function handle_skill_event(key: string, down: boolean) {
+  if (key_state[key] !== down) {
+    key_state[key] = down;
+    var time = client.time();
+    var act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
+    sm.register_action(mach, act);
+    client.send(room, serialize(act));
+  }
+}
+
 // Mouse Click Handler
 function handle_mouse_click(event: MouseEvent) {
   if (event.button === 0 && event.target instanceof HTMLCanvasElement) {
@@ -205,6 +246,14 @@ function game_loop() {
   // Compute the current state
   const state = sm.compute(mach, { init, tick, when }, client.time());
 
+  // Check if the game has finished
+  let finished: Finished | null = game_finished(state);
+  if (finished) {
+    // Stop the game loop
+    show_game_result(finished, state);
+    return;
+  }
+
   // Draw the current state
   draw(state);
 
@@ -216,6 +265,28 @@ function game_loop() {
 
   // Schedule the next frame
   requestAnimationFrame(game_loop);
+}
+
+function show_game_result(finished: Finished, state: GameState) {
+  const game_container = document.getElementById('game-container');
+  const result_container = document.getElementById('result-container');
+  const result_message = document.getElementById('result-message');
+
+  if (game_container && result_container && result_message) {
+    game_container.style.display = 'none';
+    result_container.style.display = 'block';
+    
+    const playerTeam = state.players.get(PID)?.team;
+    if (playerTeam === finished.winner) {
+      result_message.textContent = 'You Won!';
+    } else if (playerTeam === finished.loser) {
+      result_message.textContent = 'You Lost!';
+    } else {
+      result_message.textContent = 'Game Finished!';
+    }
+  } else {
+    console.error("Could not find game or result container");
+  }
 }
 
 // Initialize TimeDisplay

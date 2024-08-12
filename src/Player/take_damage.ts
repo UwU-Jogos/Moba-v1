@@ -1,4 +1,4 @@
-/// Takes damage from players life. 
+/// Takes damage from players life, decrement player lifes if dies.
 ///
 /// # Args
 ///
@@ -12,6 +12,6 @@ export function take_damage(player: Player, damage: Damage) : Player {
   const updated_life = Math.max(0, player.life - damage);
   return {
     ...player,
-    life: updated_life
+    life: updated_life,
   };
 }
