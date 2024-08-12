@@ -35,46 +35,46 @@ export type Finished = {
 
 export function game_finished(state: GameState): Finished | null {
   const players = Array.from(state.players.values());
-  const pentagonPlayer = players.find(player => create_character(player.character).type === CharacterType.PENTAGON);
+  const pentagon_player = players.find(player => create_character(player.character).type === CharacterType.PENTAGON);
 
-  if (pentagonPlayer) {
+  if (pentagon_player) {
     if (players.length === 2) {
       // 1v1 scenario with Pentagon, game ends immediately
       return {
-        winner: pentagonPlayer.team === TeamType.TEAM_RED ? TeamType.TEAM_BLUE : TeamType.TEAM_RED,
-        loser: pentagonPlayer.team
+        winner: pentagon_player.team === TeamType.TEAM_RED ? TeamType.TEAM_BLUE : TeamType.TEAM_RED,
+        loser: pentagon_player.team
       };
     }
 
-    const pentagonTeamPlayers = players.filter(player => player.team === pentagonPlayer.team && player.id !== pentagonPlayer.id);
-    const pentagonTeamFinished = pentagonTeamPlayers.every(player => player.stats.lifes === 0);
+    const pentagon_team_players = players.filter(player => player.team === pentagon_player.team && player.id !== pentagon_player.id);
+    const pentagon_team_finished = pentagon_team_players.every(player => player.stats.lifes === 0);
 
-    if (pentagonTeamFinished) {
+    if (pentagon_team_finished) {
       return {
-        winner: pentagonPlayer.team === TeamType.TEAM_RED ? TeamType.TEAM_BLUE : TeamType.TEAM_RED,
-        loser: pentagonPlayer.team
+        winner: pentagon_player.team === TeamType.TEAM_RED ? TeamType.TEAM_BLUE : TeamType.TEAM_RED,
+        loser: pentagon_player.team
       };
     }
 
     return null; // Game continues if Pentagon's teammates are still alive
   }
 
-  const redTeamFinished = players
+  const red_team_finished = players
     .filter(player => player.team === TeamType.TEAM_RED)
     .every(player => player.stats.lifes === 0);
 
-  const blueTeamFinished = players
+  const blue_team_finished = players
     .filter(player => player.team === TeamType.TEAM_BLUE)
     .every(player => player.stats.lifes === 0);
 
-  if (redTeamFinished) {
+  if (red_team_finished) {
     return {
       winner: TeamType.TEAM_BLUE,
       loser: TeamType.TEAM_RED
     };
   }
 
-  if (blueTeamFinished) {
+  if (blue_team_finished) {
     return {
       winner: TeamType.TEAM_RED,
       loser: TeamType.TEAM_BLUE
