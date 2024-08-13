@@ -74,28 +74,30 @@ export function check_game_object_collision(player: Player, pos: V2, game_object
         }
       }
     }
-  } else if (game_object.kind === 'LineWall') {
-    // Handle LineWall collision
-    const dx = game_object.end.x - game_object.ini.x;
-    const dy = game_object.end.y - game_object.ini.y;
-    const length = Math.sqrt(dx * dx + dy * dy);
-    const normalX = -dy / length;
-    const normalY = dx / length;
+  } else if (game_object.kind === 'LineWall' || game_object.kind === 'TimedLineWall') {
+    if (game_object.kind === 'TimedLineWall' && game_object.active == 0) {
+    } else {
+      const dx = game_object.end.x - game_object.ini.x;
+      const dy = game_object.end.y - game_object.ini.y;
+      const length = Math.sqrt(dx * dx + dy * dy);
+      const normalX = -dy / length;
+      const normalY = dx / length;
 
-    const playerToWallX = new_x - game_object.ini.x;
-    const playerToWallY = new_y - game_object.ini.y;
+      const playerToWallX = new_x - game_object.ini.x;
+      const playerToWallY = new_y - game_object.ini.y;
 
-    const projection = playerToWallX * normalX + playerToWallY * normalY;
+      const projection = playerToWallX * normalX + playerToWallY * normalY;
 
-    if (Math.abs(projection) < PLAYER_RADIUS) {
-      const closestX = new_x - projection * normalX;
-      const closestY = new_y - projection * normalY;
+      if (Math.abs(projection) < PLAYER_RADIUS) {
+        const closestX = new_x - projection * normalX;
+        const closestY = new_y - projection * normalY;
 
-      const t = ((closestX - game_object.ini.x) * dx + (closestY - game_object.ini.y) * dy) / (length * length);
+        const t = ((closestX - game_object.ini.x) * dx + (closestY - game_object.ini.y) * dy) / (length * length);
 
-      if (t >= 0 && t <= 1) {
-        new_x = closestX + normalX * PLAYER_RADIUS * Math.sign(projection);
-        new_y = closestY + normalY * PLAYER_RADIUS * Math.sign(projection);
+        if (t >= 0 && t <= 1) {
+          new_x = closestX + normalX * PLAYER_RADIUS * Math.sign(projection);
+          new_y = closestY + normalY * PLAYER_RADIUS * Math.sign(projection);
+        }
       }
     }
   }

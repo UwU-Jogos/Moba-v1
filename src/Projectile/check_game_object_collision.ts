@@ -39,7 +39,11 @@ export function check_game_object_collision(projectile: Projectile, game_object:
       }
       return [game_object, projectile];
     },
-    LineWall: (ini, end) => check_line_wall_collision(projectile, game_object, ini, end)
+    LineWall: (ini, end) => check_line_wall_collision(projectile, game_object, ini, end),
+    TimedLineWall: (ini, end, active) => {
+      if (active == 0) { return [game_object, projectile]; }
+      else { return check_line_wall_collision(projectile, game_object, ini, end); }
+    }
   });
 }
 
