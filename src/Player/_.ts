@@ -44,4 +44,5 @@ export type Player = {
   key: { [key: Key]: boolean };
   stats: Stats;
   effects: Effect[]; 
+  shots: number;
 };

@@ -2,6 +2,7 @@ import { Skill } from "../Skill/_";
 import { UID } from "../UID/_";
 import { Damage } from "../Damage/_";
 import { V2 } from "../V2/_";
+import { Effect } from "../Effect/_";
 
 
 export type Projectile = {
@@ -15,4 +16,5 @@ export type Projectile = {
   remaining_duration: number;
   range: number;
   damage: Damage;
+  effects: Effect[];
 };

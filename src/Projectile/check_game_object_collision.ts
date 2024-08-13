@@ -12,11 +12,15 @@
 import { Projectile } from './_';
 import { V2 } from '../V2/_';
 import { GameObject } from '../GameMap/GameObject/_';
-import { match as matchGameObject } from '../GameMap/GameObject/match';
+import { match as match_game_object } from '../GameMap/GameObject/match';
 import { distance } from '../Helpers/distance';
 
 export function check_game_object_collision(projectile: Projectile, game_object: GameObject): [GameObject, Projectile] {
-  return matchGameObject(game_object, {
+  if (projectile.effects.some(effect => effect.$ === 'ShotThroughWall')) {
+    return [game_object, projectile];
+  }
+
+  return match_game_object(game_object, {
     Wall: (position, width, height) => check_rectangle_collision(projectile, game_object, position, width, height),
     Platform: (position, width, height) => check_rectangle_collision(projectile, game_object, position, width, height),
     PushWall: (position, width, height) => check_rectangle_collision(projectile, game_object, position, width, height),
