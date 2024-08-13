@@ -26,6 +26,9 @@
 ///
 /// * `IncreaseMoveSpeed` - Gives move speed
 ///   - `percentage` - percentage of move speed increase
+///
+/// * `ShotThroughWall` - Allows shots to pass through walls
+///   - `active` - Whether the effect is active (true) or not (false)
 
 
 export type Effect =
@@ -36,3 +39,4 @@ export type Effect =
   | { $: 'MultipleShot'; shots_number: number }
   | { $: 'OrbGivesMaxLife'; life: number }
   | { $: 'IncreaseMoveSpeed'; percentage: number }
+  | { $: 'ShotThroughWall'; active: boolean }
