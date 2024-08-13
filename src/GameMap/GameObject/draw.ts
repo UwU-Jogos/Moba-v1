@@ -65,5 +65,10 @@ export function draw(ctx: CanvasRenderingContext2D, gameObject: GameObject): voi
       ctx.fillStyle = 'green';
       ctx.fillRect(lifeBarX, lifeBarY, currentLifeWidth, lifeBarHeight);
     },
+    TimedLineWall: (ini: V2, end: V2, active: number) => {
+      if (active == 0) return;
+      let line_shape : Shape = line(ini, end);
+      shape_draw(ctx, line_shape, WALL_COLOR);
+    },
   });
 }
