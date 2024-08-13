@@ -1,11 +1,7 @@
 import * as sm from '@uwu-games/uwu-state-machine';
 import { UwUChat2Client } from 'uwuchat2';
-import { Map } from 'immutable';
 import { UID } from './UID/_'; // 48-bit
-import { Key } from './Key/_'; // 8-bit
 import { Name } from './Name/_'; // UTF-16
-import { V2 } from './V2/_';
-import { Player } from './Player/_';
 import { GameState } from './GameState/_';
 import { Action } from './Action/_';
 import { init } from './Game/init';
@@ -26,13 +22,12 @@ import { Finished, game_finished } from './GameState/finished';
 
 const TPS = 32;
 const PID = Math.floor(Math.random() * (2 ** 16));
-const PRADIUS = 10;
 console.log("PID is:", PID);
 
 // Main App
 // --------
 
-let players_in_the_room: UID[] = [];
+const players_in_the_room: UID[] = [];
 let room: UID;
 let mach: sm.Mach<GameState, Action>;
 const client = new UwUChat2Client();
@@ -45,9 +40,9 @@ document.addEventListener('DOMContentLoaded', () => {
 // Also set up the listener immediately in case DOMContentLoaded has already fired
 setup_form_listener();
 
-function setup_form_listener() {
+function setup_form_listener(): void {
   const login_form = document.getElementById('login-form');
-  
+
   if (login_form) {
     login_form.addEventListener('submit', handle_form_submit);
     populate_character_select();
@@ -56,7 +51,7 @@ function setup_form_listener() {
   }
 }
 
-function populate_character_select() {
+function populate_character_select(): void {
   const character_select = document.getElementById('character-select') as HTMLSelectElement;
   if (character_select) {
     character_select.innerHTML = ''; // Clear existing options
@@ -72,11 +67,11 @@ function populate_character_select() {
   }
 }
 
-async function handle_form_submit(e: Event) {
+async function handle_form_submit(e: Event): Promise<void> {
   e.preventDefault();
-  
+
   const room_input = document.getElementById('room-number') as HTMLInputElement;
-  const room_id = parseInt(room_input.value);
+  const room_id = parseInt(room_input.value, 10);
   const name_input = document.getElementById('nickname') as HTMLInputElement;
   const name = name_input.value;
   const character_select = document.getElementById('character-select') as HTMLSelectElement;
@@ -87,26 +82,27 @@ async function handle_form_submit(e: Event) {
 }
 
 // Function to start the game
-async function start_game(room_id: UID, name: Name, character: string) {
+async function start_game(room_id: UID, name: Name, character: string): Promise<void> {
   room = room_id;
 
-  //await client.init('ws://localhost:7171');
+  // await client.init('ws://localhost:7171');
   await client.init('ws://server.uwu.games');
 
   mach = sm.new_mach(TPS);
 
   // Join room and handle messages
+  // tslint:disable-next-line:no-unused-variable
   const leave = client.recv(room, msg => {
-    try { 
+    try {
       const deserialized_msg: Action = deserialize(msg);
-      if (deserialized_msg.$ == 'SetNick') {
+      if (deserialized_msg.$ === 'SetNick') {
         players_in_the_room.push(deserialized_msg.pid);
         update_lobby();
         if (players_in_the_room.length === PLAYERS_LIMIT) {
           start_countdown();
         }
       }
-      sm.register_action(mach, deserialized_msg); 
+      sm.register_action(mach, deserialized_msg);
     }
     catch (e) { console.error("Error processing message:", e); }
   });
@@ -117,7 +113,7 @@ async function start_game(room_id: UID, name: Name, character: string) {
     $: "SetNick",
     time: client.time(),
     pid: PID,
-    name: name,
+    name,
     character: character_type
   };
   sm.register_action(mach, set_nick_action);
@@ -133,10 +129,10 @@ async function start_game(room_id: UID, name: Name, character: string) {
   show_lobby();
 }
 
-function show_lobby() {
+function show_lobby(): void {
   const login_container = document.getElementById('login-container');
   const lobby_container = document.getElementById('lobby-container');
-  
+
   if (login_container && lobby_container) {
     login_container.style.display = 'none';
     lobby_container.style.display = 'block';
@@ -145,14 +141,14 @@ function show_lobby() {
   }
 }
 
-function update_lobby() {
+function update_lobby(): void {
   const lobby_players = document.getElementById('lobby-players');
   if (lobby_players) {
     lobby_players.innerHTML = `Players in lobby: ${players_in_the_room.length}/${PLAYERS_LIMIT}`;
   }
 }
 
-function start_countdown() {
+function start_countdown(): void {
   let countdown = TIME_TO_START_GAME;
   const countdown_element = document.getElementById('countdown');
   if (countdown_element) {
@@ -168,16 +164,16 @@ function start_countdown() {
   }
 }
 
-function show_game_container() {
+function show_game_container(): void {
   const lobby_container = document.getElementById('lobby-container');
   const game_container = document.getElementById('game-container');
-  
+
   if (lobby_container && game_container) {
     lobby_container.style.display = 'none';
     game_container.style.display = 'block';
   } else {
     console.error("Could not find lobby or game container");
-    return; 
+    return;
   }
 
   // Start game loop
@@ -186,7 +182,7 @@ function show_game_container() {
 
 // Input Handler
 const key_state: { [key: string]: boolean } = {};
-function handle_key_event(event: KeyboardEvent) {
+function handle_key_event(event: KeyboardEvent): void {
   const key = event.key.toUpperCase();
   const down = event.type === 'keydown';
   if (['W', 'A', 'S', 'D'].includes(key)) {
@@ -196,28 +192,28 @@ function handle_key_event(event: KeyboardEvent) {
   }
 }
 
-function handle_movement_event(key: string, down: boolean) {
+function handle_movement_event(key: string, down: boolean): void {
   if (key_state[key] !== down) {
     key_state[key] = down;
-    var time = client.time() + ARTIFICIAL_DELAY;
-    var act = { $: "MovementEvent", time, pid: PID, key, down } as Action;
+    const time = client.time() + ARTIFICIAL_DELAY;
+    const act = { $: "MovementEvent", time, pid: PID, key, down } as Action;
     sm.register_action(mach, act);
     client.send(room, serialize(act));
   }
 }
 
-function handle_skill_event(key: string, down: boolean) {
+function handle_skill_event(key: string, down: boolean): void {
   if (key_state[key] !== down) {
     key_state[key] = down;
-    var time = client.time() + ARTIFICIAL_DELAY;
-    var act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
+    const time = client.time() + ARTIFICIAL_DELAY;
+    const act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
     sm.register_action(mach, act);
     client.send(room, serialize(act));
   }
 }
 
 // Mouse Click Handler
-function handle_mouse_click(event: MouseEvent) {
+function handle_mouse_click(event: MouseEvent): void {
   if (event.button === 0 && event.target instanceof HTMLCanvasElement) {
     const time = client.time() + ARTIFICIAL_DELAY;
     const x = event.clientX - event.target.offsetLeft;
@@ -234,7 +230,7 @@ function handle_mouse_click(event: MouseEvent) {
 // Add mouse position tracking
 let mouseX = 0;
 let mouseY = 0;
-function handle_mouse_move(event: MouseEvent) {
+function handle_mouse_move(event: MouseEvent): void {
   if (event.target instanceof HTMLCanvasElement) {
     mouseX = event.clientX - event.target.offsetLeft;
     mouseY = event.clientY - event.target.offsetTop;
@@ -242,12 +238,12 @@ function handle_mouse_move(event: MouseEvent) {
 }
 
 // Game Loop
-function game_loop() {
+function game_loop(): void {
   // Compute the current state
   const state = sm.compute(mach, { init, tick, when }, client.time());
 
   // Check if the game has finished
-  let finished: Finished | null = game_finished(state);
+  const finished: Finished | null = game_finished(state);
   if (finished) {
     // Stop the game loop
     show_game_result(finished, state);
@@ -267,7 +263,7 @@ function game_loop() {
   requestAnimationFrame(game_loop);
 }
 
-function show_game_result(finished: Finished, state: GameState) {
+function show_game_result(finished: Finished, state: GameState): void {
   const game_container = document.getElementById('game-container');
   const result_container = document.getElementById('result-container');
   const result_message = document.getElementById('result-message');
@@ -275,7 +271,7 @@ function show_game_result(finished: Finished, state: GameState) {
   if (game_container && result_container && result_message) {
     game_container.style.display = 'none';
     result_container.style.display = 'block';
-    
+
     const playerTeam = state.players.get(PID)?.team;
     if (playerTeam === finished.winner) {
       result_message.textContent = 'You Won!';

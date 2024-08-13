@@ -3,7 +3,7 @@ import { Player } from '../Player/_';
 import { distance } from '../Helpers/distance';
 
 export function move(projectile: Projectile, owner_player: Player | undefined, dt: number): Projectile {
-  let updated_projectile = { ...projectile }; 
+  const updated_projectile = { ...projectile };
 
   switch (updated_projectile.skill_type) {
     case "melee":

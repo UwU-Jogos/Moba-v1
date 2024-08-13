@@ -21,12 +21,12 @@ import { update_owner_player_stats } from '../Player/update_owner_player_stats';
 export function update_projectile_game_object_collisions(game_map: GameMap, projectile: Projectile, owner_player: Player | undefined): [GameMap, Projectile] {
   const updated_objects = game_map.objects.map(game_object => {
     const [updated_game_object, updated_projectile] = check_game_object_collision(projectile, game_object);
-    
+
     // Check if the orb was destroyed
     if (game_object.kind === 'Orb' && game_object.life > 0 && updated_game_object.kind === 'Orb' && updated_game_object.life <= 0 && owner_player) {
       owner_player = update_owner_player_stats(owner_player);
     }
-    
+
     projectile = updated_projectile;
     return updated_game_object;
   });

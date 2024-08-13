@@ -9,7 +9,7 @@ export function process_player_skills(state_tick: number, end_tick: number, skil
     const skill = Object.values(player.skills).find(
       (s) => s.id === skill_id
     );
-    
+
     if (skill) {
       switch (skill.type) {
         case "melee":

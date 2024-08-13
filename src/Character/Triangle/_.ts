@@ -2,7 +2,7 @@
 ///
 /// # Description
 ///
-/// A triangle char with projectiles 25% faster and no collision with other players. 
+/// A triangle char with projectiles 25% faster and no collision with other players.
 ///
 /// # Output
 ///
@@ -12,7 +12,6 @@ import { Character } from '../_';
 import { CharacterType } from '../type';
 import { DEFAULT_RANGE } from '../../Helpers/consts';
 import { seconds_to_ticks } from '../../Helpers/seconds_to_ticks';
-import { Effect } from '../../Effect/_';
 
 export function Triangle(): Character {
   const triangle_range = 1.25 * DEFAULT_RANGE;

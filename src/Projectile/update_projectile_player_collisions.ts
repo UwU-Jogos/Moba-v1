@@ -26,7 +26,7 @@ export function update_projectile_player_collisions(players: Map<UID, Player>, p
   const updated_players = players.withMutations(mutable_players => {
     mutable_players.forEach((player, player_id) => {
       const [collision_player, collision_projectile] = check_player_collision(projectile, player, player_id);
-      
+
       projectile = collision_projectile;
       // If the projectile hit the player
       if (collision_player !== player) {

@@ -4,7 +4,6 @@ import { Damage } from "../Damage/_";
 import { V2 } from "../V2/_";
 import { Effect } from "../Effect/_";
 
-
 export type Projectile = {
   id: string;
   skill_type: Skill;

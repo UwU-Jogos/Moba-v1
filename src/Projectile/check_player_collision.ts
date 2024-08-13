@@ -18,15 +18,14 @@ export function check_player_collision(projectile: Projectile, player: Player, p
       remaining_duration: 0,
     };
 
-
   const dist = distance(projectile.pos, player.pos);
 
   if (dist <= PLAYER_RADIUS) {
     const character_obj = create_character(player.character);
     const immune_effect = player.effects.find(effect => effect.$ === 'Immune' && effect.active > 0);
     const char_immune_effect = character_obj.effects.find(effect => effect.$ === 'Immune' && effect.active > 0);
-    const pentagon_player = player.character == CharacterType.PENTAGON;
-    
+    const pentagon_player = player.character === CharacterType.PENTAGON;
+
     if (immune_effect || char_immune_effect || pentagon_player) {
       return [player, useless_projectile];
     } else {

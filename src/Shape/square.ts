@@ -15,7 +15,7 @@ import { V2 } from '../V2/_';
 export function square(pos: V2, side: number): Shape {
   return {
     type: 'square',
-    pos: pos,
-    side: side
+    pos,
+    side
   };
 }

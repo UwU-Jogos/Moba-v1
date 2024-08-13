@@ -17,8 +17,8 @@ export function update_game_objects(game_map: GameMap, new_respawn_areas: GameOb
   return {
     ...game_map,
     objects: [
-      ...game_map.objects.filter(obj => 
-        (obj.kind !== 'RespawnArea' && obj.kind !== 'Orb' && obj.kind !== 'TimedLineWall') || 
+      ...game_map.objects.filter(obj =>
+        (obj.kind !== 'RespawnArea' && obj.kind !== 'Orb' && obj.kind !== 'TimedLineWall') ||
         ((obj.kind === 'RespawnArea' || obj.kind === 'Orb' || obj.kind === 'TimedLineWall') && obj.active > 0)
       ).map(obj => {
         if (obj.kind === 'RespawnArea' || obj.kind === 'Orb' || obj.kind === 'TimedLineWall') {

@@ -16,8 +16,8 @@ import { V2 } from '../V2/_';
 export function rectangle(pos: V2, width: number, height: number): Shape {
   return {
     type: 'rectangle',
-    pos: pos,
-    width: width,
-    height: height
+    pos,
+    width,
+    height
   };
 }

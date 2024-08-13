@@ -1,0 +1,64 @@
+{
+  "defaultSeverity": "error",
+  "extends": [
+    "tslint:recommended"
+  ],
+  "jsRules": {},
+  "rules": {
+    "variable-name": {
+      "options": [
+        "ban-keywords",
+        "check-format",
+        "allow-leading-underscore",
+        "require-const-for-all-caps",
+        "allow-snake-case"
+      ]
+    },
+    "function-name": {
+      "options": [
+        {
+          "function-regex": "^[a-z][\\w\\d]+_[\\w\\d]+$",
+          "method-regex": "^[a-z][\\w\\d]+_[\\w\\d]+$",
+          "private-method-regex": "^[a-z][\\w\\d]+_[\\w\\d]+$",
+          "protected-method-regex": "^[a-z][\\w\\d]+_[\\w\\d]+$",
+          "static-method-regex": "^[a-z][\\w\\d]+_[\\w\\d]+$"
+        }
+      ]
+    },
+    "class-name": true,
+    "interface-name": [true, "never-prefix"],
+    "file-name-casing": [true, "snake-case"],
+    "import-name": false,
+    "typedef-whitespace": false,
+    "whitespace": [
+      true,
+      "check-branch",
+      "check-decl",
+      "check-operator",
+      "check-separator",
+      "check-type"
+    ],
+    "comment-format": [true, "check-space"],
+    "jsdoc-format": true,
+    "no-consecutive-blank-lines": true,
+    "no-trailing-whitespace": true,
+    "semicolon": [true, "always"],
+    "triple-equals": [true, "allow-null-check"],
+    "typedef": [
+      true,
+      "call-signature",
+      "parameter",
+      "property-declaration",
+      "member-variable-declaration"
+    ],
+    "no-console": false,
+    "no-bitwise": false,
+    "no-unused-variable": true
+  },
+  "rulesDirectory": [],
+  "linterOptions": {
+    "exclude": [
+      "docs/**/*"
+    ]
+  }
+}

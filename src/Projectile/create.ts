@@ -16,7 +16,7 @@ export function create(skill: basic, owner_id: UID, pos: V2, target: V2, damage:
     remaining_duration: skill.duration,
     speed: skill.range / skill.duration,
     range: skill.range,
-    damage: damage,
+    damage,
     effects: []
   }];
 }

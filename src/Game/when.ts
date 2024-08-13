@@ -12,47 +12,45 @@
 import { Action } from '../Action/_';
 import { GameState } from '../GameState/_';
 import { Player } from '../Player/_';
-import { seconds_to_ticks } from '../Helpers/seconds_to_ticks';
 import { activate as activate_skill} from '../Skill/activate';
-import { PLAYER_RADIUS, PLAYER_INITIAL_LIFE } from '../Helpers/consts';
 import { init as init_player } from '../Player/init';
 import { CharacterType } from '../Character/type';
 
-export function when(when: Action, gs: GameState): GameState {
+export function when(action: Action, gs: GameState): GameState {
   let players = gs.players;
 
-  if (!players.has(when.pid)) {
-    const initial_name = when.$ === "SetNick" ? when.name : "Anon";
-    const character_type = when.$ === "SetNick" ? when.character : CharacterType.TRIANGLE;
-    players = players.set(when.pid, init_player(when.pid, initial_name, character_type));
+  if (!players.has(action.pid)) {
+    const initial_name = action.$ === "SetNick" ? action.name : "Anon";
+    const character_type = action.$ === "SetNick" ? action.character : CharacterType.TRIANGLE;
+    players = players.set(action.pid, init_player(action.pid, initial_name, character_type));
   }
 
-  switch (when.$) {
+  switch (action.$) {
     case "SetNick": {
-      players = players.update(when.pid, player => {
-        const updatedPlayer = { ...player, name: when.name } as Player;
+      players = players.update(action.pid, player => {
+        const updatedPlayer = { ...player, name: action.name } as Player;
         return updatedPlayer;
       });
       break;
     }
 
     case "SkillEvent": {
-      if (when.down) {
-        return activate_skill(gs, when.pid, when.key, { x: when.x, y: when.y }, 10);
+      if (action.down) {
+        return activate_skill(gs, action.pid, action.key, { x: action.x, y: action.y }, 10);
       }
       break;
     }
     case "MouseClick": {
-      players = players.update(when.pid, player => {
+      players = players.update(action.pid, player => {
         if (!player) return player;
-        return { ...player, target_pos: { x: when.x, y: when.y } } as Player;
+        return { ...player, target_pos: { x: action.x, y: action.y } } as Player;
       });
       break;
     }
     case "MovementEvent": {
-      players = players.update(when.pid, player => {
+      players = players.update(action.pid, player => {
         if (!player) return player;
-        return { ...player, key: { ...player.key, [when.key]: when.down } } as Player;
+        return { ...player, key: { ...player.key, [action.key]: action.down } } as Player;
       });
       break;
     }

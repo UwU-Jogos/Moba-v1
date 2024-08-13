@@ -20,7 +20,7 @@ export function serialize(action: Action): Uint8Array {
 
   return match(action, {
     SetNick: (time: number, pid: number, name: string, character: number) => {
-      let buffer: number[] = [];
+      const buffer: number[] = [];
       buffer.push(0); // Action type identifier for SetNick
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(time)]).buffer).slice(0, 6)); // 48-bit Time
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(pid)]).buffer).slice(0, 6)); // 48-bit UID
@@ -30,7 +30,7 @@ export function serialize(action: Action): Uint8Array {
     },
 
     SkillEvent: (time: number, pid: number, key: string, down: boolean, x: number, y: number) => {
-      let buffer: number[] = [];
+      const buffer: number[] = [];
       buffer.push(1); // Action type identifier for SkillEvent
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(time)]).buffer).slice(0, 6)); // 48-bit Time
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(pid)]).buffer).slice(0, 6)); // 48-bit UID
@@ -45,7 +45,7 @@ export function serialize(action: Action): Uint8Array {
     },
 
     MouseClick: (time: number, pid: number, x: number, y: number) => {
-      let buffer: number[] = [];
+      const buffer: number[] = [];
       buffer.push(2); // Action type identifier for MouseClick
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(time)]).buffer).slice(0, 6)); // 48-bit Time
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(pid)]).buffer).slice(0, 6)); // 48-bit UID
@@ -57,7 +57,7 @@ export function serialize(action: Action): Uint8Array {
     },
 
     MovementEvent: (time: number, pid: number, key: string, down: boolean) => {
-      let buffer: number[] = [];
+      const buffer: number[] = [];
       buffer.push(3); // Action type identifier for KeyEvent
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(time)]).buffer).slice(0, 6)); // 48-bit Time
       buffer.push(...new Uint8Array(new BigUint64Array([BigInt(pid)]).buffer).slice(0, 6)); // 48-bit UID

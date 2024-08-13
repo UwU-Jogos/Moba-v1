@@ -19,13 +19,10 @@
 import { Map } from 'immutable';
 import { GameState } from '../GameState/_';
 import { Projectile } from './_';
-import { Player } from '../Player/_';
-import { GameMap } from '../GameMap/_';
 import { update_projectile_player_collisions } from './update_projectile_player_collisions';
 import { update_projectile_game_object_collisions } from './update_projectile_game_object_collisions';
 import { should_remove_projectile } from './should_remove_projectile';
 import { move as move_projectile } from './move';
-
 
 export function update_projectile_system(gs: GameState, dt: number): [GameState, Map<string, Projectile>] {
   let updated_players = gs.players;
@@ -37,7 +34,7 @@ export function update_projectile_system(gs: GameState, dt: number): [GameState,
 
     [updated_players, projectile] = update_projectile_player_collisions(updated_players, projectile);
     [updated_game_map, projectile] = update_projectile_game_object_collisions(updated_game_map, projectile, owner_player);
-    
+
     projectile = move_projectile(projectile, owner_player, dt);
 
     if (should_remove_projectile(projectile)) {

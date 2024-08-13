@@ -11,13 +11,11 @@
 ///
 /// This function doesn't return a value, but draws the character on the canvas
 
-import { Character } from './_';
 import { V2 } from '../V2/_';
 import { Shape } from '../Shape/_';
 import { triangle } from '../Shape/triangle';
 import { circle } from '../Shape/circle';
 import { diamond } from '../Shape/diamond';
-import { square } from '../Shape/square';
 import { rectangle } from '../Shape/rectangle';
 import { pentagon } from '../Shape/pentagon';
 import { star } from '../Shape/star';

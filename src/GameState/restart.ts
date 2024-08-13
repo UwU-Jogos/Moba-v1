@@ -11,12 +11,6 @@
 import { GameState } from './_';
 import { init as init_game } from '../Game/init';
 import { init as init_player } from '../Player/init';
-import { Map } from 'immutable';
-import { UID } from '../UID/_';
-import { Player } from '../Player/_';
-import { PLAYERS_LIMIT } from '../Helpers/consts';
-import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
-import { CharacterType } from '../Character/type';
 
 export function restart(state: GameState): GameState {
   const initial_state = init_game();
