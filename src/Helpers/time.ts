@@ -12,6 +12,8 @@ export class TimeDisplay {
         this.timeDisplay.style.left = '10px';
         this.timeDisplay.style.color = 'black';
         this.timeDisplay.style.fontSize = '20px';
+        this.timeDisplay.style.userSelect = 'none'; // Evita a seleção de texto
+        this.timeDisplay.style.pointerEvents = 'none'; // Evita a interação do usuário
         document.body.appendChild(this.timeDisplay);
         this.remainingTime = GAME_TIME;
         this.onTimeUp = onTimeUp;

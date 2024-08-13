@@ -20,7 +20,7 @@ import { get_characters_list } from './Lobby/get_characters_list';
 import { name_to_type } from './Character/name_to_type';
 import { CharacterType } from './Character/type';
 import { Finished, game_finished } from './GameState/finished';
-
+import { TeamType } from './Team/type';
 // Types
 // -----
 
@@ -245,27 +245,36 @@ function game_loop() {
   // Compute the current state
   const state = sm.compute(mach, { init, tick, when }, client.time());
 
-  // Check if the game has finished
-  const finished: Finished | null = game_finished(state);
-  if (finished) {
-    // Stop the game loop
-    show_game_result(finished, state);
-    return;
-  }
-
-  // Draw the current state
-  draw(state);
-
   // Atualiza o tempo decorrido
   timeDisplay.update();
 
   // Verifica se o tempo acabou
   if (timeDisplay.isTimeUp()) {
     // Verifica o estado do jogo e exibe o resultado
-    const finished = game_finished(state);
+    const redTeamLives = state.players.filter(player => player.team === TeamType.TEAM_RED)
+      .reduce((sum, player) => sum + player.stats.lifes, 0);
+    const blueTeamLives = state.players.filter(player => player.team === TeamType.TEAM_BLUE)
+      .reduce((sum, player) => sum + player.stats.lifes, 0);
+
+    let finished: Finished | null = null;
+    if (redTeamLives > blueTeamLives) {
+      finished = {
+        winner: TeamType.TEAM_RED,
+        loser: TeamType.TEAM_BLUE
+      };
+    } else if (blueTeamLives > redTeamLives) {
+      finished = {
+        winner: TeamType.TEAM_BLUE,
+        loser: TeamType.TEAM_RED
+      };
+    }
+
     show_game_result(finished, state);
     return;
   }
+
+  // Draw the current state
+  draw(state);
 
   // Schedule the next frame
   requestAnimationFrame(game_loop);
