@@ -32,6 +32,7 @@ export function draw(ctx: CanvasRenderingContext2D, gs: GameState): void {
         );
         break;
       case "action":
+        const owner = gs.players.get(projectile.owner_id);
         const angle = Math.atan2(
           projectile.target.y - projectile.pos.y,
           projectile.target.x - projectile.pos.x
@@ -42,10 +43,13 @@ export function draw(ctx: CanvasRenderingContext2D, gs: GameState): void {
           x: projectile.pos.x - (rectWidth / 2) * Math.cos(angle),
           y: projectile.pos.y - (rectWidth / 2) * Math.sin(angle)
         };
+        const isFourthProjectile = owner && (owner.shots % 4 === 0);
+        const color = isFourthProjectile ? "rgba(0, 255, 0, 0.5)" : "rgba(0, 0, 255, 0.5)";
+        const size = isFourthProjectile ? 2 : 1;
         draw_shape(
           ctx,
-          rectangle(rectPos, rectWidth, rectHeight),
-          "rgba(0, 0, 255, 0.5)"
+          rectangle(rectPos, rectWidth * size, rectHeight * size),
+          color
         );
         break;
     }
