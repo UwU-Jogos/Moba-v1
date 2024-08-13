@@ -214,10 +214,10 @@ export function tick(gs: GameState): GameState {
     ...updated_game_map,
     objects: [
       ...updated_game_map.objects.filter(obj => 
-        (obj.kind !== 'RespawnArea' && obj.kind !== 'Orb') || 
-        ((obj.kind === 'RespawnArea' || obj.kind === 'Orb') && obj.active > 0)
+        (obj.kind !== 'RespawnArea' && obj.kind !== 'Orb' && obj.kind !== 'TimedLineWall') || 
+        ((obj.kind === 'RespawnArea' || obj.kind === 'Orb' || obj.kind === 'TimedLineWall') && obj.active > 0)
       ).map(obj => {
-        if (obj.kind === 'RespawnArea' || obj.kind === 'Orb') {
+        if (obj.kind === 'RespawnArea' || obj.kind === 'Orb' || obj.kind === 'TimedLineWall') {
           return {
             ...obj,
             active: obj.active - 1
@@ -229,6 +229,81 @@ export function tick(gs: GameState): GameState {
       ...new_orbs
     ]
   };
+
+  // Add TimedLineWall every 5 seconds
+  if (gs.tick % (5 * TPS) === 0) {
+    const orb_square_side = 100;
+    const window_size = 20;
+    const wall_size = (orb_square_side - window_size) / 2;
+
+
+    const orb_walls = [
+      // Top wall center
+      {
+        kind: "LineWall",
+        ini: {
+          x: (width / 2) - window_size / 2,
+          y: (height / 2) - orb_square_side / 2,
+        },
+        end: {
+          x: (width / 2) + window_size / 2,
+          y: (height / 2) - orb_square_side / 2,
+        }
+      },
+      // Bottom wall center
+      {
+        kind: "LineWall",
+        ini: {
+          x: (width / 2) - window_size / 2,
+          y: (height / 2) + orb_square_side / 2,
+        },
+        end: {
+          x: (width / 2) + window_size / 2,
+          y: (height / 2) + orb_square_side / 2,
+        }
+      },
+      // Left wall center
+      {
+        kind: "LineWall",
+        ini: {
+          x: (width / 2) - orb_square_side / 2,
+          y: (height / 2) - window_size / 2,
+        },
+        end: {
+          x: (width / 2) - orb_square_side / 2,
+          y: (height / 2) + window_size / 2,
+        }
+      },
+      // Right wall center
+      {
+        kind: "LineWall",
+        ini: {
+          x: (width / 2) + orb_square_side / 2,
+          y: (height / 2) - window_size / 2,
+        },
+        end: {
+          x: (width / 2) + orb_square_side / 2,
+          y: (height / 2) + window_size / 2,
+        }
+      }
+    ];
+
+    const wall_index = Math.floor(gs.tick / (5 * TPS)) % 4;
+
+    const new_timed_line_walls: GameObject[] = orb_walls
+      .filter((_, index) => index !== wall_index)
+      .map(wall => ({
+        kind: 'TimedLineWall',
+        ini: wall.ini,
+        end: wall.end,
+        active: 5 * TPS // 2 seconds of active time
+      }));
+
+    updated_game_map.objects.push(...new_timed_line_walls);
+  }
+  updated_game_map.objects = updated_game_map.objects.filter(obj => 
+    obj.kind !== 'TimedLineWall' || (obj.kind === 'TimedLineWall' && obj.active > 0)
+  );
 
   return {
     ...gs,
