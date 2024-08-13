@@ -1,12 +1,16 @@
 /// Respawns a player to a corner of the map.
 ///
-/// # Input
+/// # Arguments
 ///
-/// * `player` - The player object to respawn
+/// - `player: Player` - The player object to respawn
 ///
-/// # Output
+/// # Returns
 ///
-/// A new Player object with updated position and decremented life count
+/// - `Player` - A new Player object with:
+///   - Updated position (set to a corner based on team)
+///   - Reset life to maximum
+///   - Decremented life count
+///   - Added temporary immunity effect
 
 import { Player } from './_';
 import { V2 } from '../V2/_';

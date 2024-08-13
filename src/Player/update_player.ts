@@ -1,3 +1,15 @@
+/// Updates the player's state based on input, collisions, and effects.
+///
+/// # Arguments
+/// - player: The current player object
+/// - uid: The unique identifier of the player
+/// - dt: Delta time, the time elapsed since the last update
+/// - mutable_players: A map of all players in the game
+/// - game_map: The current game map
+///
+/// # Returns
+/// An updated Player object with new position and effects
+
 import { Player } from './_';
 import { UID } from '../UID/_';
 import { GameMap } from '../GameMap/_';

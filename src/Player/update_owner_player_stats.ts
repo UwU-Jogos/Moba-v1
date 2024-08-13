@@ -1,12 +1,16 @@
 /// Updates the stats of the player who destroyed an orb.
 ///
-/// # Input
+/// # Arguments
 ///
 /// * `owner_player` - The Player object representing the player who destroyed the orb
 ///
-/// # Output
+/// # Returns
 ///
-/// A new Player object with updated stats
+/// A new Player object with updated stats:
+/// - Increments the destroyed_orbs count
+/// - Increases the damage_multiplier by 0.1
+/// - Increases the max_life based on the OrbGivesMaxLife effect (if present)
+/// - Doubles the IncreaseMoveSpeed effect percentage (if present)
 
 import { Player } from './_';
 import { create_character } from '../Character/create_character';

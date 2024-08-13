@@ -1,11 +1,23 @@
-/// Checks if a player is colliding with other player.
+/// Checks if a player is colliding with another player and adjusts position if necessary.
 ///
-/// # Args
+/// # Arguments
 ///
-/// * `pid` - The unique identifier of the player
-/// * `other_player` - The player we are checking collision against. 
-/// * `other_pid` - The pid of other player
-/// * `pos` - The old position 
+/// - player: The player object being checked for collision
+/// - pid: The unique identifier of the player
+/// - other_player: The player we are checking collision against
+/// - other_pid: The unique identifier of the other player
+/// - pos: The current position of the player being checked
+///
+/// # Returns
+///
+/// - A new position (V2) after collision resolution, or the original position if no collision occurs
+///
+/// # Details
+///
+/// This function checks for collision between two players, considering their positions and radii.
+/// It also takes into account special effects like 'NoPlayerCollision' and adjusts the push factor
+/// for the PENTAGON character type. If a collision is detected, it calculates a new position to
+/// resolve the collision.
 
 import { Player } from './_';
 import { UID } from '../UID/_';

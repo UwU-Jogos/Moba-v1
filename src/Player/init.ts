@@ -1,14 +1,23 @@
 /// Initializes a new player.
 ///
-/// # Input
+/// # Arguments
 ///
-/// * `id` - The unique identifier for the player
-/// * `name` - The name of the player
-/// * `pos` - The initial position of the player
+/// * `id: UID` - The unique identifier for the player
+/// * `name: Name` - The name of the player
+/// * `character_type: CharacterType` - The type of character for the player
 ///
-/// # Output
+/// # Returns
 ///
-/// A new Player object with initialized properties
+/// * `Player` - A new Player object with initialized properties
+///
+/// # Description
+///
+/// This function creates a new player with the given id, name, and character type.
+/// It alternates between red and blue teams for each new player created.
+/// The initial position is set based on the team.
+/// Character-specific adjustments (e.g., for DIAMOND type) are applied to stats.
+/// The function initializes various player properties including skills, life, team, and effects.
+/// It also sets up the player's initial stats, position, and character-specific attributes.
 
 import { Player } from './_';
 import { UID } from '../UID/_';

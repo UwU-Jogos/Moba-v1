@@ -1,16 +1,14 @@
 /// Updates the effects on a player.
 ///
-/// # Description
+/// Processes each effect on a player, updating durations and removing expired effects.
+/// Currently, it only handles the 'Immune' effect, decreasing its active duration by 1 each update.
 ///
-/// This function processes each effect on a player, updating durations and removing expired effects.
+/// # Arguments
+/// - effects: An array of Effect objects currently applied to the player
 ///
-/// # Input
-///
-/// * `effects` - An array of Effect objects currently applied to the player
-///
-/// # Output
-///
-/// Returns an updated array of Effect objects, with expired effects removed and durations updated
+/// # Returns
+/// An updated array of Effect objects, with expired 'Immune' effects removed and their durations updated.
+/// Other effect types are left unchanged.
 
 import { Effect } from '../Effect/_';
 
