@@ -52,7 +52,8 @@ export function init(id: UID, name: Name, character_type: CharacterType): Player
     character: character_type,
     key: {},
     stats,
-    effects: []
+    effects: [],
+    shots: 0
   };
   next_team = (next_team == TeamType.TEAM_RED) ? TeamType.TEAM_BLUE : TeamType.TEAM_RED;
 
