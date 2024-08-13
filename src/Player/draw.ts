@@ -1,13 +1,29 @@
-/// Draws a Player.
+/// Draws a Player on the canvas.
 ///
-/// # Input
+/// # Arguments
 ///
-/// * `ctx` - The rendering context
-/// * `player` - The Player to be drawn
+/// * `ctx: CanvasRenderingContext2D` - The rendering context
+/// * `player: Player` - The Player to be drawn
 ///
-/// # Output
+/// # Returns
 ///
-/// Renders the Player on the canvas
+/// This function doesn't return a value. It renders the Player on the canvas.
+///
+/// # Description
+///
+/// Renders the Player on the canvas, including:
+/// - The character sprite with team-specific coloring
+/// - Player name
+/// - Life bar
+/// - Player stats
+///
+/// # Notes
+///
+/// - The player is not drawn if their life is 0 or less
+/// - The team color darkens based on the number of destroyed orbs
+/// - Players with 5 or more destroyed orbs are colored black
+/// - The life bar is displayed below the player
+/// - The player's name is displayed above the player
 
 import { Player } from './_';
 import { circle } from '../Shape/circle';

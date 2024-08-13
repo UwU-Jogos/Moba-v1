@@ -1,14 +1,15 @@
-/// Checks if a player is colliding with some game_object.
+/// Checks if a player is colliding with a game object and resolves the collision.
 ///
 /// # Args
 ///
-/// * `pid` - The unique identifier of the player
-/// * `other_player` - The player we are checking collision against. 
-/// * `other_pid` - The pid of other player
-/// * `pos` - The old position
+/// * `player` - The player object
+/// * `pos` - The current position of the player
+/// * `game_object` - The game object to check collision against
 ///
 /// # Return
-/// The new position after resolving collision with any game object
+///
+/// The new position after resolving collision with the game object. If there's no collision
+/// or if the player has a NoWallCollision effect, the original position is returned.
 
 import { Player } from './_';
 import { GameObject } from '../GameMap/GameObject/_';

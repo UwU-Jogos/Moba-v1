@@ -1,9 +1,11 @@
-/// Takes damage from players life, decrement player lifes if dies.
+/// Takes damage from player's life.
 ///
-/// # Args
+/// # Arguments
+/// - player: The player object to take damage from
+/// - damage: The amount of damage to apply
 ///
-/// * `player` - The player object to take life 
-/// * `damage` - How much to take 
+/// # Returns
+/// A new Player object with updated life
 
 import { Player } from './_';
 import { Damage } from '../Damage/_';
