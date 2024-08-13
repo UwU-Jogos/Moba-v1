@@ -30,13 +30,11 @@ export type Finished = {
 };
 
 export function game_finished(state: GameState): Finished | null {
-  const redTeamFinished = state.players
-    .filter(player => player.team === TeamType.TEAM_RED)
-    .every(player => player.stats.lifes === 0);
+  const redTeamPlayers = state.players.filter(player => player.team === TeamType.TEAM_RED);
+  const blueTeamPlayers = state.players.filter(player => player.team === TeamType.TEAM_BLUE);
 
-  const blueTeamFinished = state.players
-    .filter(player => player.team === TeamType.TEAM_BLUE)
-    .every(player => player.stats.lifes === 0);
+  const redTeamFinished = redTeamPlayers.every(player => player.stats.lifes === 0);
+  const blueTeamFinished = blueTeamPlayers.every(player => player.stats.lifes === 0);
 
   if (redTeamFinished) {
     return {
@@ -49,6 +47,22 @@ export function game_finished(state: GameState): Finished | null {
     return {
       winner: TeamType.TEAM_RED,
       loser: TeamType.TEAM_BLUE
+    };
+  }
+
+  // Desempate por vidas restantes
+  const redTeamLives = redTeamPlayers.reduce((sum, player) => sum + player.stats.lifes, 0);
+  const blueTeamLives = blueTeamPlayers.reduce((sum, player) => sum + player.stats.lifes, 0);
+
+  if (redTeamLives > blueTeamLives) {
+    return {
+      winner: TeamType.TEAM_RED,
+      loser: TeamType.TEAM_BLUE
+    };
+  } else if (blueTeamLives > redTeamLives) {
+    return {
+      winner: TeamType.TEAM_BLUE,
+      loser: TeamType.TEAM_RED
     };
   }
 
