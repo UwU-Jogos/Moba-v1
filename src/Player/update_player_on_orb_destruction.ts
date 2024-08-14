@@ -1,21 +1,20 @@
-/// Updates the stats of the player who destroyed an orb.
+/// Updates the player's stats and effects when they destroy an orb.
 ///
 /// # Arguments
-///
-/// * `owner_player` - The Player object representing the player who destroyed the orb
+/// - players: A map of all players in the game
+/// - owner_player: The player who destroyed the orb
+/// - projectile: The projectile that destroyed the orb
 ///
 /// # Returns
-///
-/// A new Player object with updated stats:
-/// - Increments the destroyed_orbs count
-/// - Increases the damage_multiplier by 0.1
-/// - Increases the max_life based on the OrbGivesMaxLife effect (if present)
-/// - Doubles the IncreaseMoveSpeed effect percentage (if present)
+/// An updated Map of players with the owner player's stats and effects modified
 
+import { Map } from 'immutable';
 import { Player } from './_';
+import { UID } from '../UID/_';
+import { Projectile } from '../Projectile/_';
 import { create_character } from '../Character/create_character';
 
-export function update_owner_player_stats(owner_player: Player): Player {
+export function update_player_on_orb_destruction(players: Map<UID, Player>, owner_player: Player, projectile: Projectile): Map<UID, Player> {
   const owner_player_character = create_character(owner_player.character);
   const max_life_increase = owner_player_character.effects.find(effect => effect.$ === 'OrbGivesMaxLife')?.life || 0;
   const movement_speed = owner_player_character.effects.find(effect => effect.$ === 'IncreaseMoveSpeed');
@@ -24,7 +23,7 @@ export function update_owner_player_stats(owner_player: Player): Player {
     movement_speed.percentage += movement_speed.percentage;
   }
 
-  return {
+  return players.set(projectile.owner_id, {
     ...owner_player,
     stats: {
       ...owner_player.stats,
@@ -32,5 +31,5 @@ export function update_owner_player_stats(owner_player: Player): Player {
       damage_multiplier: owner_player.stats.damage_multiplier + 0.1,
       max_life: owner_player.stats.max_life + max_life_increase,
     }
-  };
+  });
 }

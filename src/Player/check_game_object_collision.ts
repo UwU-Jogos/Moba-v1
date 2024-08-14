@@ -77,7 +77,7 @@ export function check_game_object_collision(player: Player, pos: V2, game_object
     }
   } else if (game_object.kind === 'LineWall' || game_object.kind === 'TimedLineWall') {
     if (game_object.kind === 'TimedLineWall' && game_object.active === 0) {
-
+      // do nothing, not active
     } else {
       const dx = game_object.end.x - game_object.ini.x;
       const dy = game_object.end.y - game_object.ini.y;
