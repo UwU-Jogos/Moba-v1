@@ -1,31 +1,32 @@
-/// Creates timed line walls for the orb area.
+/// Creates timed line walls for the game.
 ///
 /// # Description
 ///
-/// This function generates timed line walls that form a square around the orb,
-/// with one side missing on a rotating basis.
+/// This function creates a set of timed line walls that form a square around the center of the game area,
+/// with one wall missing based on the current tick count.
 ///
-/// # Args
+/// # Parameters
 ///
 /// * `tick` - The current game tick
+/// * `width` - The width of the game area
+/// * `height` - The height of the game area
 ///
 /// # Returns
 ///
 /// An array of GameObject representing the timed line walls
 
-import { GameObject } from './GameObject/_';
-import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
-import { TPS } from '../Helpers/consts';
+import { GameObject } from '../GameMap/GameObject/_';
 import { V2 } from '../V2/_';
+import { TPS } from '../Helpers/consts';
 
-export function create_timed_orb_walls(tick: number): GameObject[] {
-  const { width, height } = get_canvas_dimensions();
+export function create_timed_line_walls(tick: number, width: number, height: number): GameObject[] {
   const orb_square_side = 100;
   const window_size = 20;
 
-  const orb_walls: { ini: V2, end: V2 }[] = [
+  const orb_walls: { kind: 'LineWall', ini: V2, end: V2 }[] = [
     // Top wall center
     {
+      kind: "LineWall",
       ini: {
         x: (width / 2) - window_size / 2,
         y: (height / 2) - orb_square_side / 2,
@@ -37,6 +38,7 @@ export function create_timed_orb_walls(tick: number): GameObject[] {
     },
     // Bottom wall center
     {
+      kind: "LineWall",
       ini: {
         x: (width / 2) - window_size / 2,
         y: (height / 2) + orb_square_side / 2,
@@ -48,6 +50,7 @@ export function create_timed_orb_walls(tick: number): GameObject[] {
     },
     // Left wall center
     {
+      kind: "LineWall",
       ini: {
         x: (width / 2) - orb_square_side / 2,
         y: (height / 2) - window_size / 2,
@@ -59,6 +62,7 @@ export function create_timed_orb_walls(tick: number): GameObject[] {
     },
     // Right wall center
     {
+      kind: "LineWall",
       ini: {
         x: (width / 2) + orb_square_side / 2,
         y: (height / 2) - window_size / 2,

@@ -1,6 +1,3 @@
-import { GameMap } from './_';
-import { GameObject } from './GameObject/_';
-
 /// Updates the game objects in the game map.
 ///
 /// # Input
@@ -13,14 +10,17 @@ import { GameObject } from './GameObject/_';
 ///
 /// Returns an updated GameMap with filtered and updated game objects
 
+import { GameMap } from '../GameMap/_';
+import { GameObject } from '../GameMap/GameObject/_';
+
 export function update_game_objects(game_map: GameMap, new_respawn_areas: GameObject[], new_orbs: GameObject[]): GameMap {
   return {
     ...game_map,
     objects: [
-      ...game_map.objects.filter(obj =>
+      ...game_map.objects.filter((obj: GameObject) =>
         (obj.kind !== 'RespawnArea' && obj.kind !== 'Orb' && obj.kind !== 'TimedLineWall') ||
         ((obj.kind === 'RespawnArea' || obj.kind === 'Orb' || obj.kind === 'TimedLineWall') && obj.active > 0)
-      ).map(obj => {
+      ).map((obj: GameObject) => {
         if (obj.kind === 'RespawnArea' || obj.kind === 'Orb' || obj.kind === 'TimedLineWall') {
           return {
             ...obj,

@@ -1,30 +1,30 @@
-/// Creates a respawn area for a player.
+/// Creates a respawn area for a team.
 ///
 /// # Description
 ///
-/// This function creates a respawn area GameObject based on the player's team.
+/// This function creates a respawn area GameObject based on the team type.
 ///
-/// # Input
+/// # Parameters
 ///
-/// * `player` - The player for whom to create the respawn area
+/// * `team` - The team for which to create the respawn area
+/// * `width` - The width of the game map
+/// * `height` - The height of the game map
 ///
-/// # Output
+/// # Returns
 ///
 /// A GameObject representing the respawn area
 
-import { Player } from '../Player/_';
-import { GameObject } from './GameObject/_';
 import { TeamType } from '../Team/type';
-import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
-import { PLAYER_RADIUS, TPS } from '../Helpers/consts';
+import { GameObject } from '../GameMap/GameObject/_';
+import { PLAYER_RADIUS } from '../Helpers/consts';
+import { seconds_to_ticks } from '../Helpers/seconds_to_ticks';
 
-export function create_respawn_area(player: Player): GameObject {
-  const { width, height } = get_canvas_dimensions();
+export function create_respawn_area(team: TeamType, width: number, height: number): GameObject {
   return {
     kind: 'RespawnArea',
-    position: player.team === TeamType.TEAM_RED ? { x: 0, y: 0 } : { x: width - PLAYER_RADIUS * 4, y: height - PLAYER_RADIUS * 4 },
+    position: team === TeamType.TEAM_RED ? { x: 0, y: 0 } : { x: width - PLAYER_RADIUS * 4, y: height - PLAYER_RADIUS * 4 },
     width: PLAYER_RADIUS * 6,
     height: PLAYER_RADIUS * 6,
-    active: 3 * TPS // 3 seconds of active time
+    active: seconds_to_ticks(3) // 3 seconds of active time
   };
 }
