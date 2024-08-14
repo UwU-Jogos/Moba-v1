@@ -13,7 +13,7 @@ import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
 import { TPS } from '../Helpers/consts';
 import { update_projectiles } from '../Projectile/update_projectiles';
 import { update_players } from '../Player/update_players';
-import { create_timed_line_walls } from '../GameState/create_timed_line_walls';
+import { create_timed_line_walls } from '../GameMap/create_timed_line_walls';
 
 export function tick(gs: GameState): GameState {
   const dt = 1 / TPS;
