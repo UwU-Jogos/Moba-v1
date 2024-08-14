@@ -2,22 +2,25 @@
 ///
 /// # Description
 ///
-/// Finished type contains the winner and loser teams.
+/// Finished type contains the winner and loser teams, and a draw flag.
 ///
 /// # Fields
 ///
 /// * `winner` - The winning team
 /// * `loser` - The losing team
+/// * `draw` - A boolean indicating if the game ended in a draw
 ///
 /// # Function: game_finished
 ///
 /// Checks if the game has finished by verifying if all players of a team have no lives left.
 /// If there's a Pentagon character, the game finishes if all other players on that team have no lives left.
 /// In a 1v1 scenario with a Pentagon character, the game ends immediately.
+/// If time is up, the team with more total lives wins.
 ///
 /// # Input
 ///
 /// * `state` - The current game state
+/// * `time_up` - A boolean indicating if the time is up
 ///
 /// # Output
 ///
@@ -31,9 +34,10 @@ import { CharacterType } from '../Character/type';
 export type Finished = {
   winner: TeamType;
   loser: TeamType;
+  draw: boolean;
 };
 
-export function game_finished(state: GameState): Finished | null {
+export function game_finished(state: GameState, time_up: boolean): Finished | null {
   const players = Array.from(state.players.values());
   const pentagon_player = players.find(player => create_character(player.character).type === CharacterType.PENTAGON);
 
@@ -42,7 +46,8 @@ export function game_finished(state: GameState): Finished | null {
       // 1v1 scenario with Pentagon, game ends immediately
       return {
         winner: pentagon_player.team === TeamType.TEAM_RED ? TeamType.TEAM_BLUE : TeamType.TEAM_RED,
-        loser: pentagon_player.team
+        loser: pentagon_player.team,
+        draw: false
       };
     }
 
@@ -52,33 +57,44 @@ export function game_finished(state: GameState): Finished | null {
     if (pentagon_team_finished) {
       return {
         winner: pentagon_player.team === TeamType.TEAM_RED ? TeamType.TEAM_BLUE : TeamType.TEAM_RED,
-        loser: pentagon_player.team
+        loser: pentagon_player.team,
+        draw: false
       };
     }
 
-    return null; // Game continues if Pentagon's teammates are still alive
+    if (!time_up) {
+      return null; // Game continues if Pentagon's teammates are still alive and time is not up
+    }
   }
 
-  const red_team_finished = players
+  const red_team_lives = players
     .filter(player => player.team === TeamType.TEAM_RED)
-    .every(player => player.stats.lifes === 0);
+    .reduce((sum, player) => sum + player.stats.lifes, 0);
 
-  const blue_team_finished = players
+  const blue_team_lives = players
     .filter(player => player.team === TeamType.TEAM_BLUE)
-    .every(player => player.stats.lifes === 0);
+    .reduce((sum, player) => sum + player.stats.lifes, 0);
 
-  if (red_team_finished) {
-    return {
-      winner: TeamType.TEAM_BLUE,
-      loser: TeamType.TEAM_RED
-    };
-  }
-
-  if (blue_team_finished) {
-    return {
-      winner: TeamType.TEAM_RED,
-      loser: TeamType.TEAM_BLUE
-    };
+  if (time_up || red_team_lives === 0 || blue_team_lives === 0) {
+    if (red_team_lives === blue_team_lives) {
+      return {
+        winner: TeamType.TEAM_RED, // Arbitrary winner in case of a draw
+        loser: TeamType.TEAM_BLUE,
+        draw: true
+      };
+    } else if (red_team_lives > blue_team_lives) {
+      return {
+        winner: TeamType.TEAM_RED,
+        loser: TeamType.TEAM_BLUE,
+        draw: false
+      };
+    } else {
+      return {
+        winner: TeamType.TEAM_BLUE,
+        loser: TeamType.TEAM_RED,
+        draw: false
+      };
+    }
   }
 
   return null;

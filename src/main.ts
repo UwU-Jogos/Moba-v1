@@ -3,6 +3,7 @@ import { UwUChat2Client } from 'uwuchat2';
 import { UID } from './UID/_'; // 48-bit
 import { Name } from './Name/_'; // UTF-16
 import { GameState } from './GameState/_';
+import { Finished, game_finished } from './GameState/finished';
 import { Action } from './Action/_';
 import { init } from './Game/init';
 import { when } from './Game/when';
@@ -11,11 +12,14 @@ import { draw } from './Game/draw';
 import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
 import { ARTIFICIAL_DELAY, PLAYERS_LIMIT, TIME_TO_START_GAME } from './Helpers/consts';
-import { TimeDisplay } from './Helpers/time';
 import { get_characters_list } from './Lobby/get_characters_list';
 import { name_to_type } from './Character/name_to_type';
 import { CharacterType } from './Character/type';
-import { Finished, game_finished } from './GameState/finished';
+import { Timer } from './Timer/_';
+import { init as init_timer } from './Timer/init';
+import { is_time_up } from './Timer/is_time_up';
+import { reset as reset_timer } from './Timer/reset';
+import { update as update_timer } from './Timer/update';
 
 // Types
 // -----
@@ -85,8 +89,8 @@ async function handle_form_submit(e: Event): Promise<void> {
 async function start_game(room_id: UID, name: Name, character: string): Promise<void> {
   room = room_id;
 
-  // await client.init('ws://localhost:7171');
-  await client.init('ws://server.uwu.games');
+   await client.init('ws://localhost:7171');
+  //await client.init('ws://server.uwu.games');
 
   mach = sm.new_mach(TPS);
 
@@ -238,14 +242,17 @@ function handle_mouse_move(event: MouseEvent): void {
 }
 
 // Game Loop
+let timer : Timer = init_timer(); 
+
 function game_loop(): void {
   // Compute the current state
   const state = sm.compute(mach, { init, tick, when }, client.time());
 
+  timer = update_timer(timer, state.tick / TPS);
+
   // Check if the game has finished
-  const finished: Finished | null = game_finished(state);
+  const finished: Finished | null = game_finished(state, is_time_up(timer));
   if (finished) {
-    // Stop the game loop
     show_game_result(finished, state);
     return;
   }
@@ -253,15 +260,10 @@ function game_loop(): void {
   // Draw the current state
   draw(state);
 
-  // Calcula o tempo decorrido em segundos
-  const elapsedTime = state.tick / TPS;
-
-  // Atualiza o tempo decorrido
-  timeDisplay.update(elapsedTime);
-
   // Schedule the next frame
   requestAnimationFrame(game_loop);
 }
+
 
 function show_game_result(finished: Finished, state: GameState): void {
   const game_container = document.getElementById('game-container');
@@ -272,18 +274,20 @@ function show_game_result(finished: Finished, state: GameState): void {
     game_container.style.display = 'none';
     result_container.style.display = 'block';
 
-    const playerTeam = state.players.get(PID)?.team;
-    if (playerTeam === finished.winner) {
-      result_message.textContent = 'You Won!';
-    } else if (playerTeam === finished.loser) {
-      result_message.textContent = 'You Lost!';
+    if (finished.draw) {
+      result_message.textContent = 'That was a Draw!';
     } else {
-      result_message.textContent = 'Game Finished!';
+      const playerTeam = state.players.get(PID)?.team;
+      if (playerTeam === finished.winner) {
+        result_message.textContent = 'You Won!';
+      } else if (playerTeam === finished.loser) {
+        result_message.textContent = 'You Lost!';
+      } else {
+        result_message.textContent = 'Game Finished!';
+      }
     }
   } else {
     console.error("Could not find game or result container");
   }
 }
 
-// Initialize TimeDisplay
-const timeDisplay = new TimeDisplay();
