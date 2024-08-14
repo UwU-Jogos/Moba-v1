@@ -30,9 +30,9 @@ import { check_collision as check_player_collision } from './check_collision';
 import { process_player_skills } from '../Skill/process';
 import { check_game_object_collision } from '../Player/check_game_object_collision';
 import { update_player_effects } from './update_player_effects';
-import { create_respawn_area } from '../GameState/create_respawn_area';
-import { create_orb } from '../GameState/create_orb';
-import { update_game_objects } from '../GameState/update_game_objects';
+import { create_respawn_area } from '../GameMap/create_respawn_area';
+import { create_orb } from '../GameMap/create_orb';
+import { update_game_objects } from '../GameMap/update_game_objects';
 
 export function update_players(gs: GameState, dt: number): GameState {
   const { width, height } = get_canvas_dimensions();
