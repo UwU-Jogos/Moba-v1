@@ -26,3 +26,4 @@ export const TIME_TO_START_GAME = 5;
 export const DEFAULT_RANGE = 150;
 export const RESPAWN_AREA_COLOR = 'green';
 export const ORB_COLOR = 'blue';
+export const GAME_TIME = 60 * 1;
