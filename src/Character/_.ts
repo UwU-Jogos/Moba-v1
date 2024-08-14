@@ -25,7 +25,6 @@
 
 import { CharacterType } from './type';
 import { Key } from '../Key/_';
-import { DEFAULT_RANGE } from '../Helpers/consts';
 import { basic } from '../Skill/basic';
 import { Effect } from '../Effect/_';
 

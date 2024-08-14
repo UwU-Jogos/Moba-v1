@@ -37,12 +37,12 @@ export type Player = {
   pos: V2;
   target_pos: V2;
   skills: { [key: Key]: basic };
-  active_skills: { [key: string]: number }; 
+  active_skills: { [key: string]: number };
   life: Life;
   team: TeamType;
   character: CharacterType;
   key: { [key: Key]: boolean };
   stats: Stats;
-  effects: Effect[]; 
+  effects: Effect[];
   shots: number;
 };

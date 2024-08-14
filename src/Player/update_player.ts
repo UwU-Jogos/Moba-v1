@@ -30,11 +30,11 @@ export function update_player(player: Player, uid: UID, dt: number, mutable_play
   }
 
   const char = create_character(player.character);
-  const move_speed_mult = char.effects.find(effect => effect.$ === 'IncreaseMoveSpeed')?.percentage || 0; 
+  const move_speed_mult = char.effects.find(effect => effect.$ === 'IncreaseMoveSpeed')?.percentage || 0;
   const speed = PLAYER_SPEED + (PLAYER_SPEED * move_speed_mult);
 
-  const dx = ((player.key["D"] ? speed : 0) + (player.key["A"] ? -speed : 0)) * dt * 90;
-  const dy = ((player.key["S"] ? speed : 0) + (player.key["W"] ? -speed : 0)) * dt * 90;
+  const dx = ((player.key.D ? speed : 0) + (player.key.A ? -speed : 0)) * dt * 90;
+  const dy = ((player.key.S ? speed : 0) + (player.key.W ? -speed : 0)) * dt * 90;
 
   let new_pos = { x: player.pos.x + dx, y: player.pos.y + dy };
 

@@ -10,7 +10,7 @@
 ///   - `time` - The time of the action
 ///   - `pid` - The player's unique identifier
 ///   - `name` - The new nickname for the player
-///   - `character` - The character type of the player 
+///   - `character` - The character type of the player
 ///
 /// * `SkillEvent` - Action for a skill activation event
 ///   - `time` - The time of the action

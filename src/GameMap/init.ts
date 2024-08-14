@@ -17,9 +17,8 @@ export function init(): GameMap {
 
   const orb_square_side = 100;
   const window_size = 20;
-  const wall_size = (orb_square_side - window_size) / 2;
 
-  const objects: GameObject[] = 
+  const objects: GameObject[] =
   [
     {
       kind: "LineWall",
@@ -44,7 +43,6 @@ export function init(): GameMap {
       }
     },
 
-
     {
       kind: "LineWall",
       ini: {
@@ -67,7 +65,6 @@ export function init(): GameMap {
         y: 450,
       }
     },
-
 
     {
       kind: "LineWall",
@@ -114,7 +111,7 @@ export function init(): GameMap {
         y: 100,
       }
     },
- 
+
     // orb map
     // Top wall left
     {
@@ -212,10 +209,10 @@ export function init(): GameMap {
         y: (height / 2) + orb_square_side / 2,
       }
     }
-  ]
+  ];
  return {
-    width: width,
-    height: height,
-    objects: objects
+    width,
+    height,
+    objects
   };
 }

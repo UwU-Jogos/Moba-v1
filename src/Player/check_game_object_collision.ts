@@ -35,7 +35,7 @@ export function check_game_object_collision(player: Player, pos: V2, game_object
     // Check if player is colliding with the object
     if (new_x + PLAYER_RADIUS > left && new_x - PLAYER_RADIUS < right &&
         new_y + PLAYER_RADIUS > top && new_y - PLAYER_RADIUS < bottom) {
-      
+
       if (game_object.kind === 'RespawnArea') {
         // For RespawnArea, keep the player inside
         new_x = Math.max(left + PLAYER_RADIUS, Math.min(right - PLAYER_RADIUS, new_x));
@@ -76,7 +76,8 @@ export function check_game_object_collision(player: Player, pos: V2, game_object
       }
     }
   } else if (game_object.kind === 'LineWall' || game_object.kind === 'TimedLineWall') {
-    if (game_object.kind === 'TimedLineWall' && game_object.active == 0) {
+    if (game_object.kind === 'TimedLineWall' && game_object.active === 0) {
+
     } else {
       const dx = game_object.end.x - game_object.ini.x;
       const dy = game_object.end.y - game_object.ini.y;

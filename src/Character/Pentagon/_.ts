@@ -10,9 +10,6 @@
 
 import { Character } from '../_';
 import { CharacterType } from '../type';
-import { DEFAULT_RANGE } from '../../Helpers/consts';
-import { seconds_to_ticks } from '../../Helpers/seconds_to_ticks';
-import { Effect } from '../../Effect/_';
 
 export function Pentagon(): Character {
   return {

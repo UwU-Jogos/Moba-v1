@@ -9,10 +9,20 @@
 ///
 /// # Returns
 /// The adjusted position after collision checks.
+
+import { Map } from 'immutable';
+import { Player } from './_';
+import { UID } from '../UID/_';
+import { V2 } from '../V2/_';
+import { GameMap } from '../GameMap/_';
+import { check_collision } from './check_collision';
+import { check_game_object_collision } from './check_game_object_collision';
+import { GameObject } from '../GameMap/GameObject/_';
+
 export function check_collisions(player: Player, uid: UID, new_pos: V2, mutable_players: Map<UID, Player>, game_map: GameMap): V2 {
   mutable_players.forEach((other_player, other_uid) => {
     if (uid !== other_uid) {
-      new_pos = check_player_collision(player, uid, other_player, other_uid, new_pos);
+      new_pos = check_collision(player, uid, other_player, other_uid, new_pos);
     }
   });
 

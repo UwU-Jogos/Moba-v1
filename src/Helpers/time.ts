@@ -11,7 +11,7 @@ export class TimeDisplay {
         document.body.appendChild(this.timeDisplay);
     }
 
-    update(elapsedTime: number) {
+    update(elapsedTime: number): void {
         const minutes = Math.floor(elapsedTime / 60);
         const seconds = Math.floor(elapsedTime % 60);
         this.timeDisplay.textContent = `Time: ${minutes}:${seconds.toString().padStart(2, '0')}`;

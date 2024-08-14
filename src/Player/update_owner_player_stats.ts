@@ -23,7 +23,7 @@ export function update_owner_player_stats(owner_player: Player): Player {
   if (movement_speed) {
     movement_speed.percentage += movement_speed.percentage;
   }
-  
+
   return {
     ...owner_player,
     stats: {

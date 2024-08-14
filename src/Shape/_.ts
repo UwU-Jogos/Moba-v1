@@ -45,5 +45,4 @@ export type Shape =
   | { type: 'rectangle', pos: V2, width: number, height: number }
   | { type: 'diamond', pos: V2, width: number, height: number }
   | { type: 'star', pos: V2, outer_radius: number, inner_radius: number }
-  | { type: 'pentagon', pos: V2, radius: number }
-
+  | { type: 'pentagon', pos: V2, radius: number };

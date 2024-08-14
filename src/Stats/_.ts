@@ -8,15 +8,13 @@
 ///
 /// * `kills` - The number of kills the player has achieved
 /// * `max_life` - The maximum life of the player
-/// * `lifes` - How many times it will respawn if dies 
-/// * `destroyed_orbs` - How many times the player destroyed the orb 
-/// * `damage_multiplier`  
-/// * `movement_multiplier`  
+/// * `lifes` - How many times it will respawn if dies
+/// * `destroyed_orbs` - How many times the player destroyed the orb
+/// * `damage_multiplier`
+/// * `movement_multiplier`
 ///
 /// # Type Definition
 ///
-
-import { Damage } from '../Damage/_';
 
 export type Stats = {
   kills: number;

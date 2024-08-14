@@ -15,7 +15,7 @@ import { V2 } from '../V2/_';
 export function circle(pos: V2, rad: number): Shape {
   return {
     type: 'circle',
-    pos: pos,
-    rad: rad
+    pos,
+    rad
   };
 }

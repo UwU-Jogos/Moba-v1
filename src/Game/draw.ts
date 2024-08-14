@@ -9,7 +9,6 @@
 /// This function doesn't return a value, it performs the drawing operation.
 
 import { GameState } from '../GameState/_';
-import { draw as draw_shape } from '../Shape/draw';
 import { draw as draw_game_object } from '../GameMap/GameObject/draw';
 import { draw as draw_projectiles } from '../Projectile/draw';
 import { draw as draw_player } from '../Player/draw';

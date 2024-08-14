@@ -17,7 +17,6 @@
 /// Throws an Error if an unknown action type is encountered
 
 import { Action } from './_';
-import { match } from './match';
 
 export function deserialize(data: Uint8Array): Action {
   const decoder = new TextDecoder();

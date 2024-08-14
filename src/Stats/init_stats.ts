@@ -18,5 +18,5 @@ export function init_stats(): Stats {
     lifes: 3,
     destroyed_orbs: 0,
     damage_multiplier: 1,
-  }
+  };
 }

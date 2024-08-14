@@ -30,7 +30,6 @@
 /// * `ShotThroughWall` - Allows shots to pass through walls
 ///   - `active` - Whether the effect is active (true) or not (false)
 
-
 export type Effect =
   | { $: 'RangeAlter'; multiplier: number }
   | { $: 'NoPlayerCollision'; active: boolean }
@@ -39,4 +38,4 @@ export type Effect =
   | { $: 'MultipleShot'; shots_number: number }
   | { $: 'OrbGivesMaxLife'; life: number }
   | { $: 'IncreaseMoveSpeed'; percentage: number }
-  | { $: 'ShotThroughWall'; active: boolean }
+  | { $: 'ShotThroughWall'; active: boolean };

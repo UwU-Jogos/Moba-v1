@@ -22,7 +22,6 @@ export function create_timed_orb_walls(tick: number): GameObject[] {
   const { width, height } = get_canvas_dimensions();
   const orb_square_side = 100;
   const window_size = 20;
-  const wall_size = (orb_square_side - window_size) / 2;
 
   const orb_walls: { ini: V2, end: V2 }[] = [
     // Top wall center
