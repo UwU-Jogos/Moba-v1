@@ -27,7 +27,6 @@ import { is_dead as is_player_dead } from './is_dead';
 import { respawn } from './respawn';
 import { update_player_position } from './update_player_position';
 import { check_collision as check_player_collision } from './check_collision';
-import { process_player_skills } from '../Skill/process';
 import { check_game_object_collision } from '../Player/check_game_object_collision';
 import { update_player_effects } from './update_player_effects';
 import { create_respawn_area } from '../GameMap/create_respawn_area';
@@ -60,11 +59,6 @@ export function update_players(gs: GameState, dt: number): GameState {
         }
       });
 
-      const active_skills = { ...player.active_skills };
-      Object.entries(active_skills).forEach(([skill_id, end_tick]) => {
-        process_player_skills(gs.tick, end_tick, skill_id, player, uid);
-      });
-
       gs.game_map.objects.forEach((game_object: GameObject) => {
         new_pos = check_game_object_collision(player, new_pos, game_object);
       });
@@ -74,7 +68,6 @@ export function update_players(gs: GameState, dt: number): GameState {
       mutable_players.set(uid, {
         ...updated_player,
         pos: new_pos,
-        active_skills,
       });
     });
   });
