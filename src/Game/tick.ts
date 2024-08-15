@@ -11,15 +11,16 @@
 import { GameState } from '../GameState/_';
 import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
 import { TPS } from '../Helpers/consts';
-import { update_projectiles } from '../Projectile/update_projectiles';
 import { update_players } from '../Player/update_players';
 import { create_timed_line_walls } from '../GameMap/create_timed_line_walls';
+import { update as update_skill } from '../Skill/update';
 
 export function tick(gs: GameState): GameState {
   const dt = 1 / TPS;
   const { width, height } = get_canvas_dimensions();
 
-  let updated_gs = update_projectiles(gs, dt);
+  let updated_gs = update_skill(gs);
+
   updated_gs = update_players(updated_gs, dt);
 
   if (updated_gs.tick % (5 * TPS) === 0) {
