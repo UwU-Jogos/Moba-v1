@@ -10,8 +10,8 @@
 
 import { GameState } from '../GameState/_';
 import { draw as draw_game_object } from '../GameMap/GameObject/draw';
-import { draw as draw_projectiles } from '../Projectile/draw';
 import { draw as draw_player } from '../Player/draw';
+import { draw as draw_skill } from '../Skill/draw';
 
 export function draw(gs: GameState): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -29,5 +29,8 @@ export function draw(gs: GameState): void {
   gs.players.forEach(player => {
     draw_player(ctx, player);
   });
-  draw_projectiles(ctx, gs);
+
+  gs.skills.forEach(skill => {
+    draw_skill(ctx, skill);
+  });
 }
