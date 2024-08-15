@@ -27,7 +27,7 @@ import { Key } from '../Key/_';
 import { Life } from '../Life/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
-import { basic } from '../Skill/basic';
+import { Skill } from '../Skill/_';
 import { Stats } from '../Stats/_';
 import { Effect } from '../Effect/_';
 
@@ -36,7 +36,6 @@ export type Player = {
   name: Name;
   pos: V2;
   target_pos: V2;
-  skills: { [key: Key]: basic };
   active_skills: { [key: string]: number };
   life: Life;
   team: TeamType;
