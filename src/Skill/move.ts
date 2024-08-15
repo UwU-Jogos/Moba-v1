@@ -17,13 +17,15 @@ import { scale } from '../V2/scale';
 import { add } from '../V2/add';
 
 export function move(skill: Skill, delta_time: number): Skill {
+  const SPEED_MULTIPLIER = 10;
+
   return match(skill, {
     Projectile: (damage, speed, range, target) => {
       const direction = normalize({
         x: target.x - skill.pos.x,
         y: target.y - skill.pos.y
       });
-      const distance = speed * delta_time * 10;
+      const distance = speed * delta_time * SPEED_MULTIPLIER;
       const movement = scale(direction, distance);
       const new_pos = add(skill.pos, movement);
 
