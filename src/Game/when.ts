@@ -12,12 +12,18 @@
 import { Action } from '../Action/_';
 import { GameState } from '../GameState/_';
 import { Player } from '../Player/_';
-import { activate as activate_skill} from '../Skill/activate';
+import { Skill } from '../Skill/_';
+import { V2 } from '../V2/_';
+import { create_skill } from '../Skill/create';
 import { init as init_player } from '../Player/init';
 import { CharacterType } from '../Character/type';
+import { create_character } from '../Character/create_character';
+
+const SKILL_COOLDOWN = 5; 
 
 export function when(action: Action, gs: GameState): GameState {
   let players = gs.players;
+  let skills = gs.skills;
 
   if (!players.has(action.pid)) {
     const initial_name = action.$ === "SetNick" ? action.name : "Anon";
@@ -28,18 +34,38 @@ export function when(action: Action, gs: GameState): GameState {
   switch (action.$) {
     case "SetNick": {
       players = players.update(action.pid, player => {
-        const updatedPlayer = { ...player, name: action.name } as Player;
-        return updatedPlayer;
+        if (!player) return player;
+        return { ...player, name: action.name } as Player;
       });
       break;
     }
 
     case "SkillEvent": {
       if (action.down) {
-        return activate_skill(gs, action.pid, action.key, { x: action.x, y: action.y }, 10);
+        const player = players.get(action.pid);
+        if (!player) return gs;
+
+        const current_tick = gs.tick;
+        const last_skill_time = player.active_skills[action.key] || 0;
+
+        if (current_tick - last_skill_time >= SKILL_COOLDOWN) {
+          const new_skill : Skill | null = create_skill(action, player, current_tick);
+          if (!new_skill) return gs;
+          skills = skills.set(new_skill.id, new_skill);
+
+          // Update the last skill use time for this player and key
+          players = players.update(action.pid, p => {
+            if (!p) return p;
+            return {
+              ...p,
+              active_skills: { ...p.active_skills, [action.key]: current_tick }
+            };
+          });
+        }
       }
       break;
     }
+
     case "MouseClick": {
       players = players.update(action.pid, player => {
         if (!player) return player;
@@ -55,5 +81,5 @@ export function when(action: Action, gs: GameState): GameState {
       break;
     }
   }
-  return { ...gs, players };
+  return { ...gs, players, skills };
 }

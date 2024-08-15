@@ -13,13 +13,13 @@ import { Map } from 'immutable';
 import { UID } from '../UID/_';
 import { Player } from '../Player/_';
 import { init as init_map } from '../GameMap/init';
-import { Projectile } from '../Projectile/_';
+import { Skill } from '../Skill/_';
 
 export function init(): GameState {
   return {
     tick: 0,
     players: Map<UID, Player>(),
     game_map: init_map(),
-    projectile_system: Map<string, Projectile>()
+    skills: Map<string, Skill>(),
   };
 }

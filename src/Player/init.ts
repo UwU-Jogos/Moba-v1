@@ -49,7 +49,6 @@ export function init(id: UID, name: Name, character_type: CharacterType): Player
     name,
     pos,
     target_pos: pos,
-    skills: character.skills,
     active_skills: {},
     life: stats.max_life,
     team: next_team,

@@ -25,12 +25,11 @@
 
 import { CharacterType } from './type';
 import { Key } from '../Key/_';
-import { basic } from '../Skill/basic';
 import { Effect } from '../Effect/_';
 
 export type Character = {
   name: string;
   type: CharacterType;
-  skills: { [key: Key]: basic };
+  skills: { [key: Key]: any };
   effects: Effect[];
 };
