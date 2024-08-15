@@ -20,6 +20,12 @@ import { init as init_timer } from './Timer/init';
 import { is_time_up } from './Timer/is_time_up';
 import { reset as reset_timer } from './Timer/reset';
 import { update as update_timer } from './Timer/update';
+import { populate_character_select } from './Lobby/populate_character_select';
+import { show_lobby } from './Lobby/show_lobby';
+import { update_lobby } from './Lobby/update_lobby';
+import { handle_key_event } from './Input/handle_key_event';
+import { handle_mouse_move } from './Input/handle_mouse_move';
+import { handle_mouse_click } from './Input/handle_mouse_click';
 
 // Types
 // -----
@@ -44,6 +50,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // Also set up the listener immediately in case DOMContentLoaded has already fired
 setup_form_listener();
 
+// Extract to: /src/UI/setup_form_listener.ts
 function setup_form_listener(): void {
   const login_form = document.getElementById('login-form');
 
@@ -55,22 +62,7 @@ function setup_form_listener(): void {
   }
 }
 
-function populate_character_select(): void {
-  const character_select = document.getElementById('character-select') as HTMLSelectElement;
-  if (character_select) {
-    character_select.innerHTML = ''; // Clear existing options
-    const characters = get_characters_list();
-    characters.forEach(character => {
-      const option = document.createElement('option');
-      option.value = character;
-      option.textContent = character;
-      character_select.appendChild(option);
-    });
-  } else {
-    console.error("Character select not found!");
-  }
-}
-
+// Extract to: /src/UI/handle_form_submit.ts
 async function handle_form_submit(e: Event): Promise<void> {
   e.preventDefault();
 
@@ -85,7 +77,7 @@ async function handle_form_submit(e: Event): Promise<void> {
   await start_game(room_id, name, character);
 }
 
-// Function to start the game
+// Extract to: /src/Game/start_game.ts
 async function start_game(room_id: UID, name: Name, character: string): Promise<void> {
   room = room_id;
 
@@ -101,7 +93,7 @@ async function start_game(room_id: UID, name: Name, character: string): Promise<
       const deserialized_msg: Action = deserialize(msg);
       if (deserialized_msg.$ === 'SetNick') {
         players_in_the_room.push(deserialized_msg.pid);
-        update_lobby();
+        update_lobby(players_in_the_room);
         if (players_in_the_room.length === PLAYERS_LIMIT) {
           start_countdown();
         }
@@ -124,34 +116,16 @@ async function start_game(room_id: UID, name: Name, character: string): Promise<
   client.send(room, serialize(set_nick_action));
 
   // Set up key and mouse event listeners
-  window.addEventListener('keydown', handle_key_event);
-  window.addEventListener('keyup', handle_key_event);
+  window.addEventListener('keydown', (event) => handle_key_event(event, room,  PID, mach, client));
+  window.addEventListener('keyup', (event) => handle_key_event(event, room, PID, mach, client));
   window.addEventListener('mousemove', handle_mouse_move);
-  window.addEventListener('click', handle_mouse_click);
+  window.addEventListener('click', (event) => handle_mouse_click(event, room, PID, mach, client));
 
   // Show lobby
   show_lobby();
 }
 
-function show_lobby(): void {
-  const login_container = document.getElementById('login-container');
-  const lobby_container = document.getElementById('lobby-container');
-
-  if (login_container && lobby_container) {
-    login_container.style.display = 'none';
-    lobby_container.style.display = 'block';
-  } else {
-    console.error("Could not find login or lobby container");
-  }
-}
-
-function update_lobby(): void {
-  const lobby_players = document.getElementById('lobby-players');
-  if (lobby_players) {
-    lobby_players.innerHTML = `Players in lobby: ${players_in_the_room.length}/${PLAYERS_LIMIT}`;
-  }
-}
-
+// Extract to: /src/UI/start_countdown.ts
 function start_countdown(): void {
   let countdown = TIME_TO_START_GAME;
   const countdown_element = document.getElementById('countdown');
@@ -168,6 +142,7 @@ function start_countdown(): void {
   }
 }
 
+// Extract to: /src/UI/show_game_container.ts
 function show_game_container(): void {
   const lobby_container = document.getElementById('lobby-container');
   const game_container = document.getElementById('game-container');
@@ -184,66 +159,10 @@ function show_game_container(): void {
   game_loop();
 }
 
-// Input Handler
-const key_state: { [key: string]: boolean } = {};
-function handle_key_event(event: KeyboardEvent): void {
-  const key = event.key.toUpperCase();
-  const down = event.type === 'keydown';
-  if (['W', 'A', 'S', 'D'].includes(key)) {
-    handle_movement_event(key, down);
-  } else if (['Q', 'W', 'E', 'R'].includes(key)) {
-    handle_skill_event(key, down);
-  }
-}
-
-function handle_movement_event(key: string, down: boolean): void {
-  if (key_state[key] !== down) {
-    key_state[key] = down;
-    const time = client.time() + ARTIFICIAL_DELAY;
-    const act = { $: "MovementEvent", time, pid: PID, key, down } as Action;
-    sm.register_action(mach, act);
-    client.send(room, serialize(act));
-  }
-}
-
-function handle_skill_event(key: string, down: boolean): void {
-  if (key_state[key] !== down) {
-    key_state[key] = down;
-    const time = client.time() + ARTIFICIAL_DELAY;
-    const act = { $: "SkillEvent", time, pid: PID, key, down, x: mouseX, y: mouseY } as Action;
-    sm.register_action(mach, act);
-    client.send(room, serialize(act));
-  }
-}
-
-// Mouse Click Handler
-function handle_mouse_click(event: MouseEvent): void {
-  if (event.button === 0 && event.target instanceof HTMLCanvasElement) {
-    const time = client.time() + ARTIFICIAL_DELAY;
-    const x = event.clientX - event.target.offsetLeft;
-    const y = event.clientY - event.target.offsetTop;
-    const act = { $: "MouseClick", time, pid: PID, x, y } as Action;
-
-    // Add to own action log
-    sm.register_action(mach, act);
-    // Send to server
-    client.send(room, serialize(act));
-  }
-}
-
-// Add mouse position tracking
-let mouseX = 0;
-let mouseY = 0;
-function handle_mouse_move(event: MouseEvent): void {
-  if (event.target instanceof HTMLCanvasElement) {
-    mouseX = event.clientX - event.target.offsetLeft;
-    mouseY = event.clientY - event.target.offsetTop;
-  }
-}
-
 // Game Loop
 let timer : Timer = init_timer(); 
 
+// Extract to: /src/Game/game_loop.ts
 function game_loop(): void {
   // Compute the current state
   const state = sm.compute(mach, { init, tick, when }, client.time());
@@ -264,7 +183,7 @@ function game_loop(): void {
   requestAnimationFrame(game_loop);
 }
 
-
+// Extract to: /src/UI/show_game_result.ts
 function show_game_result(finished: Finished, state: GameState): void {
   const game_container = document.getElementById('game-container');
   const result_container = document.getElementById('result-container');
@@ -290,4 +209,3 @@ function show_game_result(finished: Finished, state: GameState): void {
     console.error("Could not find game or result container");
   }
 }
-
