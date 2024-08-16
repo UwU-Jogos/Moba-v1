@@ -16,10 +16,14 @@ export function create_skill(action: Action, player: Player, current_tick: numbe
       if (!skill) { return null; }
 
       const target = { x: action.x, y: action.y };
+      
+      // Check if it's the 4th, 8th, 12th, etc. shot
+      const is_fourth_shot = (player.shots + 1) % 4 === 0;
+      
       return {
         id: `${action.pid}_${current_tick}`,
         $: 'Projectile',
-        effects: [],
+        effects: is_fourth_shot ? [ { $: 'ShotThroughWall', active: true } ] : [],
         pos: player.pos,
         owner_id: action.pid,
         damage: skill.damage,
