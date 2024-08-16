@@ -10,6 +10,7 @@
 /// This function doesn't return a value, but draws the skill on the canvas
 
 import { Skill } from './_';
+import { Effect } from '../Effect/_';
 import { match } from './match';
 import { V2 } from '../V2/_';
 import { Shape } from '../Shape/_';
@@ -19,10 +20,12 @@ import { draw as shape_draw } from '../Shape/draw';
 export function draw(ctx: CanvasRenderingContext2D, skill: Skill): void {
   match(skill, {
     Projectile: (damage, speed, range, target) => {
-      const projectile_width = 2;
-      const projectile_height = 3;
+      const has_shot_through_wall = skill.effects.some((effect : Effect) => effect.$ === "ShotThroughWall");
+      const projectile_width  = has_shot_through_wall ? 3 : 2;
+      const projectile_height = has_shot_through_wall ? 4 : 3;
+      const projectile_color  = has_shot_through_wall ? 'pink' : 'black';
       const projectile_shape: Shape = rectangle(skill.pos, projectile_width, projectile_height);
-      shape_draw(ctx, projectile_shape, 'black');
+      shape_draw(ctx, projectile_shape, projectile_color);
     }
   });
 }

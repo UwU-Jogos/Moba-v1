@@ -58,7 +58,8 @@ export function when(action: Action, gs: GameState): GameState {
             if (!p) return p;
             return {
               ...p,
-              active_skills: { ...p.active_skills, [action.key]: current_tick }
+              active_skills: { ...p.active_skills, [action.key]: current_tick },
+              shots: p.shots + 1
             };
           });
         }
