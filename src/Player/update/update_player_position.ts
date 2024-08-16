@@ -11,10 +11,10 @@
 ///
 /// A new V2 object representing the updated player position
 
-import { Player } from './_';
-import { V2 } from '../V2/_';
-import { PLAYER_SPEED, PLAYER_RADIUS } from '../Helpers/consts';
-import { create_character } from '../Character/create_character';
+import { Player } from '../_';
+import { V2 } from '../../V2/_';
+import { PLAYER_SPEED, PLAYER_RADIUS } from '../../Helpers/consts';
+import { create_character } from '../../Character/create_character';
 
 export function update_player_position(player: Player, dt: number, width: number, height: number): V2 {
   const char = create_character(player.character);

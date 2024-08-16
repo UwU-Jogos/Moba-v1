@@ -15,7 +15,7 @@
 /// 2. Removing any 'Immune' effects that have expired (active <= 0)
 /// 3. Keeping all other effects unchanged
 
-import { Player } from './_';
+import { Player } from '../_';
 
 export function update_player_effects(player: Player): Player {
   const updated_effects = player.effects.map(effect => {
