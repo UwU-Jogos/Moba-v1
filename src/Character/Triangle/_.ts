@@ -21,6 +21,7 @@ export function Triangle(): Character {
     type: CharacterType.TRIANGLE,
     skills: {
       'E': { $: 'Projectile', effects: [], damage: DEFAULT_ATTACK_DAMAGE, speed: 30, range: triangle_range },
+      'Q': { $: 'HealArea', effects: [], amount: 10, radius: 10 },
     },
     effects: [
       { $: 'NoPlayerCollision', active: true },
