@@ -1,8 +1,8 @@
-/// Moves a projectile skill.
+/// Moves a projectile skill or updates HealArea position.
 ///
 /// # Input
 ///
-/// * `skill` - The Skill to move
+/// * `skill` - The Skill to move or update
 /// * `delta_time` - The time elapsed since the last update
 ///
 /// # Output
@@ -34,6 +34,7 @@ export function move(skill: Skill, delta_time: number): Skill {
         pos: new_pos,
         range: range - distance
       };
-    }
+    },
+    HealArea: (heal_amount, radius) => { return skill; }, 
   });
 }

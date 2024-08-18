@@ -15,6 +15,7 @@ import { match } from './match';
 import { V2 } from '../V2/_';
 import { Shape } from '../Shape/_';
 import { rectangle } from '../Shape/rectangle';
+import { circle } from '../Shape/circle';
 import { draw as shape_draw } from '../Shape/draw';
 
 export function draw(ctx: CanvasRenderingContext2D, skill: Skill): void {
@@ -26,6 +27,11 @@ export function draw(ctx: CanvasRenderingContext2D, skill: Skill): void {
       const projectile_color  = has_shot_through_wall ? 'pink' : 'black';
       const projectile_shape: Shape = rectangle(skill.pos, projectile_width, projectile_height);
       shape_draw(ctx, projectile_shape, projectile_color);
+    },
+    HealArea: (amount, radius) => {
+      if (radius == 0) { return; }
+      const heal_area_shape: Shape = circle(skill.pos, radius);
+      shape_draw(ctx, heal_area_shape, 'green');
     }
   });
 }
