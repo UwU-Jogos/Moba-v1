@@ -20,6 +20,7 @@ export type SkillInfo = {
 };
 
 export type SkillType =
-  | { $: 'Projectile'; damage: Damage; speed: number; range: number; target: V2 };
+  | { $: 'Projectile'; damage: Damage; speed: number; range: number; target: V2 }
+  | { $: 'HealArea'; amount: number; radius: number; };
 
 export type Skill = SkillInfo & SkillType;
