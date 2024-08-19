@@ -1,7 +1,7 @@
 import * as sm from '@uwu-games/uwu-state-machine';
 import { UwUChat2Client } from 'uwuchat2';
-import { UID } from './UID/_'; // 48-bit
-import { Name } from './Name/_'; // UTF-16
+import { UID } from './Types/UID/_'; // 48-bit
+import { Name } from './Types/Name/_'; // UTF-16
 import { GameState } from './GameState/_';
 import { Finished, game_finished } from './GameState/finished';
 import { Action } from './Action/_';

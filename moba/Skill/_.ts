@@ -6,11 +6,11 @@
 ///
 /// # Type Definitions
 
-import { Effect } from '../Effect/_';
+import { Effect } from '../Types/Effect/_';
 import { V2 } from '../V2/_';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { Key } from '../../base/Types/Key/_';
-import { Damage } from '../Damage/_';
+import { Damage } from '../Types/Damage/_';
 
 export type SkillInfo = {
   id: string;

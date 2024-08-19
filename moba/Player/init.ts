@@ -20,8 +20,8 @@
 /// It also sets up the player's initial stats, position, and character-specific attributes.
 
 import { Player } from './_';
-import { UID } from '../UID/_';
-import { Name } from '../Name/_';
+import { UID } from '../Types/UID/_';
+import { Name } from '../Types/Name/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
 import { create_character } from '../Character/create_character';

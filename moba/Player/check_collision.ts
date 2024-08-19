@@ -20,7 +20,7 @@
 /// resolve the collision.
 
 import { Player } from './_';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { V2 } from '../V2/_';
 import { PLAYER_RADIUS } from '../Helpers/consts';
 import { create_character } from '../Character/create_character';

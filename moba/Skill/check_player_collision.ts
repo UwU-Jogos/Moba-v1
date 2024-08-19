@@ -2,7 +2,7 @@ import { distance } from '../Helpers/distance';
 import { PLAYER_RADIUS } from '../Helpers/consts';
 import { Player } from '../Player/_';
 import { take_damage } from '../Player/take_damage';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { Skill } from './_';
 import { match } from './match';
 import { create_character } from '../Character/create_character';

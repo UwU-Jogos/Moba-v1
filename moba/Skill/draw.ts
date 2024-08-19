@@ -10,7 +10,7 @@
 /// This function doesn't return a value, but draws the skill on the canvas
 
 import { Skill } from './_';
-import { Effect } from '../Effect/_';
+import { Effect } from '../Types/Effect/_';
 import { match } from './match';
 import { V2 } from '../V2/_';
 import { Shape } from '../Shape/_';

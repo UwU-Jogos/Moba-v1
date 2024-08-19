@@ -11,7 +11,7 @@
 
 import { GameObject } from './_';
 import { V2 } from '../../V2/_';
-import { Effect } from '../../Effect/_';
+import { Effect } from '../../Types/Effect/_';
 
 export function match<R>(
   game_obj: GameObject,

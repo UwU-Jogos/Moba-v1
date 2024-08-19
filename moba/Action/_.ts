@@ -33,7 +33,7 @@
 ///   - `down` - Whether the key is pressed down (true) or released (false)
 
 import { Time } from '@uwu-games/uwu-state-machine';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { Key } from '../../base/Types/Key/_';
 import { CharacterType } from '../Character/type';
 

@@ -10,7 +10,7 @@
 
 import { GameState } from '../GameState/_';
 import { Map } from 'immutable';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { Player } from '../Player/_';
 import { init as init_map } from '../GameMap/init';
 import { Skill } from '../Skill/_';

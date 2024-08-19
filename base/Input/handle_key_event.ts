@@ -24,7 +24,7 @@ import { handle_movement_event } from "./handle_movement_event";
 import { handle_skill_event } from "./handle_skill_event";
 import { Action } from "../../moba/Action/_";
 import { GameState } from "../../moba/GameState/_";
-import { UID } from "../../moba/UID/_";
+import { UID } from "../../moba/Types/UID/_";
 import * as sm from "@uwu-games/uwu-state-machine";
 
 export function handle_key_event(

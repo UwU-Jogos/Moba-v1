@@ -12,7 +12,7 @@
 import { Action } from './_';
 import { CharacterType } from '../Character/type';
 import { Time } from '@uwu-games/uwu-state-machine';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { Key } from '../../base/Types/Key/_';
 
 export function match<R>(

@@ -11,7 +11,7 @@
 
 import { Skill } from './_';
 import { V2 } from '../V2/_';
-import { Damage } from '../Damage/_';
+import { Damage } from '../Types/Damage/_';
 
 export function match<R>(
   skill: Skill,

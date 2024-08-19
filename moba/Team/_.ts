@@ -10,7 +10,7 @@
 /// * `players` - An array of player UIDs, with a maximum length of MAX_PLAYERS
 
 import { TeamType } from './type';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { PLAYERS_LIMIT } from '../Helpers/consts';
 
 export type Team = {

@@ -1,7 +1,7 @@
 import { GameState } from "../../GameState/_";
 import { Skill } from "../_";
 import { Player } from "../../Player/_";
-import { UID } from "../../UID/_";
+import { UID } from "../../Types/UID/_";
 import { check_player_collision } from "../check_player_collision";
 import { Map } from "immutable";
 

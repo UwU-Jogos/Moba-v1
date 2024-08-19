@@ -10,10 +10,10 @@
 
 import { Map } from 'immutable';
 import { Player } from './_';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { Skill } from '../Skill/_';
 import { GameObject } from '../GameMap/GameObject/_';
-import { Effect } from '../Effect/_';
+import { Effect } from '../Types/Effect/_';
 import { create_character } from '../Character/create_character';
 import { apply_effects as apply_orb_effects } from '../GameMap/GameObject/Orb/apply_effects';
 

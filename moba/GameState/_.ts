@@ -11,7 +11,7 @@
 /// * `game_map` - The current game map
 
 import { Map } from 'immutable';
-import { UID } from '../UID/_';
+import { UID } from '../Types/UID/_';
 import { Player } from '../Player/_';
 import { GameMap } from '../GameMap/_';
 import { Skill } from '../Skill/_';
