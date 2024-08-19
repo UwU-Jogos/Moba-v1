@@ -16,8 +16,9 @@ import { match } from './match';
 import { rectangle } from '../../Shape/rectangle';
 import { line } from '../../Shape/line';
 import { circle } from '../../Shape/circle';
+import { Effect } from '../../Effect/_';
 import { draw as shape_draw } from '../../Shape/draw';
-import { WALL_COLOR, PLATFORM_COLOR, RESPAWN_AREA_COLOR, ORB_COLOR } from '../../Helpers/consts';
+import { WALL_COLOR, PLATFORM_COLOR, RESPAWN_AREA_COLOR } from '../../Helpers/consts';
 
 export function draw(ctx: CanvasRenderingContext2D, gameObject: GameObject): void {
   match(gameObject, {
@@ -48,17 +49,17 @@ export function draw(ctx: CanvasRenderingContext2D, gameObject: GameObject): voi
       shape_draw(ctx, bottom_line, RESPAWN_AREA_COLOR);
       shape_draw(ctx, left_line, RESPAWN_AREA_COLOR);
     },
-    Orb: (position: V2, radius: number, life: number, active: number) => {
+    Orb: (position: V2, radius: number, life: number, active: number, effects: Effect[], color: string) => {
       if (active === 0 || life <= 0) return;
       const circle_shape : Shape = circle(position, radius);
-      shape_draw(ctx, circle_shape, ORB_COLOR);
+      shape_draw(ctx, circle_shape, color);
 
       // Draw life bar
       const lifeBarWidth = radius * 2;
       const lifeBarHeight = 5;
       const lifeBarY = position.y - radius - 10;
       const lifeBarX = position.x - radius;
-      const currentLifeWidth = (life / 200) * lifeBarWidth; // Assuming max life is 100
+      const currentLifeWidth = (life / 100) * lifeBarWidth;
 
       ctx.fillStyle = 'red';
       ctx.fillRect(lifeBarX, lifeBarY, lifeBarWidth, lifeBarHeight);

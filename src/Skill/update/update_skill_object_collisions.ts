@@ -22,7 +22,7 @@ export function update_skill_object_collisions(gs: GameState, skill: Skill): [Ga
 
         const owner_player = acc_gs.players.get(acc_skill.owner_id);
         if (owner_player) {
-          const updated_players = update_player_on_orb_destruction(acc_gs.players, owner_player, acc_skill);
+          const updated_players = update_player_on_orb_destruction(acc_gs.players, owner_player, acc_skill, game_object);
           acc_gs = {
             ...acc_gs,
             players: updated_players

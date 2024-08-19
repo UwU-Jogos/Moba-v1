@@ -15,7 +15,6 @@
 /// * `TIME_TO_START_GAME` - The countdown time before the game starts (in seconds)
 /// * `DEFAULT_RANGE` - The default range for player actions
 /// * `RESPAWN_AREA_COLOR` - The color used for respawn areas
-/// * `ORB_COLOR` - The color used for orbs
 /// * `GAME_TIME` - The total duration of the game (in seconds)
 /// * `DEFAULT_ATTACK_DAMAGE` - The default damage value for attacks
 /// * `DEFAULT_ATTACK_COOLDOWN` - The default cooldown time for attacks
@@ -34,7 +33,6 @@ export const PLAYERS_LIMIT = 2;
 export const TIME_TO_START_GAME = 5;
 export const DEFAULT_RANGE = 150;
 export const RESPAWN_AREA_COLOR = 'green';
-export const ORB_COLOR = 'blue';
 export const GAME_TIME = 60 * 10;
 export const DEFAULT_ATTACK_DAMAGE = 10;
 export const DEFAULT_ATTACK_COOLDOWN = 5;
