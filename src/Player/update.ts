@@ -44,7 +44,11 @@ export function update(gs: GameState, dt: number): GameState {
     if (is_player_dead(player) && player.stats.lifes > 0) {
       const respawned_player = respawn(player);
       new_respawn_areas = [...new_respawn_areas, create_respawn_area(player.team, width, height)];
-      new_orbs = [...new_orbs, create_orb(width, height)];
+      
+      // Remove existing orbs before creating a new one
+      gs.game_map.objects = gs.game_map.objects.filter(obj => obj.kind !== 'Orb');
+      new_orbs = [create_orb(width, height)];
+      
       return respawned_player;
     }
 
