@@ -38,8 +38,13 @@ export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
   ctx.fillStyle = 'gray';
   ctx.fill(new Path2D());
 
+  const has_active_orb_damage_buff = updated_effects.some(effect => effect.$ === "OrbDamageBuff");
+
   let team_color: string;
-  if (player.stats.destroyed_orbs >= 5) {
+  // maybe pass this as an arg from player, when we have more colors we dont want to keep adding for this if?
+  if (has_active_orb_damage_buff) {
+    team_color = 'green';
+  } else if (player.stats.destroyed_orbs >= 5) {
     team_color = 'rgb(0, 0, 0)'; // Black
   } else {
     const base_color = player.team === TeamType.TEAM_RED ? [255, 100, 100] : [150, 150, 255];
