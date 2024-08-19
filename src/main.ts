@@ -131,11 +131,11 @@ function start_countdown(): void {
   const countdown_element = document.getElementById('countdown');
   if (countdown_element) {
     countdown_element.style.display = 'block';
-    const timer = setInterval(() => {
+    const countdown_timer = setInterval(() => {
       countdown_element.textContent = `Game starting in ${countdown} seconds`;
       countdown--;
       if (countdown < 0) {
-        clearInterval(timer);
+        clearInterval(countdown_timer);
         show_game_container();
       }
     }, 1000);
@@ -156,11 +156,12 @@ function show_game_container(): void {
   }
 
   // Start game loop
+  timer = init_timer();
   game_loop();
 }
 
 // Game Loop
-let timer : Timer = init_timer(); 
+let timer : Timer; 
 
 // Extract to: /src/Game/game_loop.ts
 function game_loop(): void {
