@@ -30,7 +30,7 @@ import { check_collision as check_player_collision } from './check_collision';
 import { check_game_object_collision } from '../Player/check_game_object_collision';
 import { update_player_effects } from './update/update_player_effects';
 import { create_respawn_area } from '../GameMap/create_respawn_area';
-import { create_orb } from '../GameMap/create_orb';
+import { create_orb } from '../GameMap/GameObject/Orb/create';
 import { update_game_objects } from '../GameMap/update_game_objects';
 
 export function update(gs: GameState, dt: number): GameState {
