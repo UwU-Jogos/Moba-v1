@@ -1,11 +1,7 @@
 import { Skill } from "./_";
-import { V2 } from "../V2/_";
-import { UID } from "../Types/UID/_";
 import { Action } from "../Action/_";
 import { create_character } from "../Character/create_character";
 import { Player } from "../Player/_";
-import { Damage } from "../Types/Damage/_";
-import { TPS } from "../Helpers/consts";
 
 export function create_skill(action: Action, player: Player, current_tick: number): Skill | null {
   if (action.$ !== "SkillEvent") { return null; }

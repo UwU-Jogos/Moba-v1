@@ -10,13 +10,12 @@
 /// The result of calling the appropriate handler function for the given skill
 
 import { Skill } from './_';
-import { V2 } from '../V2/_';
-import { Damage } from '../Types/Damage/_';
+import { V2 } from '../../base/V2/_';
 
 export function match<R>(
   skill: Skill,
   handlers: {
-    Projectile: (damage: Damage, speed: number, range: number, target: V2) => R;
+    Projectile: (damage: number, speed: number, range: number, target: V2) => R;
     HealArea: (amount: number, radius: number) => R;
   }
 ): R {
