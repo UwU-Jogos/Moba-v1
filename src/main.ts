@@ -184,29 +184,50 @@ function game_loop(): void {
   requestAnimationFrame(game_loop);
 }
 
-// Extract to: /src/UI/show_game_result.ts
 function show_game_result(finished: Finished, state: GameState): void {
   const game_container = document.getElementById('game-container');
   const result_container = document.getElementById('result-container');
   const result_message = document.getElementById('result-message');
+  const stats_container = document.getElementById('result-stats');
 
-  if (game_container && result_container && result_message) {
+  if (game_container && result_container && result_message && stats_container) {
     game_container.style.display = 'none';
     result_container.style.display = 'block';
 
     if (finished.draw) {
       result_message.textContent = 'That was a Draw!';
     } else {
-      const playerTeam = state.players.get(PID)?.team;
-      if (playerTeam === finished.winner) {
+      const player_team = state.players.get(PID)?.team;
+      if (player_team === finished.winner) {
         result_message.textContent = 'You Won!';
-      } else if (playerTeam === finished.loser) {
+      } else if (player_team === finished.loser) {
         result_message.textContent = 'You Lost!';
       } else {
         result_message.textContent = 'Game Finished!';
       }
     }
+
+    stats_container.innerHTML = '<h3>Player Stats:</h3>';
+    show_player_stats(state, stats_container);
   } else {
-    console.error("Could not find game or result container");
+    console.error("Could not find game, result, or stats container");
   }
 }
+
+function show_player_stats(state: GameState, container: HTMLElement): void {
+  state.players.forEach((player, pid) => {
+    const player_stats = document.createElement('div');
+    player_stats.className = 'player-stats';
+    player_stats.innerHTML = `
+      <h4>${player.name} (${pid === PID ? 'You' : 'Opponent'})</h4>
+      <p>Kills: ${player.stats.kills}</p>
+      <p>Lifes: ${player.stats.lifes}</p>
+      <p>Destroyed Orbs: ${player.stats.destroyed_orbs}</p>
+      <p>Total life healed: ${player.stats.total_life_healed}</p>
+      <p>Total damage received: ${player.stats.total_damage_received}</p>
+      <p>Total damage caused: ${player.stats.total_damage_caused}</p>
+    `;
+    container.appendChild(player_stats);
+  });
+}
+
