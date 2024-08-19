@@ -38,7 +38,7 @@ export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
   ctx.fillStyle = 'gray';
   ctx.fill(new Path2D());
 
-  const has_active_orb_damage_buff = updated_effects.some(effect => effect.$ === "OrbDamageBuff");
+  const has_active_orb_damage_buff = player.effects.some(effect => effect.$ === "OrbDamageBuff");
 
   let team_color: string;
   // maybe pass this as an arg from player, when we have more colors we dont want to keep adding for this if?
