@@ -22,6 +22,22 @@ export function update_skill_player_collisions(gs: GameState, skill: Skill): [Ga
 
       let new_players = acc_players.set(player_id, collision_player);
 
+      const owner = acc_players.get(collision_skill.owner_id);
+      // if player lost life
+      if (owner) {
+        if (collision_player.life < player.life) {
+          const damage_caused = player.life - collision_player.life;
+          const updated_player = {
+            ...owner,
+            stats: {
+              ...owner.stats,
+              total_damage_caused: owner.stats.total_damage_caused + damage_caused
+            }
+          }
+          new_players = new_players.set(collision_skill.owner_id, updated_player);
+        } 
+      }
+
       if (collision_player.life <= 0 && player_id !== collision_skill.owner_id) {
         const owner_player = acc_players.get(collision_skill.owner_id);
         if (owner_player) {
@@ -29,7 +45,8 @@ export function update_skill_player_collisions(gs: GameState, skill: Skill): [Ga
             ...owner_player,
             stats: {
               ...owner_player.stats,
-              kills: (owner_player.stats.kills || 0) + 1
+              kills: (owner_player.stats.kills || 0) + 1,
+              total_damage_caused: owner_player.stats.total_damage_caused + player.life
             }
           };
           new_players = new_players.set(collision_skill.owner_id, updated_owner);
