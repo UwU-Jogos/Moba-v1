@@ -20,14 +20,6 @@ import { CharacterType } from '../Character/type';
 import { create_character } from '../Character/create_character';
 import { TPS } from '../Helpers/consts';
 
-
-// Maybe extract this to other place
-// probably yes, because in theory different hcaracters have diff skills, so maybe moving this to character is good
-const skill_cooldowns: { [key: string]: number } = {
-  'E': 5,
-  'Q': 5 * TPS
-};
-
 export function when(action: Action, gs: GameState): GameState {
   let players = gs.players;
   let skills = gs.skills;
@@ -54,16 +46,18 @@ export function when(action: Action, gs: GameState): GameState {
 
         const current_tick = gs.tick;
         const last_skill_time = player.active_skills[action.key] || 0;
-        const skill_cooldown = skill_cooldowns[action.key] || 0;
+
+        const character = create_character(player.character);
+        const skill_cooldown = character.skills[action.key]?.cooldown || 0;
+        //const skill_cooldown = 0;
 
         if (current_tick - last_skill_time >= skill_cooldown) {
           const new_skill : Skill | null = create_skill(action, player, current_tick);
-          console.log("CREATED SKILL: ", new_skill);
+
           if (!new_skill) return gs;
           skills = skills.set(new_skill.id, new_skill);
 
           // Update the last skill use time for this player and key
-          // TODO: enhance shots calculation
           players = players.update(action.pid, p => {
             if (!p) return p;
             return {
