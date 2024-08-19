@@ -32,6 +32,21 @@ export function create_skill(action: Action, player: Player, current_tick: numbe
         target: target
       };
     }
+
+    case 'Q': {
+      const skill = player_character.skills[action.key];
+      if (!skill) { return null; }
+
+      return {
+        id: `${action.pid}_${current_tick}`,
+        $: 'HealArea',
+        effects: [],
+        pos: player.pos,
+        owner_id: action.pid,
+        amount: skill.amount,
+        radius: skill.radius
+      };
+    }
     
     default:
       return null;

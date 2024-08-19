@@ -17,10 +17,13 @@ export function match<R>(
   skill: Skill,
   handlers: {
     Projectile: (damage: Damage, speed: number, range: number, target: V2) => R;
+    HealArea: (amount: number, radius: number) => R;
   }
 ): R {
   switch (skill.$) {
     case 'Projectile':
       return handlers.Projectile(skill.damage, skill.speed, skill.range, skill.target);
+    case 'HealArea':
+      return handlers.HealArea(skill.amount, skill.radius);
   }
 }

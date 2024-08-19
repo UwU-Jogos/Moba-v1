@@ -33,6 +33,8 @@ export function check_game_object_collision(skill: Skill, game_object: GameObjec
 }
 
 function check_rectangle_collision(skill: Skill, game_object: GameObject, position: V2, width: number, height: number): [GameObject, Skill] {
+  if (skill.$ !== 'Projectile') { return [game_object, skill]; }
+
   if (skill.effects.some(effect => effect.$ === 'ShotThroughWall')) {
     return [game_object, skill];
   }
@@ -58,6 +60,8 @@ function check_rectangle_collision(skill: Skill, game_object: GameObject, positi
 }
 
 function check_orb_collision(skill: Skill, game_object: GameObject, position: V2, radius: number, life: number, active: number): [GameObject, Skill] {
+  if (skill.$ !== 'Projectile') { return [game_object, skill]; }
+
   if (game_object.kind === 'Orb' && active && distance(skill.pos, position) <= radius) {
     // Collision with active orb
     return [
@@ -72,6 +76,9 @@ function check_orb_collision(skill: Skill, game_object: GameObject, position: V2
 }
 
 function check_line_wall_collision(skill: Skill, game_object: GameObject, ini: V2, end: V2): [GameObject, Skill] {
+  // TODO: Refactor
+  if (skill.$ !== 'Projectile') { return [game_object, skill]; }
+
   if (skill.effects.some(effect => effect.$ === 'ShotThroughWall')) {
     return [game_object, skill];
   }
