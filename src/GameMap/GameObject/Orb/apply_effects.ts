@@ -10,12 +10,13 @@ export function apply_effects(player: Player, orb: GameObject & { kind: 'Orb', e
   return orb.effects.reduce((updated_player, effect) => {
     switch (effect.$) {
       case "OrbHeal": {
-        console.log("FOUND AN ORB HEAL");
         const new_life = Math.min(updated_player.life + effect.amount, updated_player.stats.max_life);
-        return { ...updated_player, life: new_life };
+        return { 
+          ...updated_player, life: new_life, stats:
+            { ...updated_player.stats, total_life_healed: updated_player.stats.total_life_healed + effect.amount }
+        };
       }
       case "OrbDamageBuff": {
-        console.log("FOUND A DAMAGE BUFF");
         const new_effects = [...updated_player.effects, effect];
         return { ...updated_player, effects: new_effects };
       }
