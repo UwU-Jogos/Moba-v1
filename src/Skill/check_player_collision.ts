@@ -33,6 +33,10 @@ function heal_collision(skill: Skill, player: Player): [Player, Skill] {
   const healed_player = {
     ...player,
     life: (life_healed <= player.stats.max_life ? life_healed : player.stats.max_life), 
+    stats: {
+      ...player.stats,
+      total_life_healed: player.stats.total_life_healed + life_healed
+    }
   };
   return [healed_player, useless_heal];
 }
@@ -54,6 +58,13 @@ function projectile_collision(skill: Skill, player: Player): [Player, Skill] {
   } else {
     const damage_to_take = skill.damage * player.stats.damage_multiplier;
     const damaged_player = take_damage(player, damage_to_take);
-    return [damaged_player, useless_projectile];
+    const stats_updated_player = {
+      ...damaged_player,
+      stats: {
+        ...damaged_player.stats,
+        total_damage_received: damaged_player.stats.total_damage_received + damage_to_take
+      }
+    }
+    return [stats_updated_player, useless_projectile];
   }
 }
