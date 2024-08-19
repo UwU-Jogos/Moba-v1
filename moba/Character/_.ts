@@ -24,7 +24,7 @@
 /// ```
 
 import { CharacterType } from './type';
-import { Key } from '../Key/_';
+import { Key } from '../../base/Types/Key/_';
 import { Effect } from '../Effect/_';
 
 export type Character = {

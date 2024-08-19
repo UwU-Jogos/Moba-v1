@@ -27,7 +27,7 @@ import { is_dead as is_player_dead } from './is_dead';
 import { respawn } from './respawn';
 import { update_player_position } from './update/update_player_position';
 import { check_collision as check_player_collision } from './check_collision';
-import { check_game_object_collision } from '../Player/check_game_object_collision';
+import { check_game_object_collision } from './check_game_object_collision';
 import { update_player_effects } from './update/update_player_effects';
 import { create_respawn_area } from '../GameMap/create_respawn_area';
 import { create_orb } from '../GameMap/GameObject/Orb/create';

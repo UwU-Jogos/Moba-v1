@@ -19,12 +19,12 @@
 /// * Updates the key state for movement keys.
 /// * Triggers skill events for skill keys.
 
-import { Key } from "../Key/_";
+import { Key } from "../Types/Key/_";
 import { handle_movement_event } from "./handle_movement_event";
 import { handle_skill_event } from "./handle_skill_event";
-import { Action } from "../Action/_";
-import { GameState } from "../GameState/_";
-import { UID } from "../UID/_";
+import { Action } from "../../moba/Action/_";
+import { GameState } from "../../moba/GameState/_";
+import { UID } from "../../moba/UID/_";
 import * as sm from "@uwu-games/uwu-state-machine";
 
 export function handle_key_event(

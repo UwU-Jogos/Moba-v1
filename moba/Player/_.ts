@@ -23,7 +23,7 @@
 import { UID } from '../UID/_';
 import { Name } from '../Name/_';
 import { V2 } from '../V2/_';
-import { Key } from '../Key/_';
+import { Key } from '../../base/Types/Key/_';
 import { Life } from '../Life/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';

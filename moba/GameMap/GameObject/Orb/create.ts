@@ -15,7 +15,7 @@
 ///
 /// A GameObject of kind 'Orb' with position, radius, life, active properties, and effects.
 
-import { GameObject } from '../../GameObject/_';
+import { GameObject } from '../_';
 import { PLAYER_RADIUS } from '../../../Helpers/consts';
 import { seconds_to_ticks } from '../../../Helpers/seconds_to_ticks';
 import { OrbType } from './type';

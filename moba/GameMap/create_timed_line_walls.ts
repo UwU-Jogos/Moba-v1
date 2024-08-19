@@ -15,7 +15,7 @@
 ///
 /// An array of GameObject representing the timed line walls
 
-import { GameObject } from '../GameMap/GameObject/_';
+import { GameObject } from './GameObject/_';
 import { V2 } from '../V2/_';
 import { TPS } from '../Helpers/consts';
 

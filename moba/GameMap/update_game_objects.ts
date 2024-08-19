@@ -10,8 +10,8 @@
 ///
 /// Returns an updated GameMap with filtered and updated game objects
 
-import { GameMap } from '../GameMap/_';
-import { GameObject } from '../GameMap/GameObject/_';
+import { GameMap } from './_';
+import { GameObject } from './GameObject/_';
 
 export function update_game_objects(game_map: GameMap, new_respawn_areas: GameObject[], new_orbs: GameObject[]): GameMap {
   return {

@@ -15,7 +15,7 @@
 /// A GameObject representing the respawn area
 
 import { TeamType } from '../Team/type';
-import { GameObject } from '../GameMap/GameObject/_';
+import { GameObject } from './GameObject/_';
 import { PLAYER_RADIUS } from '../Helpers/consts';
 import { seconds_to_ticks } from '../Helpers/seconds_to_ticks';
 

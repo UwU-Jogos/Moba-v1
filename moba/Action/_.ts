@@ -34,7 +34,7 @@
 
 import { Time } from '@uwu-games/uwu-state-machine';
 import { UID } from '../UID/_';
-import { Key } from '../Key/_';
+import { Key } from '../../base/Types/Key/_';
 import { CharacterType } from '../Character/type';
 
 export type Action =

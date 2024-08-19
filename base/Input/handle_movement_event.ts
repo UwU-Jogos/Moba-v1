@@ -21,11 +21,11 @@
 /// * Sends the action to the server
 
 import * as sm from '@uwu-games/uwu-state-machine';
-import { Action } from '../Action/_';
-import { Key } from '../Key/_';
-import { GameState } from '../GameState/_';
-import { ARTIFICIAL_DELAY } from '../Helpers/consts';
-import { serialize } from '../Action/serialize';
+import { Action } from '../../moba/Action/_';
+import { Key } from '../Types/Key/_';
+import { GameState } from '../../moba/GameState/_';
+import { ARTIFICIAL_DELAY } from '../../moba/Helpers/consts';
+import { serialize } from '../../moba/Action/serialize';
 
 const key_state: { [key: Key]: boolean } = {};
 

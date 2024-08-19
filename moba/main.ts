@@ -23,9 +23,9 @@ import { update as update_timer } from './Timer/update';
 import { populate_character_select } from './Lobby/populate_character_select';
 import { show_lobby } from './Lobby/show_lobby';
 import { update_lobby } from './Lobby/update_lobby';
-import { handle_key_event } from './Input/handle_key_event';
-import { handle_mouse_move } from './Input/handle_mouse_move';
-import { handle_mouse_click } from './Input/handle_mouse_click';
+import { handle_key_event } from '../base/Input/handle_key_event';
+import { handle_mouse_move } from '../base/Input/handle_mouse_move';
+import { handle_mouse_click } from '../base/Input/handle_mouse_click';
 
 // Types
 // -----
