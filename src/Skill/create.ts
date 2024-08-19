@@ -29,7 +29,8 @@ export function create_skill(action: Action, player: Player, current_tick: numbe
         damage: skill.damage,
         speed: skill.speed,
         range: skill.range,
-        target: target
+        target: target,
+        cooldown: skill.cooldown
       };
     }
 
@@ -44,7 +45,8 @@ export function create_skill(action: Action, player: Player, current_tick: numbe
         pos: player.pos,
         owner_id: action.pid,
         amount: skill.amount,
-        radius: skill.radius
+        radius: skill.radius,
+        cooldown: skill.cooldown
       };
     }
     
