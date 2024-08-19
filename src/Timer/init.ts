@@ -30,7 +30,7 @@ export function init(): Timer {
   time_display.style.userSelect = 'none';
   time_display.style.pointerEvents = 'none';
   document.body.appendChild(time_display);
-  const game_time = GAME_TIME + TIME_TO_START_GAME;
+  const game_time = GAME_TIME + TIME_TO_START_GAME + 2; // 2s delay to show screen
   return {
     time_display,
     remaining_time: game_time,
