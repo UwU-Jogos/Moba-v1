@@ -21,7 +21,6 @@
 /// * `shots` - The number of shots fired by the player
 
 import { UID } from '../Types/UID/_';
-import { Name } from '../Types/Name/_';
 import { V2 } from '../../base/V2/_';
 import { Key } from '../../base/Types/Key/_';
 import { TeamType } from '../Team/type';
@@ -32,7 +31,7 @@ import { Effect } from '../Types/Effect/_';
 
 export type Player = {
   id: UID;
-  name: Name;
+  name: string;
   pos: V2;
   target_pos: V2;
   active_skills: { [key: string]: number };
