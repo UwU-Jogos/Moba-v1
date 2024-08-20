@@ -8,14 +8,13 @@
 
 import { Effect } from '../Effect/_';
 import { V2 } from '../V2/_';
-import { UID } from '../UID/_';
 import { Damage } from '../Damage/_';
 
 export type SkillInfo = {
   id: string;
   effects: Effect[];
   pos: V2;
-  owner_id: UID;
+  owner_id: number;
 };
 
 export type SkillType =

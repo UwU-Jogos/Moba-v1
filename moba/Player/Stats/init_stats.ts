@@ -9,7 +9,7 @@
 /// A new Stats object with kills initialized to 0.
 
 import { Stats } from './_';
-import { PLAYER_INITIAL_LIFE } from '../Helpers/consts';
+import { PLAYER_INITIAL_LIFE } from '../../Helpers/consts';
 
 export function init_stats(): Stats {
   return {

@@ -33,7 +33,6 @@
 ///   - `down` - Whether the key is pressed down (true) or released (false)
 
 import { Time } from '@uwu-games/uwu-state-machine';
-import { UID } from '../UID/_';
 import { Key } from '../Key/_';
 import { CharacterType } from '../Character/type';
 
@@ -41,4 +40,4 @@ export type Action =
   | { $: 'SetNick'; time: number; pid: number; name: string, character: CharacterType }
   | { $: 'SkillEvent'; time: number; pid: number; key: string; down: boolean; x: number; y: number }
   | { $: 'MouseClick'; time: number; pid: number; x: number; y: number }
-  | { $: 'MovementEvent'; time: Time; pid: UID; key: Key; down: boolean };
+  | { $: 'MovementEvent'; time: Time; pid: number; key: Key; down: boolean };

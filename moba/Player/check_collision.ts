@@ -20,13 +20,12 @@
 /// resolve the collision.
 
 import { Player } from './_';
-import { UID } from '../UID/_';
 import { V2 } from '../V2/_';
 import { PLAYER_RADIUS } from '../Helpers/consts';
 import { create_character } from '../Character/create_character';
 import { CharacterType } from '../Character/type';
 
-export function check_collision(player: Player, pid: UID, other_player: Player, other_pid: UID, pos: V2) : V2 {
+export function check_collision(player: Player, pid: number, other_player: Player, other_pid: number, pos: V2) : V2 {
   if (pid === other_pid) { return pos; }
 
   const player_character = create_character(player.character);

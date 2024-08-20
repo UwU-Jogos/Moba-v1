@@ -28,7 +28,7 @@
 import { Player } from './_';
 import { TeamType } from '../Team/type';
 import { draw as draw_character } from '../Character/draw';
-import { draw as draw_stats } from '../Stats/draw';
+import { draw as draw_stats } from './Stats/draw';
 
 export function draw(ctx: CanvasRenderingContext2D, player: Player): void {
   if (player.life <= 0) {

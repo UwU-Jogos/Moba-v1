@@ -10,7 +10,6 @@
 
 import { GameState } from '../GameState/_';
 import { Map } from 'immutable';
-import { UID } from '../UID/_';
 import { Player } from '../Player/_';
 import { init as init_map } from '../GameMap/init';
 import { Skill } from '../Skill/_';
@@ -18,7 +17,7 @@ import { Skill } from '../Skill/_';
 export function init(): GameState {
   return {
     tick: 0,
-    players: Map<UID, Player>(),
+    players: Map<number, Player>(),
     game_map: init_map(),
     skills: Map<string, Skill>(),
   };

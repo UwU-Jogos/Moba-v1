@@ -24,13 +24,12 @@ import { handle_movement_event } from "./handle_movement_event";
 import { handle_skill_event } from "./handle_skill_event";
 import { Action } from "../Action/_";
 import { GameState } from "../GameState/_";
-import { UID } from "../UID/_";
 import * as sm from "@uwu-games/uwu-state-machine";
 
 export function handle_key_event(
   event: KeyboardEvent,
   room: number,
-  PID: UID,
+  PID: number,
   mach: sm.Mach<GameState, Action>,
   client: any
 ): void {

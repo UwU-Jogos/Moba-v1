@@ -14,9 +14,8 @@
 /// Updates the innerHTML of the 'lobby-players' element if it exists.
 
 import { PLAYERS_LIMIT } from '../Helpers/consts';
-import { UID } from '../UID/_';
 
-export function update_lobby(players_in_the_room: UID[]): void {
+export function update_lobby(players_in_the_room: number[]): void {
   const lobby_players = document.getElementById('lobby-players');
   if (lobby_players) {
     lobby_players.innerHTML = `Players in lobby: ${players_in_the_room.length}/${PLAYERS_LIMIT}`;

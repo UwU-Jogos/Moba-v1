@@ -20,7 +20,6 @@
 /// * `effects` - An array of active effects on the player
 /// * `shots` - The number of shots fired by the player
 
-import { UID } from '../UID/_';
 import { Name } from '../Name/_';
 import { V2 } from '../V2/_';
 import { Key } from '../Key/_';
@@ -31,7 +30,7 @@ import { Stats } from './Stats/_';
 import { Effect } from '../Effect/_';
 
 export type Player = {
-  id: UID;
+  id: number;
   name: Name;
   pos: V2;
   target_pos: V2;

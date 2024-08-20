@@ -1,6 +1,5 @@
 import * as sm from '@uwu-games/uwu-state-machine';
 import { UwUChat2Client } from 'uwuchat2';
-import { UID } from './UID/_'; // 48-bit
 import { Name } from './Name/_'; // UTF-16
 import { GameState } from './GameState/_';
 import { Finished, game_finished } from './GameState/finished';
@@ -35,8 +34,8 @@ console.log("PID is:", PID);
 // Main App
 // --------
 
-const players_in_the_room: UID[] = [];
-let room: UID;
+const players_in_the_room: number[] = [];
+let room: number;
 let mach: sm.Mach<GameState, Action>;
 const client = new UwUChat2Client();
 
@@ -76,7 +75,7 @@ async function handle_form_submit(e: Event): Promise<void> {
 }
 
 // Extract to: /src/Game/start_game.ts
-async function start_game(room_id: UID, name: Name, character: string): Promise<void> {
+async function start_game(room_id: number, name: Name, character: string): Promise<void> {
   room = room_id;
 
    await client.init('ws://localhost:7171');

@@ -12,7 +12,6 @@
 import { Action } from './_';
 import { CharacterType } from '../Character/type';
 import { Time } from '@uwu-games/uwu-state-machine';
-import { UID } from '../UID/_';
 import { Key } from '../Key/_';
 
 export function match<R>(
@@ -21,7 +20,7 @@ export function match<R>(
     SetNick: (time: number, pid: number, name: string, character: CharacterType) => R;
     SkillEvent: (time: number, pid: number, key: string, down: boolean, x: number, y: number) => R;
     MouseClick: (time: number, pid: number, x: number, y: number) => R;
-    MovementEvent: (time: Time, pid: UID, key: Key, down: boolean) => R;
+    MovementEvent: (time: Time, pid: number, key: Key, down: boolean) => R;
   }
 ): R {
   switch (action.$) {

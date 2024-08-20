@@ -1,7 +1,6 @@
 import { GameState } from "../../GameState/_";
 import { Skill } from "../_";
 import { Player } from "../../Player/_";
-import { UID } from "../../UID/_";
 import { check_player_collision } from "../check_player_collision";
 import { Map } from "immutable";
 
@@ -10,10 +9,10 @@ import { Map } from "immutable";
 // - skill: skill to check collisions for
 // = tuple of updated game state and updated skill
 export function update_skill_player_collisions(gs: GameState, skill: Skill): [GameState, Skill] {
-  const initial_state: [Map<UID, Player>, Skill] = [gs.players, skill];
+  const initial_state: [Map<number, Player>, Skill] = [gs.players, skill];
 
   const [updated_players, updated_skill] = gs.players.reduce(
-    ([acc_players, acc_skill]: [Map<UID, Player>, Skill], player: Player, player_id: UID) => {
+    ([acc_players, acc_skill]: [Map<number, Player>, Skill], player: Player, player_id: number) => {
       const [collision_player, collision_skill] = check_player_collision(acc_skill, player, player_id);
 
       if (collision_player === player) {
