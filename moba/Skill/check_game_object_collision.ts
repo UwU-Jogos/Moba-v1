@@ -1,7 +1,6 @@
 import { Skill } from './_';
 import { V2 } from '../V2/_';
 import { GameObject } from '../GameMap/GameObject/_';
-import { Map } from 'immutable';
 import { match as match_game_object } from '../GameMap/GameObject/match';
 import { distance } from '../Helpers/distance';
 
@@ -152,9 +151,9 @@ function check_line_wall_collision(skill: Skill & { $: "Projectile" }, game_obje
 // - active: whether the timed line wall is active
 // = a tuple with potentially updated game object and skill
 function check_timed_line_wall_collision(skill: Skill & { $: "Projectile" }, game_object: GameObject, ini: V2, end: V2, active: number): [GameObject, Skill] {
-  if (active === 0) { 
-    return [game_object, skill]; 
-  } else { 
-    return check_line_wall_collision(skill, game_object, ini, end); 
+  if (active === 0) {
+    return [game_object, skill];
+  } else {
+    return check_line_wall_collision(skill, game_object, ini, end);
   }
 }

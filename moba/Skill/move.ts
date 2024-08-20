@@ -11,7 +11,6 @@
 
 import { Skill } from './_';
 import { match } from './match';
-import { V2 } from '../V2/_';
 import { normalize } from '../V2/normalize';
 import { scale } from '../V2/scale';
 import { add } from '../V2/add';
@@ -35,6 +34,6 @@ export function move(skill: Skill, delta_time: number): Skill {
         range: range - distance
       };
     },
-    HealArea: (heal_amount, radius) => { return skill; }, 
+    HealArea: (heal_amount, radius) => { return skill; },
   });
 }

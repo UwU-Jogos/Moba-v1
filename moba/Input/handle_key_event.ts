@@ -36,7 +36,7 @@ export function handle_key_event(
 ): void {
   const key = event.key.toUpperCase() as Key;
   const down = event.type === 'keydown';
-  
+
   if (['W', 'A', 'S', 'D'].includes(key)) {
     handle_movement_event(key, down, room, PID, mach, client);
   } else if (['Q', 'W', 'E', 'R'].includes(key)) {

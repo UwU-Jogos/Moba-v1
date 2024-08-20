@@ -32,7 +32,7 @@ function heal_collision(skill: Skill, player: Player): [Player, Skill] {
   const life_healed = player.life + skill.amount;
   const healed_player = {
     ...player,
-    life: (life_healed <= player.stats.max_life ? life_healed : player.stats.max_life), 
+    life: (life_healed <= player.stats.max_life ? life_healed : player.stats.max_life),
   };
   return [healed_player, useless_heal];
 }

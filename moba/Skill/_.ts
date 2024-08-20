@@ -9,7 +9,6 @@
 import { Effect } from '../Effect/_';
 import { V2 } from '../V2/_';
 import { UID } from '../UID/_';
-import { Key } from '../Key/_';
 import { Damage } from '../Damage/_';
 
 export type SkillInfo = {

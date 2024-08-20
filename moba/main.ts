@@ -11,14 +11,12 @@ import { tick } from './Game/tick';
 import { draw } from './Game/draw';
 import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
-import { ARTIFICIAL_DELAY, PLAYERS_LIMIT, TIME_TO_START_GAME } from './Helpers/consts';
-import { get_characters_list } from './Lobby/get_characters_list';
+import { PLAYERS_LIMIT, TIME_TO_START_GAME } from './Helpers/consts';
 import { name_to_type } from './Character/name_to_type';
 import { CharacterType } from './Character/type';
 import { Timer } from './Timer/_';
 import { init as init_timer } from './Timer/init';
 import { is_time_up } from './Timer/is_time_up';
-import { reset as reset_timer } from './Timer/reset';
 import { update as update_timer } from './Timer/update';
 import { populate_character_select } from './Lobby/populate_character_select';
 import { show_lobby } from './Lobby/show_lobby';
@@ -82,7 +80,7 @@ async function start_game(room_id: UID, name: Name, character: string): Promise<
   room = room_id;
 
    await client.init('ws://localhost:7171');
-  //await client.init('ws://server.uwu.games');
+  // await client.init('ws://server.uwu.games');
 
   mach = sm.new_mach(TPS);
 
@@ -161,7 +159,7 @@ function show_game_container(): void {
 }
 
 // Game Loop
-let timer : Timer; 
+let timer : Timer;
 
 // Extract to: /src/Game/game_loop.ts
 function game_loop(): void {

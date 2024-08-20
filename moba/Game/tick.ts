@@ -47,4 +47,3 @@ function filter_active_objects(objects: GameState['game_map']['objects']): GameS
     obj.kind !== 'TimedLineWall' || (obj.kind === 'TimedLineWall' && obj.active > 0)
   );
 }
-

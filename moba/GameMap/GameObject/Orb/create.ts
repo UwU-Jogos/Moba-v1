@@ -18,7 +18,6 @@
 import { GameObject } from '../../GameObject/_';
 import { PLAYER_RADIUS } from '../../../Helpers/consts';
 import { seconds_to_ticks } from '../../../Helpers/seconds_to_ticks';
-import { OrbType } from './type';
 
 const pink_orb = {
   kind: 'Orb',

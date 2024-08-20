@@ -11,7 +11,6 @@
 import { Character } from '../_';
 import { CharacterType } from '../type';
 import { DEFAULT_RANGE, DEFAULT_ATTACK_DAMAGE, DEFAULT_HEAL_COOLDOWN, DEFAULT_ATTACK_COOLDOWN } from '../../Helpers/consts';
-import { seconds_to_ticks } from '../../Helpers/seconds_to_ticks';
 
 export function Star(): Character {
   return {
