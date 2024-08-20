@@ -24,7 +24,7 @@ import { V2 } from '../V2/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
 import { Stats } from './Stats/_';
-import { Effect } from '../Types/Effect/_';
+import { Effect } from '../Effect/_';
 
 export type Player = {
   id: number;

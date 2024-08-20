@@ -6,7 +6,7 @@
 ///
 /// # Type Definitions
 
-import { Effect } from '../Types/Effect/_';
+import { Effect } from '../Effect/_';
 import { V2 } from '../V2/_';
 
 export type SkillInfo = {

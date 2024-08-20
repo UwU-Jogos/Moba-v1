@@ -1,6 +1,6 @@
 import { Player } from "../../../Player/_";
 import { GameObject } from "../_";
-import { Effect } from "../../../Types/Effect/_";
+import { Effect } from "../../../Effect/_";
 
 // Applies the effects of an orb to a player
 // - player: the player to apply the effects to

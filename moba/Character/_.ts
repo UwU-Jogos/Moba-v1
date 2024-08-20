@@ -24,7 +24,7 @@
 /// ```
 
 import { CharacterType } from './type';
-import { Effect } from '../Types/Effect/_';
+import { Effect } from '../Effect/_';
 
 export type Character = {
   name: string;
