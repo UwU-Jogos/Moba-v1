@@ -56,9 +56,6 @@ type GameState = { };
 interface PlayerData { }
 ```
 
-Use `${Type}Data` for data types
-
-
 ### Constants
 
 Use UPPERCASE_SNAKE_CASE
