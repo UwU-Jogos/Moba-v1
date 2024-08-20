@@ -1,6 +1,6 @@
-# Moba V1 - Multiplayer Browser Game
+# Dancing - Multiplayer Browser Game
 
-Moba V1 is a real-time multiplayer browser game where players can join rooms and interact with each other and it depends on [uwuchat2](https://github.com/UwU-Jogos/uwuchat2).
+Dancing is a real-time multiplayer browser game where players can join rooms and interact with each other and it depends on [uwuchat2](https://github.com/UwU-Jogos/uwuchat2).
 
 ## Table of Contents
 
