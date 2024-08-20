@@ -11,14 +11,13 @@
 /// * `game_map` - The current game map
 
 import { Map } from 'immutable';
-import { UID } from '../UID/_';
 import { Player } from '../Player/_';
 import { GameMap } from '../GameMap/_';
 import { Skill } from '../Skill/_';
 
 export type GameState = {
   tick: number;
-  players: Map<UID, Player>;
+  players: Map<number, Player>;
   game_map: GameMap;
   skills: Map<string, Skill>;
 };

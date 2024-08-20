@@ -4,13 +4,7 @@
 
 import { GameState } from '../GameState/_';
 import { Map } from 'immutable';
-import { TPS } from '../Helpers/consts';
 import { Skill } from './_';
-import { move } from './move';
-import { check_player_collision } from './check_player_collision';
-import { check_game_object_collision } from './check_game_object_collision';
-import { update_player_on_orb_destruction } from '../Player/update_player_on_orb_destruction';
-import { distance } from '../Helpers/distance';
 import { update_skill } from './update/update_skill';
 
 export function update(gs: GameState): GameState {

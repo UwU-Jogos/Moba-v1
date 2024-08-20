@@ -8,19 +8,16 @@
 
 import { Effect } from '../Effect/_';
 import { V2 } from '../V2/_';
-import { UID } from '../UID/_';
-import { Key } from '../Key/_';
-import { Damage } from '../Damage/_';
 
 export type SkillInfo = {
   id: string;
   effects: Effect[];
   pos: V2;
-  owner_id: UID;
+  owner_id: number;
 };
 
 export type SkillType =
-  | { $: 'Projectile'; damage: Damage; speed: number; range: number; target: V2, cooldown: number }
+  | { $: 'Projectile'; damage: number; speed: number; range: number; target: V2, cooldown: number }
   | { $: 'HealArea'; amount: number; radius: number; cooldown: number };
 
 export type Skill = SkillInfo & SkillType;

@@ -1,11 +1,7 @@
 import { Skill } from "./_";
-import { V2 } from "../V2/_";
-import { UID } from "../UID/_";
 import { Action } from "../Action/_";
 import { create_character } from "../Character/create_character";
 import { Player } from "../Player/_";
-import { Damage } from "../Damage/_";
-import { TPS } from "../Helpers/consts";
 
 export function create_skill(action: Action, player: Player, current_tick: number): Skill | null {
   if (action.$ !== "SkillEvent") { return null; }
@@ -16,10 +12,10 @@ export function create_skill(action: Action, player: Player, current_tick: numbe
       if (!skill) { return null; }
 
       const target = { x: action.x, y: action.y };
-      
+
       // Check if it's the 4th, 8th, 12th, etc. shot
       const is_fourth_shot = (player.shots + 1) % 4 === 0;
-      
+
       return {
         id: `${action.pid}_${current_tick}`,
         $: 'Projectile',
@@ -29,7 +25,7 @@ export function create_skill(action: Action, player: Player, current_tick: numbe
         damage: skill.damage,
         speed: skill.speed,
         range: skill.range,
-        target: target,
+        target,
         cooldown: skill.cooldown
       };
     }
@@ -49,7 +45,7 @@ export function create_skill(action: Action, player: Player, current_tick: numbe
         cooldown: skill.cooldown
       };
     }
-    
+
     default:
       return null;
   }

@@ -13,12 +13,10 @@ import { Action } from '../Action/_';
 import { GameState } from '../GameState/_';
 import { Player } from '../Player/_';
 import { Skill } from '../Skill/_';
-import { V2 } from '../V2/_';
 import { create_skill } from '../Skill/create';
 import { init as init_player } from '../Player/init';
 import { CharacterType } from '../Character/type';
 import { create_character } from '../Character/create_character';
-import { TPS } from '../Helpers/consts';
 
 export function when(action: Action, gs: GameState): GameState {
   let players = gs.players;
@@ -49,7 +47,7 @@ export function when(action: Action, gs: GameState): GameState {
 
         const character = create_character(player.character);
         const skill_cooldown = character.skills[action.key]?.cooldown || 0;
-        //const skill_cooldown = 0;
+        // const skill_cooldown = 0;
 
         if (current_tick - last_skill_time >= skill_cooldown) {
           const new_skill : Skill | null = create_skill(action, player, current_tick);
@@ -63,7 +61,7 @@ export function when(action: Action, gs: GameState): GameState {
             return {
               ...p,
               active_skills: { ...p.active_skills, [action.key]: current_tick },
-              shots: (action.key === "E") ? p.shots + 1 : p.shots 
+              shots: (action.key === "E") ? p.shots + 1 : p.shots
             };
           });
         }

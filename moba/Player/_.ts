@@ -20,27 +20,22 @@
 /// * `effects` - An array of active effects on the player
 /// * `shots` - The number of shots fired by the player
 
-import { UID } from '../UID/_';
-import { Name } from '../Name/_';
 import { V2 } from '../V2/_';
-import { Key } from '../Key/_';
-import { Life } from '../Life/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
-import { Skill } from '../Skill/_';
-import { Stats } from '../Stats/_';
+import { Stats } from './Stats/_';
 import { Effect } from '../Effect/_';
 
 export type Player = {
-  id: UID;
-  name: Name;
+  id: number;
+  name: string;
   pos: V2;
   target_pos: V2;
   active_skills: { [key: string]: number };
-  life: Life;
+  life: number;
   team: TeamType;
   character: CharacterType;
-  key: { [key: Key]: boolean };
+  key: { [key: string]: boolean };
   stats: Stats;
   effects: Effect[];
   shots: number;

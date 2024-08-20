@@ -10,12 +10,11 @@
 /// * `players` - An array of player UIDs, with a maximum length of MAX_PLAYERS
 
 import { TeamType } from './type';
-import { UID } from '../UID/_';
 import { PLAYERS_LIMIT } from '../Helpers/consts';
 
 export type Team = {
   type: TeamType;
-  players: UID[];
+  players: number[];
 };
 
 export function create_team(type: TeamType): Team {
@@ -25,7 +24,7 @@ export function create_team(type: TeamType): Team {
   };
 }
 
-export function add_player_to_team(team: Team, pid: UID): Team {
+export function add_player_to_team(team: Team, pid: number): Team {
   if (team.players.length >= PLAYERS_LIMIT) {
     return team; // Team is full, don't add the player
   }

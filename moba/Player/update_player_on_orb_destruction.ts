@@ -10,14 +10,12 @@
 
 import { Map } from 'immutable';
 import { Player } from './_';
-import { UID } from '../UID/_';
 import { Skill } from '../Skill/_';
 import { GameObject } from '../GameMap/GameObject/_';
-import { Effect } from '../Effect/_';
 import { create_character } from '../Character/create_character';
 import { apply_effects as apply_orb_effects } from '../GameMap/GameObject/Orb/apply_effects';
 
-export function update_player_on_orb_destruction(players: Map<UID, Player>, owner_player: Player, skill: Skill, orb: GameObject & { kind: 'Orb' }): Map<UID, Player> {
+export function update_player_on_orb_destruction(players: Map<number, Player>, owner_player: Player, skill: Skill, orb: GameObject & { kind: 'Orb' }): Map<number, Player> {
   const updated_player : Player = apply_orb_effects(owner_player, orb);
 
   const owner_player_character = create_character(updated_player.character);
@@ -30,7 +28,7 @@ export function update_player_on_orb_destruction(players: Map<UID, Player>, owne
     movement_speed.percentage += movement_speed.percentage;
   }
 
-  const new_dmg_multiplier = (damage_buff && damage_buff.$ === 'OrbDamageBuff') ? (1 + (damage_buff.percentage / 100)) : 1
+  const new_dmg_multiplier = (damage_buff && damage_buff.$ === 'OrbDamageBuff') ? (1 + (damage_buff.percentage / 100)) : 1;
 
   return players.set(skill.owner_id, {
     ...updated_player,

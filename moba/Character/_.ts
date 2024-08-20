@@ -24,12 +24,11 @@
 /// ```
 
 import { CharacterType } from './type';
-import { Key } from '../Key/_';
 import { Effect } from '../Effect/_';
 
 export type Character = {
   name: string;
   type: CharacterType;
-  skills: { [key: Key]: any };
+  skills: { [key: string]: any };
   effects: Effect[];
 };

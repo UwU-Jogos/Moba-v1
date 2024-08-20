@@ -2,8 +2,7 @@
 ///
 /// # Arguments
 ///
-/// * `id: UID` - The unique identifier for the player
-/// * `name: Name` - The name of the player
+/// * `id: number` - The unique identifier for the player
 /// * `character_type: CharacterType` - The type of character for the player
 ///
 /// # Returns
@@ -20,17 +19,15 @@
 /// It also sets up the player's initial stats, position, and character-specific attributes.
 
 import { Player } from './_';
-import { UID } from '../UID/_';
-import { Name } from '../Name/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
 import { create_character } from '../Character/create_character';
-import { init_stats } from '../Stats/init_stats';
-import { Stats } from '../Stats/_';
+import { init_stats } from './Stats/init_stats';
+import { Stats } from './Stats/_';
 
 let next_team : TeamType = TeamType.TEAM_RED;
 
-export function init(id: UID, name: Name, character_type: CharacterType): Player {
+export function init(id: number, name: string, character_type: CharacterType): Player {
   const blue_team_spawn = { x: 400, y: 550 };
   const red_team_spawn = { x: 400, y: 50 };
 

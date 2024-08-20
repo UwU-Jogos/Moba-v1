@@ -8,8 +8,8 @@ import { distance } from "../../V2/distance";
 export function should_remove_skill(skill: Skill): boolean {
   return match(skill, {
     Projectile: (damage, speed, range, target) => {
-      var distance_to_target = distance(skill.pos, target);
-      var threshold          = 5;
+      let distance_to_target = distance(skill.pos, target);
+      let threshold          = 5;
       return range <= 0 || distance_to_target <= threshold;
     },
     HealArea: (amount, radius) => {

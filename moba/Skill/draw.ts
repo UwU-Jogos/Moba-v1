@@ -12,7 +12,6 @@
 import { Skill } from './_';
 import { Effect } from '../Effect/_';
 import { match } from './match';
-import { V2 } from '../V2/_';
 import { Shape } from '../Shape/_';
 import { rectangle } from '../Shape/rectangle';
 import { circle } from '../Shape/circle';
