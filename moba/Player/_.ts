@@ -21,7 +21,6 @@
 /// * `shots` - The number of shots fired by the player
 
 import { V2 } from '../V2/_';
-import { Life } from '../Life/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
 import { Stats } from './Stats/_';
@@ -33,7 +32,7 @@ export type Player = {
   pos: V2;
   target_pos: V2;
   active_skills: { [key: string]: number };
-  life: Life;
+  life: number;
   team: TeamType;
   character: CharacterType;
   key: { [key: string]: boolean };
