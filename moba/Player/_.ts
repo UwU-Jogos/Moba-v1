@@ -20,7 +20,6 @@
 /// * `effects` - An array of active effects on the player
 /// * `shots` - The number of shots fired by the player
 
-import { Name } from '../Name/_';
 import { V2 } from '../V2/_';
 import { Key } from '../Key/_';
 import { Life } from '../Life/_';
@@ -31,7 +30,7 @@ import { Effect } from '../Effect/_';
 
 export type Player = {
   id: number;
-  name: Name;
+  name: string;
   pos: V2;
   target_pos: V2;
   active_skills: { [key: string]: number };

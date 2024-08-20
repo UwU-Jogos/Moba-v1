@@ -1,6 +1,5 @@
 import * as sm from '@uwu-games/uwu-state-machine';
 import { UwUChat2Client } from 'uwuchat2';
-import { Name } from './Name/_'; // UTF-16
 import { GameState } from './GameState/_';
 import { Finished, game_finished } from './GameState/finished';
 import { Action } from './Action/_';
@@ -75,7 +74,7 @@ async function handle_form_submit(e: Event): Promise<void> {
 }
 
 // Extract to: /src/Game/start_game.ts
-async function start_game(room_id: number, name: Name, character: string): Promise<void> {
+async function start_game(room_id: number, name: string, character: string): Promise<void> {
   room = room_id;
 
    await client.init('ws://localhost:7171');
