@@ -11,12 +11,11 @@
 
 import { Skill } from './_';
 import { V2 } from '../V2/_';
-import { Damage } from '../Damage/_';
 
 export function match<R>(
   skill: Skill,
   handlers: {
-    Projectile: (damage: Damage, speed: number, range: number, target: V2) => R;
+    Projectile: (damage: number, speed: number, range: number, target: V2) => R;
     HealArea: (amount: number, radius: number) => R;
   }
 ): R {

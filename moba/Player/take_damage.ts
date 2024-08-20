@@ -8,9 +8,8 @@
 /// A new Player object with updated life
 
 import { Player } from './_';
-import { Damage } from '../Damage/_';
 
-export function take_damage(player: Player, damage: Damage) : Player {
+export function take_damage(player: Player, damage: number) : Player {
   const updated_life = Math.max(0, player.life - damage);
   return {
     ...player,
