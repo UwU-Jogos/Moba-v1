@@ -11,7 +11,7 @@
 /// A Shape representing a star
 
 import { Shape } from './_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 
 export function star(pos: V2, outer_radius: number, inner_radius: number): Shape {
   return {

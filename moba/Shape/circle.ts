@@ -10,7 +10,7 @@
 /// A Shape representing a circle with the given center position and radius
 
 import { Shape } from './_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 
 export function circle(pos: V2, rad: number): Shape {
   return {

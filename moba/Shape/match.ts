@@ -10,7 +10,7 @@
 /// The result of calling the appropriate handler function for the given shape
 
 import { Shape } from './_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 
 export function match<T>(
   shape: Shape,

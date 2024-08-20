@@ -16,7 +16,7 @@
 /// An array of GameObject representing the timed line walls
 
 import { GameObject } from './GameObject/_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { TPS } from '../Helpers/consts';
 
 export function create_timed_line_walls(tick: number, width: number, height: number): GameObject[] {

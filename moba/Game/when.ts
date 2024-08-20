@@ -13,7 +13,7 @@ import { Action } from '../Action/_';
 import { GameState } from '../GameState/_';
 import { Player } from '../Player/_';
 import { Skill } from '../Skill/_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { create_skill } from '../Skill/create';
 import { init as init_player } from '../Player/init';
 import { CharacterType } from '../Character/type';

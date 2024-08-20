@@ -10,7 +10,7 @@
 /// A Shape representing a line from ini to end
 
 import { Shape } from './_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 
 export function line(ini: V2, end: V2): Shape {
   return {

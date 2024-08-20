@@ -13,7 +13,7 @@
 import { Map } from 'immutable';
 import { Player } from './_';
 import { UID } from '../Types/UID/_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { GameMap } from '../GameMap/_';
 import { check_collision } from './check_collision';
 import { check_game_object_collision } from './check_game_object_collision';

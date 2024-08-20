@@ -13,7 +13,7 @@
 ///   - Added temporary immunity effect
 
 import { Player } from './_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { TeamType } from '../Team/type';
 import { get_canvas_dimensions } from '../Helpers/get_canvas_dimensions';
 import { TPS } from '../Helpers/consts';

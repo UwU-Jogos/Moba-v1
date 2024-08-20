@@ -1,5 +1,5 @@
 import { Skill } from './_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { GameObject } from '../GameMap/GameObject/_';
 import { Map } from 'immutable';
 import { match as match_game_object } from '../GameMap/GameObject/match';

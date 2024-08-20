@@ -10,7 +10,7 @@
 /// Renders the GameObject on the canvas
 
 import { GameObject } from './_';
-import { V2 } from '../../V2/_';
+import { V2 } from '../../../base/V2/_';
 import { Shape } from '../../Shape/_';
 import { match } from './match';
 import { rectangle } from '../../Shape/rectangle';

@@ -10,7 +10,7 @@
 ///
 /// A Shape representing a triangle
 
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { Shape } from './_';
 
 export function triangle(v1: V2, v2: V2, v3: V2): Shape {

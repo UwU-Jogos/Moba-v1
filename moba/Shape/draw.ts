@@ -12,7 +12,7 @@
 
 import { Shape } from './_';
 import { match } from './match';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 
 export function draw(canvas: CanvasRenderingContext2D, shape: Shape, color: string): void {
   canvas.fillStyle = color;

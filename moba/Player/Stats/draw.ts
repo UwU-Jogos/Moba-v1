@@ -11,7 +11,7 @@
 /// This function doesn't return a value, but draws the stats on the canvas
 
 import { Stats } from './_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../../base/V2/_';
 
 export function draw(ctx: CanvasRenderingContext2D, stats: Stats, position: V2): void {
   const boxWidth = 100;

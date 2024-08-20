@@ -13,7 +13,7 @@
 
 import { Player } from './_';
 import { GameObject } from '../GameMap/GameObject/_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { PLAYER_RADIUS } from '../Helpers/consts';
 import { create_character } from '../Character/create_character';
 

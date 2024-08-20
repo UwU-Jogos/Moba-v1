@@ -35,7 +35,7 @@
 ///   * `pos` - The center point of the pentagon (V2)
 ///   * `radius` - The radius of the circumscribed circle of the pentagon (number)
 
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 
 export type Shape =
   | { type: 'line', ini: V2, end: V2 }

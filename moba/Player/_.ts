@@ -22,13 +22,12 @@
 
 import { UID } from '../Types/UID/_';
 import { Name } from '../Types/Name/_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { Key } from '../../base/Types/Key/_';
-import { Life } from '../Types/Life/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
 import { Skill } from '../Skill/_';
-import { Stats } from '../Stats/_';
+import { Stats } from './Stats/_';
 import { Effect } from '../Types/Effect/_';
 
 export type Player = {
@@ -37,7 +36,7 @@ export type Player = {
   pos: V2;
   target_pos: V2;
   active_skills: { [key: string]: number };
-  life: Life;
+  life: number;
   team: TeamType;
   character: CharacterType;
   key: { [key: Key]: boolean };

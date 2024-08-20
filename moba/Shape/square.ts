@@ -10,7 +10,7 @@
 /// A Shape representing a square with the given top-left corner and side length
 
 import { Shape } from './_';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 
 export function square(pos: V2, side: number): Shape {
   return {

@@ -13,7 +13,7 @@
 /// # Fields
 ///
 
-import { V2 } from '../../V2/_';
+import { V2 } from '../../../base/V2/_';
 import { Effect } from '../../Types/Effect/_';
 
 export type GameObject =

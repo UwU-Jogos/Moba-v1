@@ -10,7 +10,7 @@
 /// The result of calling the appropriate handler function
 
 import { GameObject } from './_';
-import { V2 } from '../../V2/_';
+import { V2 } from '../../../base/V2/_';
 import { Effect } from '../../Types/Effect/_';
 
 export function match<R>(

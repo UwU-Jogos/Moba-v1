@@ -11,7 +11,7 @@
 ///
 /// This function doesn't return a value, but draws the character on the canvas
 
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { Shape } from '../Shape/_';
 import { triangle } from '../Shape/triangle';
 import { circle } from '../Shape/circle';

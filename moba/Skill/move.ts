@@ -11,7 +11,7 @@
 
 import { Skill } from './_';
 import { match } from './match';
-import { V2 } from '../V2/_';
+import { V2 } from '../../base/V2/_';
 import { normalize } from '../V2/normalize';
 import { scale } from '../V2/scale';
 import { add } from '../V2/add';
