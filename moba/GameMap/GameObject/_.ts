@@ -14,7 +14,7 @@
 ///
 
 import { V2 } from '../../V2/_';
-import { Effect } from '../../Helpers/Types/Effect/_';
+import { Effect } from '../../Types/Effect/_';
 
 export type GameObject =
   | { kind: 'Wall', position: V2, width: number, height: number }

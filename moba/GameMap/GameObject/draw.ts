@@ -16,7 +16,7 @@ import { match } from './match';
 import { rectangle } from '../../Shape/rectangle';
 import { line } from '../../Shape/line';
 import { circle } from '../../Shape/circle';
-import { Effect } from '../../Helpers/Types/Effect/_';
+import { Effect } from '../../Types/Effect/_';
 import { draw as shape_draw } from '../../Shape/draw';
 import { WALL_COLOR, PLATFORM_COLOR, RESPAWN_AREA_COLOR } from '../../Helpers/consts';
 
