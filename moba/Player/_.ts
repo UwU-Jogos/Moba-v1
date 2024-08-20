@@ -26,7 +26,7 @@ import { Life } from '../Life/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
 import { Stats } from './Stats/_';
-import { Effect } from '../Effect/_';
+import { Effect } from '../Helpers/Types/Effect/_';
 
 export type Player = {
   id: number;

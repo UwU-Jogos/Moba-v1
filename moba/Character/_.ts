@@ -25,7 +25,7 @@
 
 import { CharacterType } from './type';
 import { Key } from '../Key/_';
-import { Effect } from '../Effect/_';
+import { Effect } from '../Helpers/Types/Effect/_';
 
 export type Character = {
   name: string;
