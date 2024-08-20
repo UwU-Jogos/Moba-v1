@@ -7,7 +7,7 @@
 ///
 /// # Parameters
 ///
-/// * `key` - The key involved in the movement event (type: Key)
+/// * `key` - The key involved in the movement event (type: string)
 /// * `down` - Whether the key is pressed down (true) or released (false)
 /// * `room` - The room identifier (type: number)
 /// * `PID` - The player's unique identifier (type: number)
@@ -22,15 +22,14 @@
 
 import * as sm from '@uwu-games/uwu-state-machine';
 import { Action } from '../Action/_';
-import { Key } from '../Key/_';
 import { GameState } from '../GameState/_';
 import { ARTIFICIAL_DELAY } from '../Helpers/consts';
 import { serialize } from '../Action/serialize';
 
-const key_state: { [key: Key]: boolean } = {};
+const key_state: { [key: string]: boolean } = {};
 
 export function handle_movement_event(
-  key: Key,
+  key: string,
   down: boolean,
   room: number,
   PID: number,

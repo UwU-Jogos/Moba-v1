@@ -19,7 +19,6 @@
 /// * Updates the key state for movement keys.
 /// * Triggers skill events for skill keys.
 
-import { Key } from "../Key/_";
 import { handle_movement_event } from "./handle_movement_event";
 import { handle_skill_event } from "./handle_skill_event";
 import { Action } from "../Action/_";
@@ -33,7 +32,7 @@ export function handle_key_event(
   mach: sm.Mach<GameState, Action>,
   client: any
 ): void {
-  const key = event.key.toUpperCase() as Key;
+  const key = event.key.toUpperCase() as string;
   const down = event.type === 'keydown';
 
   if (['W', 'A', 'S', 'D'].includes(key)) {
