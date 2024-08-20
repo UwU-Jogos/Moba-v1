@@ -27,7 +27,7 @@ import { Key } from '../Key/_';
 import { Life } from '../Life/_';
 import { TeamType } from '../Team/type';
 import { CharacterType } from '../Character/type';
-import { Stats } from '../Stats/_';
+import { Stats } from './Stats/_';
 import { Effect } from '../Effect/_';
 
 export type Player = {
