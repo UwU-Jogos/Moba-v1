@@ -19,10 +19,10 @@
 /// * Sends the serialized action to the server
 
 import * as sm from '@uwu-games/uwu-state-machine';
-import { Action } from '../Action/_';
-import { GameState } from '../GameState/_';
-import { serialize } from '../Action/serialize';
-import { ARTIFICIAL_DELAY } from '../Helpers/consts';
+import { Action } from '../../moba/Action/_';
+import { GameState } from '../../moba/GameState/_';
+import { serialize } from '../../moba/Action/serialize';
+import { ARTIFICIAL_DELAY } from '../../moba/Helpers/consts';
 
 export function handle_mouse_click(
   event: MouseEvent,

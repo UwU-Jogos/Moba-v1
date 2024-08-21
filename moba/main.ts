@@ -12,16 +12,16 @@ import { serialize } from './Action/serialize';
 import { PLAYERS_LIMIT, TIME_TO_START_GAME } from './Helpers/consts';
 import { name_to_type } from './Character/name_to_type';
 import { CharacterType } from './Character/type';
-import { Timer } from './Timer/_';
-import { init as init_timer } from './Timer/init';
-import { is_time_up } from './Timer/is_time_up';
-import { update as update_timer } from './Timer/update';
+import { Timer } from '../base/Timer/_';
+import { init as init_timer } from '../base/Timer/init';
+import { is_time_up } from '../base/Timer/is_time_up';
+import { update as update_timer } from '../base/Timer/update';
 import { populate_character_select } from './Lobby/populate_character_select';
 import { show_lobby } from './Lobby/show_lobby';
 import { update_lobby } from './Lobby/update_lobby';
-import { handle_key_event } from './Input/handle_key_event';
-import { handle_mouse_move } from './Input/handle_mouse_move';
-import { handle_mouse_click } from './Input/handle_mouse_click';
+import { handle_key_event } from '../base/Input/handle_key_event';
+import { handle_mouse_move } from '../base/Input/handle_mouse_move';
+import { handle_mouse_click } from '../base/Input/handle_mouse_click';
 
 // Types
 // -----
