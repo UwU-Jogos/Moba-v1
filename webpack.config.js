@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default {
-  entry: './src/main.ts',
+  entry: './moba/main.ts',
   module: {
     rules: [
       {
@@ -31,7 +31,7 @@ export default {
       process: 'process/browser',
     }),
     new HtmlWebpackPlugin({
-      template: './src/index.html',
+      template: './moba/index.html',
       filename: 'index.html',
       inject: false,
     }),
