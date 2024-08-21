@@ -1,4 +1,4 @@
-import { V2 } from "../V2/_";
+import { V2 } from "../../base/V2/_";
 
 export function distance(p1: V2, p2: V2): number {
   const dx = p2.x - p1.x;
