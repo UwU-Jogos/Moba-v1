@@ -18,7 +18,9 @@
 /// Creates and appends a new div element to the document body for displaying the timer.
 
 import { Timer } from "./_";
-import { GAME_TIME, TIME_TO_START_GAME } from "../Helpers/consts";
+
+let GAME_TIME = 1000000;
+let TIME_TO_START_GAME = 14;
 
 export function init(): Timer {
   const time_display = document.createElement('div');
