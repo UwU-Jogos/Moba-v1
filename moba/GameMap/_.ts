@@ -9,7 +9,10 @@
 /// * `width` - The width of the map
 /// * `height` - The height of the map
 
+import { Body } from '../Body/_';
+
 export type GameMap = {
   width: number;
   height: number;
+  bodies: Body[];
 };
