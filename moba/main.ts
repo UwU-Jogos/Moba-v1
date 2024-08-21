@@ -1,7 +1,6 @@
 import * as sm from '@uwu-games/uwu-state-machine';
 import { UwUChat2Client } from 'uwuchat2';
 import { GameState } from './GameState/_';
-import { Finished, game_finished } from './GameState/finished';
 import { Action } from './Action/_';
 import { init } from './Game/init';
 import { when } from './Game/when';
@@ -10,13 +9,10 @@ import { draw } from './Game/draw';
 import { deserialize } from './Action/deserialize';
 import { serialize } from './Action/serialize';
 import { PLAYERS_LIMIT, TIME_TO_START_GAME } from './Helpers/consts';
-import { name_to_type } from './Character/name_to_type';
-import { CharacterType } from './Character/type';
 import { Timer } from '../base/Timer/_';
 import { init as init_timer } from '../base/Timer/init';
 import { is_time_up } from '../base/Timer/is_time_up';
 import { update as update_timer } from '../base/Timer/update';
-import { populate_character_select } from './Lobby/populate_character_select';
 import { show_lobby } from './Lobby/show_lobby';
 import { update_lobby } from './Lobby/update_lobby';
 import { handle_key_event } from '../base/Input/handle_key_event';
@@ -52,7 +48,6 @@ function setup_form_listener(): void {
 
   if (login_form) {
     login_form.addEventListener('submit', handle_form_submit);
-    populate_character_select();
   } else {
     console.error("Login form not found!");
   }
@@ -66,18 +61,16 @@ async function handle_form_submit(e: Event): Promise<void> {
   const room_id = parseInt(room_input.value, 10);
   const name_input = document.getElementById('nickname') as HTMLInputElement;
   const name = name_input.value;
-  const character_select = document.getElementById('character-select') as HTMLSelectElement;
-  const character = character_select.value;
 
   // Start the game with the provided room ID, name, and character
-  await start_game(room_id, name, character);
+  await start_game(room_id, name);
 }
 
 // Extract to: /src/Game/start_game.ts
-async function start_game(room_id: number, name: string, character: string): Promise<void> {
+async function start_game(room_id: number, name: string): Promise<void> {
   room = room_id;
 
-   await client.init('ws://localhost:7171');
+  await client.init('ws://localhost:7171');
   // await client.init('ws://server.uwu.games');
 
   mach = sm.new_mach(TPS);
@@ -100,13 +93,11 @@ async function start_game(room_id: number, name: string, character: string): Pro
   });
 
   // Create and send SetNick action
-  const character_type : CharacterType = name_to_type(character);
   const set_nick_action: Action = {
     $: "SetNick",
     time: client.time(),
     pid: PID,
     name,
-    character: character_type
   };
   sm.register_action(mach, set_nick_action);
   client.send(room, serialize(set_nick_action));
@@ -166,13 +157,6 @@ function game_loop(): void {
 
   timer = update_timer(timer, state.tick / TPS);
 
-  // Check if the game has finished
-  const finished: Finished | null = game_finished(state, is_time_up(timer));
-  if (finished) {
-    show_game_result(finished, state);
-    return;
-  }
-
   // Draw the current state
   draw(state);
 
@@ -180,29 +164,3 @@ function game_loop(): void {
   requestAnimationFrame(game_loop);
 }
 
-// Extract to: /src/UI/show_game_result.ts
-function show_game_result(finished: Finished, state: GameState): void {
-  const game_container = document.getElementById('game-container');
-  const result_container = document.getElementById('result-container');
-  const result_message = document.getElementById('result-message');
-
-  if (game_container && result_container && result_message) {
-    game_container.style.display = 'none';
-    result_container.style.display = 'block';
-
-    if (finished.draw) {
-      result_message.textContent = 'That was a Draw!';
-    } else {
-      const playerTeam = state.players.get(PID)?.team;
-      if (playerTeam === finished.winner) {
-        result_message.textContent = 'You Won!';
-      } else if (playerTeam === finished.loser) {
-        result_message.textContent = 'You Lost!';
-      } else {
-        result_message.textContent = 'Game Finished!';
-      }
-    }
-  } else {
-    console.error("Could not find game or result container");
-  }
-}
