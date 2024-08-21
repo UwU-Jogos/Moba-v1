@@ -9,6 +9,7 @@
 /// This function doesn't return a value, it performs the drawing operation.
 
 import { GameState } from '../GameState/_';
+import { Body } from '../Body/_';
 
 export function draw(gs: GameState): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -19,6 +20,8 @@ export function draw(gs: GameState): void {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  gs.players.forEach(player => {
+  gs.game_map.bodies.forEach((body : Body) => {
+    body.draw(ctx);
   });
+
 }
