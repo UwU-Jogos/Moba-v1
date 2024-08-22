@@ -19,10 +19,8 @@
 
 import { Timer } from "./_";
 
-let GAME_TIME = 1000000;
-let TIME_TO_START_GAME = 14;
 
-export function init(): Timer {
+export function init(GAME_TIME: number, TIME_TO_START_GAME: number): Timer {
   const time_display = document.createElement('div');
   time_display.style.position = 'absolute';
   time_display.style.top = '10px';

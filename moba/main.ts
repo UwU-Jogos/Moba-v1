@@ -143,7 +143,7 @@ function show_game_container(): void {
   }
 
   // Start game loop
-  timer = init_timer();
+  timer = init_timer(1000000, 14);
   game_loop();
 }
 
