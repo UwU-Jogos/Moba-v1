@@ -1,0 +1,12 @@
+
+
+- Find a way to pass the keys from Player to Hero. (write the tick function for the hero).
+The tick function for the default hero, for now, should check if any key is pressed (it should receive this) and trigger the
+matching skill for it. When triggering the skill, it should apply all the skill efects.
+
+Ideas: the body.tick() function of the hero should receive the player keys when its created (using partial app). 
+Downside: need to update this tick function everytime the player presses something (in Game/when.ts).
+
+- Write a function that applies all the effects of a skill (like the one we discussed on the meeting). for now ignore animations
+this function will simply apply what is returned by the skill effect to the game state and return the new gameState. All of this happens in the tick function of that body.
+
