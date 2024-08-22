@@ -16,10 +16,13 @@ import { init as init_player } from '../Player/init';
 
 export function when(action: Action, gs: GameState): GameState {
   let players = gs.players;
+  let bodies = gs.game_map.bodies;
 
   if (!players.has(action.pid)) {
     const initial_name = action.$ === "SetNick" ? action.name : "Anon";
-    players = players.set(action.pid, init_player(action.pid, initial_name));
+    const player = init_player(action.pid, initial_name)
+    players = players.set(action.pid, player);
+    bodies = [...bodies, player.body];
   }
 
   switch (action.$) {
@@ -50,5 +53,10 @@ export function when(action: Action, gs: GameState): GameState {
       break;
     }
   }
-  return { ...gs, players };
+  return { ...gs, players, 
+    game_map: {
+      ...gs.game_map,
+      bodies: bodies
+    }
+  };
 }
