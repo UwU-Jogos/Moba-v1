@@ -12,7 +12,6 @@
 /// * `target_pos` - The target position of the player in 2D space
 /// * `life` - The current life of the player
 /// * `key` - An object representing the state of various keys (pressed or not)
-/// * `body` - The physical body associated with the player in the game world
 
 import { V2 } from "../../base/V2/_";
 import { Body } from "../Body/_";
@@ -20,9 +19,6 @@ import { Body } from "../Body/_";
 export type Player = {
   id: number;
   name: string;
-  pos: V2;
-  target_pos: V2;
-  life: number;
   key: { [key: string]: boolean };
-  body: Body;
+  hero: Hero;
 };
