@@ -4,30 +4,31 @@ import { V2 } from '../../base/V2/_';
 import { Body } from '../Body/_';
 import { add } from '../../base/V2/add';
 import { move as move_shape } from '../../base/Shape/move';
-import { draw as draw_shape } from '../../base/Shape/draw';
 
 // Moves a body by a given vector
-// - body: the Body to move
+// - body_id: the ID of the Body to move
 // - movement: the vector to move the body by
 // = an Effect that updates the GameState with the moved body
-export function move(body: Body, movement: V2): Effect<boolean> {
+export function move(body_id: string, movement: V2): Effect<boolean> {
   return (gs: GameState): [GameState, boolean] => {
-    const new_pos = add(body.pos, movement);
-    const updated_shape = move_shape(body.hitbox, movement);
-    const updated_body = {
-      ...body,
-      pos: new_pos,
-      hitbox: updated_shape,
-      draw: (ctx: CanvasRenderingContext2D): void => {
-        draw_shape(ctx, updated_shape);
-      }
-    };
+    var bodies = gs.game_map.bodies;
+    
+    if (!bodies.has(body_id)) {
+      return [gs, false];
+    }
 
-    const updated_bodies = gs.game_map.bodies.map(b => 
-      b.id === body.id ? updated_body : b
-    );
+    var body = bodies.get(body_id);
+    if (!body) {
+      return [gs, false];
+    }
 
-    const updated_gs: GameState = {
+    var new_pos = add(body.pos, movement);
+    var new_hitbox = move_shape(body.hitbox, movement);
+
+    var updated_body: Body = { ...body, pos: new_pos, hitbox: new_hitbox };
+    var updated_bodies = bodies.set(body_id, updated_body);
+
+    var new_gs: GameState = {
       ...gs,
       game_map: {
         ...gs.game_map,
@@ -35,6 +36,6 @@ export function move(body: Body, movement: V2): Effect<boolean> {
       }
     };
 
-    return [updated_gs, true];
+    return [new_gs, true];
   };
 }
