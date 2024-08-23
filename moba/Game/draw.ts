@@ -10,6 +10,7 @@
 
 import { GameState } from '../GameState/_';
 import { Body } from '../Body/_';
+import { draw as shape_draw } from '../../base/Shape/draw';
 
 export function draw(gs: GameState): void {
   const canvas = document.getElementById('canvas') as HTMLCanvasElement;
@@ -21,7 +22,7 @@ export function draw(gs: GameState): void {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
   gs.game_map.bodies.forEach((body : Body) => {
-    body.draw(ctx);
+    shape_draw(ctx, body.hitbox);
   });
 
 }
