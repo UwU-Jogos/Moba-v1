@@ -40,7 +40,6 @@ export function handle_movement_event(
     key_state[key] = down;
     const time = client.time() + ARTIFICIAL_DELAY;
     const act: Action = { $: "MovementEvent", time, pid: PID, key, down };
-    console.log("sending: ", act);
     sm.register_action(mach, act);
     client.send(room, serialize(act));
   }
