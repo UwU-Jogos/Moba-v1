@@ -22,7 +22,7 @@ export function when(action: Action, gs: GameState): GameState {
     const initial_name = action.$ === "SetNick" ? action.name : "Anon";
     const player = init_player(action.pid, initial_name)
     players = players.set(action.pid, player);
-    bodies = [...bodies, player.body];
+    bodies = bodies.set(player.hero.body.id, player.hero.body);
   }
 
   switch (action.$) {
@@ -39,10 +39,6 @@ export function when(action: Action, gs: GameState): GameState {
     }
 
     case "MouseClick": {
-      players = players.update(action.pid, player => {
-        if (!player) return player;
-        return { ...player, target_pos: { x: action.x, y: action.y } } as Player;
-      });
       break;
     }
     case "MovementEvent": {

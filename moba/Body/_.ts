@@ -15,11 +15,10 @@ import { GameState } from '../GameState/_';
 /// * `hitbox` - The Shape used for collision detection
 /// * `pos` - The current position of the body in 2D space
 /// * `tick` - A function that updates the game state based on this body's behavior
-/// * `draw` - A function that renders this body on the canvas
+
 export type Body = {
   id: string;
   hitbox: Shape;
   pos: V2;
   tick: (gs: GameState) => GameState;
-  draw: (ctx: CanvasRenderingContext2D) => void;
 };

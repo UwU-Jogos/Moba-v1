@@ -8,11 +8,14 @@
 ///
 /// * `width` - The width of the map
 /// * `height` - The height of the map
+/// * `bodies` - Bodies in the map
 
+import { Map } from 'immutable';
 import { Body } from '../Body/_';
 
 export type GameMap = {
   width: number;
   height: number;
-  bodies: Body[];
+  bodies: Map<string, Body>;
 };
+
