@@ -12,13 +12,15 @@ export function move(shape: Shape, v: V2): Shape {
       return {
         $: "circle",
         center: add(shape.center, v),
-        radius: shape.radius
+        radius: shape.radius,
+        mass: shape.mass
       };
     }
     case "polygon": {
       return {
         $: "polygon",
-        vertices: shape.vertices.map(vertex => add(vertex, v))
+        vertices: shape.vertices.map(vertex => add(vertex, v)),
+        mass: shape.mass
       };
     }
   }
