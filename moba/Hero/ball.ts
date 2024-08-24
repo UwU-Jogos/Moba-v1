@@ -9,10 +9,14 @@ import { V2 } from '../../base/V2/_';
 // - owner_id: the ID of the player who owns this hero
 // - pos: the initial position of the hero
 // = a new Hero instance representing a ball
+
+let last_pos = { x: 100, y: 100 };
+
 export function ball(name: string, owner_id: number, pos: V2): Hero {
   const body_id = `ball_${owner_id}`;
   const speed = 5;
   const radius = 10;
+  const mass = 10;
 
   const hero: Hero = {
     name,
@@ -24,7 +28,7 @@ export function ball(name: string, owner_id: number, pos: V2): Hero {
     },
     body: {
       id: body_id,
-      hitbox: circle(pos, radius),
+      hitbox: circle(last_pos, radius, mass),
       pos,
       tick: (gs: GameState): GameState => {
         const player = gs.players.get(owner_id);
@@ -44,6 +48,8 @@ export function ball(name: string, owner_id: number, pos: V2): Hero {
     },
     owner_id
   };
+
+  last_pos = { x: last_pos.x + 100, y: last_pos.y };
 
   return hero;
 }
