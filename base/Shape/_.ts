@@ -4,5 +4,5 @@ import { V2 } from '../V2/_';
 // - Circle: a circle with a center point and radius
 // - Polygon: a polygon defined by an array of vertices
 export type Shape
-  = { $: "circle", center: V2, radius: number }
-  | { $: "polygon", vertices: V2[] };
+  = { $: "circle", center: V2, radius: number, mass: number }
+  | { $: "polygon", vertices: V2[], mass: number };

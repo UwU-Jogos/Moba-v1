@@ -5,9 +5,9 @@ import { V2 } from '../V2/_';
 // - center: the center point of the pentagon
 // - side_size: the length of each side of the pentagon
 // = a Shape representing a pentagon with the given center and side size
-export function pentagon(center: V2, side_size: number): Shape {
+export function pentagon(center: V2, side_size: number, mass: number): Shape {
   const vertices: V2[] = calculate_pentagon_vertices(center, side_size);
-  return { $: "polygon", vertices };
+  return { $: "polygon", vertices, mass };
 }
 
 // Calculates the vertices of a regular pentagon

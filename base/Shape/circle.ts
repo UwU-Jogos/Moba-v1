@@ -5,6 +5,6 @@ import { V2 } from '../V2/_';
 // - center: the center point of the circle
 // - radius: the radius of the circle
 // = a Shape representing a circle with the given center and radius
-export function circle(center: V2, radius: number): Shape {
-  return { $: "circle", center, radius };
+export function circle(center: V2, radius: number, mass: number): Shape {
+  return { $: "circle", center, radius, mass };
 }

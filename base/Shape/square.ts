@@ -7,7 +7,7 @@ import { sub } from '../V2/sub';
 // - center: the center point of the square
 // - side: the length of a side of the square
 // = a Shape representing a square with the given center and side length
-export function square(center: V2, side: number): Shape {
+export function square(center: V2, side: number, mass: number): Shape {
   // Calculate half of the side length
   const half_side = side / 2;
 
@@ -18,5 +18,5 @@ export function square(center: V2, side: number): Shape {
   const bottom_left  = add(center, { x: -half_side, y: half_side });
 
   // Create the polygon using the vertices
-  return { $: "polygon", vertices: [top_left, top_right, bottom_right, bottom_left] };
+  return { $: "polygon", vertices: [top_left, top_right, bottom_right, bottom_left], mass };
 }
