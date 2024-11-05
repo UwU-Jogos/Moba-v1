@@ -65,12 +65,6 @@ const $Char = $Char$
 function $Equal$(_$0/*:Type*/,_$1/*:null*/,_$2/*:null*/) {var $x0 = /*{$:'Refl'}*/null;return $x0; }
 const $Equal = _$0 => _$1 => _$2 => $Equal$(_$0,_$1,_$2)
 
-function $F64$div$(_$0/*:Number*/,_$1/*:Number*/) {var $x1 = _$0;var $x2 = _$1;var $x0 = $x1 / $x2;return $x0; }
-const $F64$div = _$0 => _$1 => $F64$div$(_$0,_$1)
-
-function $F64$sub$(_$0/*:Number*/,_$1/*:Number*/) {var $x1 = _$0;var $x2 = _$1;var $x0 = $x1 - $x2;return $x0; }
-const $F64$sub = _$0 => _$1 => $F64$sub$(_$0,_$1)
-
 const $GameAction$ = (() => {var $x0 = /*{$:'Increment'}*/null;return $x0; })()
 const $GameAction = $GameAction$
 
@@ -227,6 +221,9 @@ const $UG$SM$Time$time_to_tick = _$0 => _$1 => _$2 => _$3 => $UG$SM$Time$time_to
 function $UG$SM$TimedAction$(_$0/*:Type*/) {var $x0 = /*{$:'TimedAction', action: _$0, time: UG/SM/Time}*/null;return $x0; }
 const $UG$SM$TimedAction = _$0 => $UG$SM$TimedAction$(_$0)
 
+function $UG$SM$TimedAction$time_action$(_$0/*:Type*/,_$1/*:UG/SM/Time*/,_$2/*:null*/) {var $x0 = ({$: "TimedAction"});var $x1 = _$2;$x0.action = $x1;var $x2 = _$1;$x0.time = $x2;return $x0; }
+const $UG$SM$TimedAction$time_action = _$0 => _$1 => _$2 => $UG$SM$TimedAction$time_action$(_$0,_$1,_$2)
+
 function $UG$SM$add_action_to_logs$(_$0/*:Type*/,_$1/*:Type*/,_$2/*:UG/SM/Mach<null><null>*/,_$3/*:UG/SM/Tick*/,_$4/*:null*/) {var $x1 = _$2;var $x2 = _$1;var $x3 = $x1.action_logs;var $x4 = _$3;var $x5 = _$4;var $new_logs$0 = $UG$SM$ActionLogs$add_action$($x2, $x3, $x4, $x5);var $x0 = ({$: "Mach"});var $x6 = $x1.ticks_per_second;$x0.ticks_per_second = $x6;var $x7 = $x1.genesis_tick;$x0.genesis_tick = $x7;var $x8 = $x1.cached_tick;$x0.cached_tick = $x8;var $x9 = $x1.state_logs;$x0.state_logs = $x9;var $x10 = $new_logs$0;$x0.action_logs = $x10;var $x11 = $x1.action_eq;$x0.action_eq = $x11;return $x0; }
 const $UG$SM$add_action_to_logs = _$0 => _$1 => _$2 => _$3 => _$4 => $UG$SM$add_action_to_logs$(_$0,_$1,_$2,_$3,_$4)
 
@@ -244,21 +241,6 @@ const $UG$SM$remove_future_states = _$0 => _$1 => _$2 => _$3 => $UG$SM$remove_fu
 
 function $UG$SM$register_action$(_$0/*:Type*/,_$1/*:Type*/,_$2/*:UG/SM/Mach<null><null>*/,_$3/*:UG/SM/TimedAction<null>*/) {var $x1 = _$3;var $x2 = _$0;var $x3 = _$1;var $x4 = _$2;var $x5 = $x1.time;var $tick$0 = $UG$SM$Time$time_to_tick$($x2, $x3, $x4, $x5);var $x6 = _$0;var $x7 = _$1;var $x8 = _$2;var $x9 = $tick$0;var $mach$1 = $UG$SM$update_genesis_tick$($x6, $x7, $x8, $x9);var $x10 = _$0;var $x11 = _$1;var $x12 = $mach$1;var $x13 = $tick$0;var $mach$2 = $UG$SM$update_cached_tick$($x10, $x11, $x12, $x13);var $x14 = _$0;var $x15 = _$1;var $x16 = $mach$2;var $x17 = $tick$0;var $mach$3 = $UG$SM$remove_future_states$($x14, $x15, $x16, $x17);var $x18 = _$0;var $x19 = _$1;var $x20 = $mach$3;var $x21 = $tick$0;var $x22 = $x1.action;var $x0 = $UG$SM$add_action_to_logs$($x18, $x19, $x20, $x21, $x22);return $x0; }
 const $UG$SM$register_action = _$0 => _$1 => _$2 => _$3 => $UG$SM$register_action$(_$0,_$1,_$2,_$3)
-
-const $V2$ = (() => {var $x0 = /*{$:'V2', x: Number, y: Number}*/null;return $x0; })()
-const $V2 = $V2$
-
-const $UG$Shape$ = (() => {var $x0 = /*{$:'Circle', center: V2, radius: Number} | {$:'Polygon', center: V2, vertices: List<V2>}*/null;return $x0; })()
-const $UG$Shape = $UG$Shape$
-
-function $UG$Shape$circle$(_$0/*:V2*/,_$1/*:Number*/) {var $x0 = ({$: "Circle"});var $x1 = _$0;$x0.center = $x1;var $x2 = _$1;$x0.radius = $x2;return $x0; }
-const $UG$Shape$circle = _$0 => _$1 => $UG$Shape$circle$(_$0,_$1)
-
-function $V2$new$(_$0/*:Number*/,_$1/*:Number*/) {var $x0 = ({$: "V2"});var $x1 = _$0;$x0.x = $x1;var $x2 = _$1;$x0.y = $x2;return $x0; }
-const $V2$new = _$0 => _$1 => $V2$new$(_$0,_$1)
-
-function $UG$Shape$square$(_$0/*:V2*/,_$1/*:Number*/) {var $x1 = _$1;var $x2 = 2.0;var $half_side$0 = $F64$div$($x1, $x2);var $x3 = 0.0;var $x4 = $half_side$0;var $neg_half$1 = $F64$sub$($x3, $x4);var $x5 = $neg_half$1;var $x6 = $half_side$0;var $top_left$2 = $V2$new$($x5, $x6);var $x7 = $half_side$0;var $x8 = $half_side$0;var $top_right$3 = $V2$new$($x7, $x8);var $x9 = $half_side$0;var $x10 = $neg_half$1;var $bottom_right$4 = $V2$new$($x9, $x10);var $x11 = $neg_half$1;var $x12 = $neg_half$1;var $bottom_left$5 = $V2$new$($x11, $x12);var $x0 = ({$: "Polygon"});var $x13 = _$0;$x0.center = $x13;var $x14 = ({$: "Cons"});var $x15 = $top_left$2;$x14.head = $x15;var $x16 = ({$: "Cons"});var $x17 = $top_right$3;$x16.head = $x17;var $x18 = ({$: "Cons"});var $x19 = $bottom_right$4;$x18.head = $x19;var $x20 = ({$: "Cons"});var $x21 = $bottom_left$5;$x20.head = $x21;var $x22 = ({$: "Nil"});$x20.tail = $x22;$x18.tail = $x20;$x16.tail = $x18;$x14.tail = $x16;$x0.vertices = $x14;return $x0; }
-const $UG$Shape$square = _$0 => _$1 => $UG$Shape$square$(_$0,_$1)
 
 const $event$ = (() => {var $x0 = ({$: "KeyEvent"});var $x1 = 0n;$x0.time = $x1;var $x2 = 0n;$x0.pid = $x2;var $x3 = JSTR_TO_LIST(`a`);$x0.key = $x3;var $x4 = ({$: "False"});$x0.pressed = $x4;return $x0; })()
 const $event = $event$
@@ -287,12 +269,6 @@ const $mach = $mach$
 const $main$ = (() => {var $x0 = ({$: "Mach"});var $x1 = 60n;$x0.ticks_per_second = $x1;var $x2 = 0n;$x0.genesis_tick = $x2;var $x3 = 0n;$x0.cached_tick = $x3;var $x4 = ({$: "None"});$x0.state_logs = $x4;var $x5 = ({$: "Node"});var $x6 = ({$: "Some"});var $x7 = ({$: "Cons"});var $x8 = ({$: "Increment"});$x7.head = $x8;var $x9 = ({$: "Nil"});$x7.tail = $x9;$x6.value = $x7;$x5.val = $x6;var $x10 = ({$: "Leaf"});$x5.lft = $x10;var $x11 = ({$: "Leaf"});$x5.rgt = $x11;$x0.action_logs = $x5;var $x12 = $GameAction$eq;$x0.action_eq = $x12;return $x0; })()
 const $main = $main$
 
-const $shape$ = (() => {var $x1 = ({$: "V2"});var $x2 = 100.0;$x1.x = $x2;var $x3 = 100.0;$x1.y = $x3;var $x4 = 20.0;var $x0 = $UG$Shape$circle$($x1, $x4);return $x0; })()
-const $shape = $shape$
-
-const $shape1$ = (() => {var $x1 = ({$: "V2"});var $x2 = 200.0;$x1.x = $x2;var $x3 = 200.0;$x1.y = $x3;var $x4 = 20.0;var $x0 = $UG$Shape$square$($x1, $x4);return $x0; })()
-const $shape1 = $shape1$
-
 const $simple_game$ = (() => {var $x0 = ({$: "Game"});var $x1 = ({$: "GameState"});var $x2 = 0n;$x1.counter = $x2;$x0.init = $x1;var $x3 = ($action$0 => $state$1 => {var $x5 = $action$0;var $x4 = ({$: "GameState"});var $x8 = $state$1;var $x7 = $GameState$counter$($x8);var $x9 = 1n;var $x6 = $U64$add$($x7, $x9);$x4.counter = $x6;return $x4;});$x0.when = $x3;var $x10 = ($state$0 => {var $x11 = $state$0;return $x11;});$x0.tick = $x10;return $x0; })()
 const $simple_game = $simple_game$
 
@@ -311,5 +287,8 @@ const $test$3 = $test$3$
 const $test$4$ = (() => {var $x0 = ({$: "Refl"});return $x0; })()
 const $test$4 = $test$4$
 
+const $timedEv1$ = (() => {var $x1 = $UG$SIPD$Event;var $x2 = 1n;var $x3 = $event1;var $x0 = $UG$SM$TimedAction$time_action$($x1, $x2, $x3);return $x0; })()
+const $timedEv1 = $timedEv1$
 
-export { $BinTree, $Maybe, $BinMap, $BinMap$empty, $Bits, $BinMap$get, $BinMap$new, $BinMap$set, $Bool, $Bool$eq, $Char, $Equal, $F64$div, $F64$sub, $GameAction, $GameAction$eq, $GameState, $GameState$counter, $KEYEVENT, $KEYMOUSE, $List, $List$append, $MOUSECLICK, $MOUSEMOVE, $Maybe$none, $Nat, $Pair, $SETNICK, $String, $U64$add, $U64$div, $U64$to_bool, $U64$eql, $U64$eq, $U64$from_bool, $U64$lt, $U64$min, $U64$mod, $U64$mul, $U64$to_bits, $UG$SIPD$Action, $UG$SIPD$Event$Click, $UG$SIPD$Event, $UG$SM$ActionLogs, $UG$SM$Tick, $UG$SM$ActionLogs$add_action, $UG$SM$Game, $UG$SM$Game$init, $UG$SM$Game$tick, $UG$SM$Game$when, $UG$SM$StateLogs$StateNode, $UG$SM$StateLogs, $UG$SM$Mach, $UG$SM$Mach$action_logs, $UG$SM$Mach$cached_tick, $UG$SM$StateLogs$StateNode$life, $UG$SM$StateLogs$StateNode$older, $UG$SM$StateLogs$StateNode$state, $UG$SM$StateLogs$StateNode$tick, $UG$SM$StateLogs$find_rollback_amount$go, $UG$SM$StateLogs$find_rollback_amount, $UG$SM$StateLogs$rollback$go, $UG$SM$StateLogs$rollback, $UG$SM$Time, $UG$SM$Time$time_to_tick, $UG$SM$TimedAction, $UG$SM$add_action_to_logs, $UG$SM$new_mach, $UG$SM$update_genesis_tick, $UG$SM$update_cached_tick, $UG$SM$remove_future_states, $UG$SM$register_action, $V2, $UG$Shape, $UG$Shape$circle, $V2$new, $UG$Shape$square, $event, $event1, $event2, $event3, $event4, $gm, $simulate_game, $mach, $main, $shape, $shape1, $simple_game, $test$0, $test$1, $test$2, $test$3, $test$4 }
+
+export { $BinTree, $Maybe, $BinMap, $BinMap$empty, $Bits, $BinMap$get, $BinMap$new, $BinMap$set, $Bool, $Bool$eq, $Char, $Equal, $GameAction, $GameAction$eq, $GameState, $GameState$counter, $KEYEVENT, $KEYMOUSE, $List, $List$append, $MOUSECLICK, $MOUSEMOVE, $Maybe$none, $Nat, $Pair, $SETNICK, $String, $U64$add, $U64$div, $U64$to_bool, $U64$eql, $U64$eq, $U64$from_bool, $U64$lt, $U64$min, $U64$mod, $U64$mul, $U64$to_bits, $UG$SIPD$Action, $UG$SIPD$Event$Click, $UG$SIPD$Event, $UG$SM$ActionLogs, $UG$SM$Tick, $UG$SM$ActionLogs$add_action, $UG$SM$Game, $UG$SM$Game$init, $UG$SM$Game$tick, $UG$SM$Game$when, $UG$SM$StateLogs$StateNode, $UG$SM$StateLogs, $UG$SM$Mach, $UG$SM$Mach$action_logs, $UG$SM$Mach$cached_tick, $UG$SM$StateLogs$StateNode$life, $UG$SM$StateLogs$StateNode$older, $UG$SM$StateLogs$StateNode$state, $UG$SM$StateLogs$StateNode$tick, $UG$SM$StateLogs$find_rollback_amount$go, $UG$SM$StateLogs$find_rollback_amount, $UG$SM$StateLogs$rollback$go, $UG$SM$StateLogs$rollback, $UG$SM$Time, $UG$SM$Time$time_to_tick, $UG$SM$TimedAction, $UG$SM$TimedAction$time_action, $UG$SM$add_action_to_logs, $UG$SM$new_mach, $UG$SM$update_genesis_tick, $UG$SM$update_cached_tick, $UG$SM$remove_future_states, $UG$SM$register_action, $event, $event1, $event2, $event3, $event4, $gm, $simulate_game, $mach, $main, $simple_game, $test$0, $test$1, $test$2, $test$3, $test$4, $timedEv1 }
