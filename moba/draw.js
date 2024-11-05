@@ -1,4 +1,3 @@
-
 function draw(ctx, shape, color = "black") {
   ctx.beginPath();
   ctx.fillStyle = color;
@@ -25,4 +24,12 @@ function draw(ctx, shape, color = "black") {
   }
 }
 
-export { draw };
+function draw_number(ctx, number, x, y, fontSize = 16, color = "black") {
+  ctx.fillStyle = 'white'
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.font = `${fontSize}px Arial`;
+  ctx.fillStyle = color;
+  ctx.fillText(number.toString(), x, y);
+}
+
+export { draw, draw_number };
