@@ -1,6 +1,5 @@
 import { UwUChat2Client } from 'uwuchat2';
 import { $main, $event, $event1, $event2, $event3, $event4, $KEYEVENT, $MOUSECLICK, $KEYMOUSE, $MOUSEMOVE, $SETNICK, $UG$SM$new_mach, $GameAction$eq } from './ex.js';
-import { $shape, $shape1 } from './ex.js';
 import { serialize } from './serialize.js';
 import { deserialize } from './deserialize.js';
 import { draw } from './draw.js';
@@ -8,8 +7,6 @@ import { draw } from './draw.js';
 const client = new UwUChat2Client();
 let canvas;
 const room = 0;
-console.log(JSON.stringify($shape));
-console.log(JSON.stringify($shape1));
 
 window.addEventListener('load', () => {
   canvas = document.getElementById("canvas");
@@ -17,8 +14,8 @@ window.addEventListener('load', () => {
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   if (ctx) {
-    draw(ctx, $shape);
-    draw(ctx, $shape1, "red");
+    //draw(ctx, $shape);
+    //draw(ctx, $shape1, "red");
   } else {
     console.error("Canvas not found");
   }
