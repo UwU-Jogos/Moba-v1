@@ -18,7 +18,7 @@ window.addEventListener('load', () => {
 });
 
 const TPS = BigInt(30);
-const PID = 1
+const PID = BigInt(0);
 const action_eq = {$: 'False'}
 
 let state;
