@@ -1,7 +1,7 @@
 import { serialize } from './serialize.js';
 
 function handle_mouse_click(ev, client, PID, room) {
-  if ((ev.button === 0 || ev.button === 1) && ev.target instanceof HTMLCanvasElement) {
+  if ((ev.button === 0 || ev.button === 2) && ev.target instanceof HTMLCanvasElement) {
     const time = client.time();
     const click = ev.button === 0 ? {$: "LeftButton"} : {$: "RightButton"}
     const x = ev.clientX - ev.target.offsetLeft;
