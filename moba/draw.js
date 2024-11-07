@@ -1,4 +1,4 @@
-function draw(ctx, shape, color = "black") {
+function draw(ctx, shape, color = "black") { 
   ctx.beginPath();
   ctx.fillStyle = color;
 
@@ -24,6 +24,39 @@ function draw(ctx, shape, color = "black") {
   }
 }
 
+function traverseTree(node, callback) {
+  if (!node || typeof node !== 'object') return;
+
+  // If the node has a key_value with a snd property, call the callback with it
+  if (node.key_value && node.key_value.snd) {
+    callback(node.key_value.snd.hitbox);
+  }
+
+  // Recursively traverse left and right children if they exist
+  if (node.left && node.left.$ === 'Node') {
+    traverseTree(node.left, callback);
+  }
+  if (node.right && node.right.$ === 'Node') {
+    traverseTree(node.right, callback);
+  }
+}
+
+function draw_state(state) {
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  ctx.fillStyle = 'white';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+  const draw_shape_callback = (shape) => {
+    draw(ctx, shape);
+  }
+
+  const bodies_tree = state.game_map.bodies;
+  traverseTree(bodies_tree, draw_shape_callback);
+}
+
 function draw_number(ctx, number, x, y, fontSize = 16, color = "black") {
   ctx.fillStyle = 'white'
   ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -32,4 +65,4 @@ function draw_number(ctx, number, x, y, fontSize = 16, color = "black") {
   ctx.fillText(number.toString(), x, y);
 }
 
-export { draw, draw_number };
+export { draw, draw_number, draw_state };
