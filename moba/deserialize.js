@@ -39,7 +39,7 @@ function deserialize_key_event(buffer, offset = 0) {
   offset += 8;
   const pid = BigInt(new DataView(buffer.buffer, offset).getBigUint64(0, true));
   offset += 8;
-  const key = buffer[offset];
+  const key = BigInt(buffer[offset]);
   offset += 1;
   const pressed = buffer[offset] !== 0;
   offset += 1;
@@ -100,7 +100,7 @@ function deserialize_key_mouse(buffer, offset = 0) {
   offset += 8;
   const pid = BigInt(new DataView(buffer.buffer, offset).getBigUint64(0, true));
   offset += 8;
-  const key = buffer[offset];
+  const key = BigInt(buffer[offset]);
   offset += 1;
   const pressed = buffer[offset] !== 0;
   offset += 1;
