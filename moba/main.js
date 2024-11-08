@@ -1,5 +1,5 @@
 import { UwUChat2Client } from 'uwuchat2';
-import { $main, $event, $event1, $event2, $event3, $event4, $KEYEVENT, $MOUSECLICK, $KEYMOUSE, $MOUSEMOVE, $SETNICK, $UG$SM$new_mach, $GameAction$eq, $UG$SM$TimedAction$time_action, $UG$SM$register_action,  $UG$SM$compute } from './ex.js';
+import { $main, $event, $event1, $event2, $event3, $event4, $KEYEVENT, $MOUSECLICK, $KEYMOUSE, $MOUSEMOVE, $SETNICK, $UG$SM$new_mach, $GameAction$eq, $UG$SM$TimedAction$time_action, $UG$SM$register_action,  $UG$SM$compute, $UG$SIPD$Event$eq } from './ex.js';
 import { $export_game } from './ex.js';
 import { deserialize } from './deserialize.js';
 import { draw, draw_number, draw_state } from './draw.js';
@@ -17,13 +17,15 @@ window.addEventListener('load', () => {
   ctx = canvas.getContext('2d');
 });
 
+// how to handle ids? how to init PID and so on?
+// now pid are coming from state, so we can:
+// 
 const TPS = BigInt(30);
 const PID = BigInt(0);
-const action_eq = {$: 'False'}
 
 let state;
 
-let mach = $UG$SM$new_mach(null)(null)(TPS)(action_eq)
+let mach = $UG$SM$new_mach(null)(null)(TPS)($UG$SIPD$Event$eq)
 const register = $UG$SM$register_action(null)(null);
 
 async function initializeClient() {
