@@ -104,7 +104,7 @@ function serialize_mouse_move(event_obj) {
   return new Uint8Array(buffer);
 }
 
-function serialize_string(list) {
+export function serialize_string(list) {
   const bytes = [];
 
   function traverse(node) {
