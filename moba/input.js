@@ -1,6 +1,6 @@
 import { serialize } from './serialize.js';
 
-function handle_mouse_click(ev, client, PID, room) {
+function handle_mouse_click(ev, client, PID, room, mach, register, time_action) {
   if ((ev.button === 0 || ev.button === 2) && ev.target instanceof HTMLCanvasElement) {
     const time = client.time();
     const click = ev.button === 0 ? {$: "LeftButton"} : {$: "RightButton"}
@@ -15,11 +15,14 @@ function handle_mouse_click(ev, client, PID, room) {
       y: y
     }
     client.send(room, serialize(event));
+    const timed_action = time_action(BigInt(time))(event);
+    return register(mach)(timed_action);
   }
+  return mach;
 }
 
 const key_state = {};
-function handle_key_event(ev, client, PID, room) {
+function handle_key_event(ev, client, PID, room, mach, register, time_action) {
   const time = client.time();
   const down = ev.type === 'keydown'
   const key_char = ev.key.charCodeAt(0).toUpperCase()
@@ -33,7 +36,10 @@ function handle_key_event(ev, client, PID, room) {
       pressed: down == true ? {$: "True"} : {$: "False"}
     }
     client.send(room, serialize(event));
+    const timed_action = time_action(BigInt(time))(event);
+    return register(mach)(timed_action);
   }
+  return mach;
 }
 
 let mouseX = 0;
@@ -45,7 +51,7 @@ function handle_mouse_move(event, client, PID, room) {
   }
 }
 
-function handle_key_mouse_event(ev, client, PID, room) {
+function handle_key_mouse_event(ev, client, PID, room, mach, register, time_action) {
   const time = client.time();
   const down = ev.type === 'keydown'
 
@@ -62,7 +68,10 @@ function handle_key_mouse_event(ev, client, PID, room) {
       y: mouseY
     }
     client.send(room, serialize(event));
+    const timed_action = time_action(BigInt(time))(event);
+    return register(mach)(timed_action);
   }
+  return mach;
 }
 
 export { handle_mouse_click, handle_key_event, handle_mouse_move, handle_key_mouse_event };

@@ -92,15 +92,22 @@ async function start_game(room_id, name) {
     }
   }
 
+  const time_action = $UG$SM$TimedAction$time_action(null)
   const timed_action = $UG$SM$TimedAction$time_action(null)(BigInt(c_time))(set_nick_action);
   mach = register(mach)(timed_action);
 
   await client.send(room, serialize(set_nick_action));
 
-  window.addEventListener('keydown', (event) => handle_key_mouse_event(event, client, PID, room));
-  window.addEventListener('keyup', (event) => handle_key_mouse_event(event, client, PID, room));
+  window.addEventListener('keydown', (event) => {
+    mach = handle_key_mouse_event(event, client, PID, room, mach, register, time_action)
+  })
+  window.addEventListener('keyup', (event) => {
+    mach = handle_key_mouse_event(event, client, PID, room, mach, register, time_action)
+  });
   window.addEventListener('mousemove', (event) => handle_mouse_move(event, client, PID, room));
-  window.addEventListener('click', (event) => handle_mouse_click(event, client, PID, room));
+  window.addEventListener('click', (event) => {
+    mach = handle_mouse_click(event, client, PID, room, mach, register, time_action)
+  });
   window.addEventListener('contextmenu', (event) => {
     event.preventDefault(); // Prevents the context menu from opening
     handle_mouse_click(event, client, PID, room);
