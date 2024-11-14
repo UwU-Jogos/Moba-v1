@@ -24,6 +24,38 @@ function draw(ctx, shape, color = "black") {
   }
 }
 
+function traverseBodies(bodies, callback) {
+  for (const [key, body] of bodies.entries()) {
+    if (body.$ == "Some") {
+      callback(body.value.hitbox);
+    }
+  }
+}
+
+
+function drawHeroState(hero_state_id, hero_state, state) { 
+  let hero_body = state.game_map.bodies.get(hero_state_id)?.value?.hitbox;
+  if (!hero_body) return;
+  let center = hero_body.center;
+  let health = hero_state.health;
+  let health_center = { x: (center.x - 15), y: (center.y + 40) }
+  
+  const canvas = document.getElementById("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  draw_number(ctx, health, health_center.x, health_center.y);
+}
+
+function traverseHeroStates(state, hero_states, callback) {
+  for (const [key, body] of hero_states.entries()) {
+    if (body.$ == "Some") {
+      callback(key, body.value, state);
+    }
+  }
+}
+
+
 function traverseTree(node, callback) {
   if (!node || typeof node !== 'object') return;
 
@@ -53,13 +85,14 @@ function draw_state(state) {
     draw(ctx, shape);
   }
 
-  const bodies_tree = state.game_map.bodies;
-  traverseTree(bodies_tree, draw_shape_callback);
+  const bodies = state.game_map.bodies;
+  traverseBodies(bodies, draw_shape_callback);
+  
+  const hero_states = state.hero_states;
+  traverseHeroStates(state, hero_states, drawHeroState);
 }
 
 function draw_number(ctx, number, x, y, fontSize = 16, color = "black") {
-  ctx.fillStyle = 'white'
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
   ctx.font = `${fontSize}px Arial`;
   ctx.fillStyle = color;
   ctx.fillText(number.toString(), x, y);

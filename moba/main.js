@@ -10,12 +10,12 @@ const client = new UwUChat2Client();
 let canvas;
 let ctx;
 let room = 0;
-const PLAYERS_LIMIT = 2;
+const PLAYERS_LIMIT = 1;
 const players_in_the_room = [];
 
 const TPS = BigInt(30);
 
-const PID = BigInt(Math.floor(Math.random() * (2 ** 16)));
+const PID = BigInt(Math.floor(Math.random() * (2 ** 4)));
 console.log("PID is:", PID);
 
 let state;
@@ -55,8 +55,10 @@ async function handle_form_submit(e) {
 async function start_game(room_id, name) {
   room = room_id;
 
-  await client.init('ws://localhost:7171');
-  // await client.init('ws://server.uwu.games');
+  //await client.init('ws://localhost:7171');
+  console.log("trying to connect")
+  await client.init('ws://server.uwu.games:7171');
+  console.log("connected");
 
   const leave = client.recv(room, msg => {
     const time_action = $UG$SM$TimedAction$time_action(null)
