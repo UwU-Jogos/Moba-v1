@@ -1,8 +1,10 @@
 import { serialize } from './serialize.js';
 
+const ARTIFICIAL_DELAY = 50;
+
 function handle_mouse_click(ev, client, PID, room, mach, register, time_action) {
   if ((ev.button === 0 || ev.button === 2) && ev.target instanceof HTMLCanvasElement) {
-    const time = client.time();
+    const time = client.time() + ARTIFICIAL_DELAY;
     const click = ev.button === 0 ? {$: "LeftButton"} : {$: "RightButton"}
     const x = ev.clientX - ev.target.offsetLeft;
     const y = ev.clientY - ev.target.offsetTop;
@@ -23,7 +25,7 @@ function handle_mouse_click(ev, client, PID, room, mach, register, time_action) 
 
 const key_state = {};
 function handle_key_event(ev, client, PID, room, mach, register, time_action) {
-  const time = client.time();
+  const time = client.time() + ARTIFICIAL_DELAY;
   const down = ev.type === 'keydown'
   const key_char = ev.key.charCodeAt(0).toUpperCase()
   if (key_state[key_char] !== down) {
@@ -52,7 +54,7 @@ function handle_mouse_move(event, client, PID, room) {
 }
 
 function handle_key_mouse_event(ev, client, PID, room, mach, register, time_action) {
-  const time = client.time();
+  const time = client.time() + ARTIFICIAL_DELAY;
   const down = ev.type === 'keydown'
 
   const key_char = ev.key.toUpperCase().charCodeAt(0)
