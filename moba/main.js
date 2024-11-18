@@ -54,8 +54,8 @@ async function handle_form_submit(e) {
 async function start_game(room_id, name) {
   room = room_id;
 
-  await client.init('ws://localhost:7171');
-  //await client.init('ws://server.uwu.games');
+  //await client.init('ws://localhost:7171');
+  await client.init('ws://server.uwu.games');
   console.log("CONNECTED");
 
   const leave = client.recv(room, msg => {
