@@ -1,6 +1,6 @@
 import { UwUChat2Client } from 'uwuchat2';
 import { $main, $event, $event1, $event2, $event3, $event4, $KEYEVENT, $MOUSECLICK, $KEYMOUSE, $MOUSEMOVE, $SETNICK, $UG$SM$new_mach, $GameAction$eq, $UG$SM$TimedAction$time_action, $UG$SM$register_action,  $UG$SM$compute, $UG$SIPD$Event$eq } from './ex.js';
-import { $export_game } from './ex.js';
+import { $export_game, $export_time_to_tick } from './ex.js';
 import { deserialize } from './deserialize.js';
 import { serialize } from './serialize.js';
 import { draw, draw_number, draw_state } from './draw.js';
@@ -13,7 +13,7 @@ let room = 0;
 const PLAYERS_LIMIT = 1;
 const players_in_the_room = [];
 
-const TPS = BigInt(30);
+const TPS = BigInt(50);
 
 const PID = BigInt(Math.floor(Math.random() * (2 ** 4)));
 console.log("PID is:", PID);
@@ -32,7 +32,6 @@ window.addEventListener('load', () => {
 
 function setup_form_listener() {
   const login_form = document.getElementById('login-form');
-  console.log(login_form);
   if (login_form) {
     login_form.addEventListener('submit', handle_form_submit);
   } else {
@@ -55,8 +54,8 @@ async function handle_form_submit(e) {
 async function start_game(room_id, name) {
   room = room_id;
 
-  //await client.init('ws://localhost:7171');
-  await client.init('ws://server.uwu.games');
+  await client.init('ws://localhost:7171');
+  //await client.init('ws://server.uwu.games');
   console.log("CONNECTED");
 
   const leave = client.recv(room, msg => {
@@ -146,17 +145,31 @@ function show_game_container() {
     console.error("Could not find lobby or game container");
     return;
   }
-  game_loop();
+  requestAnimationFrame(game_loop);
 }
 
-function game_loop() {
-  const time = BigInt(client.time());
-  const pair = compute(mach)($export_game)(time);
+const targetFPS = 50;
+const interval = 1000 / targetFPS;
+let lastTime = performance.now();
 
-  state = pair.fst;
-  mach = pair.snd;
+function game_loop(currentTime) {
+  const deltaTime = currentTime - lastTime;
 
-  draw_state(state);
+  if (deltaTime >= interval) {
+    lastTime = currentTime - (deltaTime % interval);
+
+    const time = BigInt(client.time());
+
+    //const tick = $export_time_to_tick(null)(null)(mach)(time);
+    //console.log(tick);
+    
+    const pair = compute(mach)($export_game)(time);
+    state = pair.fst;
+    mach = pair.snd;
+
+    draw_state(state);
+  }
+
   requestAnimationFrame(game_loop);
 }
 
