@@ -61,6 +61,7 @@ async function start_game(room_id, name) {
   const leave = client.recv(room, msg => {
     const time_action = $UG$SM$TimedAction$time_action(null)
     let deserialized = deserialize(msg).value;
+    console.log(deserialized);
     const time = deserialized.$ == "ActionEvent" ? deserialized.action.time : deserialized.time;
 
     if (deserialized.$ == "ActionEvent" && deserialized.action.$ == "SetNick") {

@@ -6,8 +6,8 @@ function handle_mouse_click(ev, client, PID, room, mach, register, time_action) 
   if ((ev.button === 0 || ev.button === 2) && ev.target instanceof HTMLCanvasElement) {
     const time = client.time() + ARTIFICIAL_DELAY;
     const click = ev.button === 0 ? {$: "LeftButton"} : {$: "RightButton"}
-    const x = ev.clientX - ev.target.offsetLeft;
-    const y = ev.clientY - ev.target.offsetTop;
+    const x = Number((ev.clientX - ev.target.offsetLeft).toFixed(2));
+    const y = Number((ev.clientY - ev.target.offsetTop).toFixed(2));
     const event = {
       $: "MouseClick",
       time: time,
@@ -66,8 +66,8 @@ function handle_key_mouse_event(ev, client, PID, room, mach, register, time_acti
       pid: PID,
       key: { $: "Cons", head: key_char, tail: {$: "Nil"}},
       pressed: down == true ? {$: "True"} : {$: "False"},
-      x: mouseX,
-      y: mouseY
+      x: Number(mouseX.toFixed(2)),
+      y: Number(mouseY.toFixed(2))
     }
     client.send(room, serialize(event));
     const timed_action = time_action(BigInt(time))(event);
