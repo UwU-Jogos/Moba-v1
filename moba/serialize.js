@@ -44,6 +44,29 @@ function serialize_click(click_obj) {
   return new Uint8Array([byte_value]);
 }
 
+function serialize_side(side_obj) {
+  let byte_value;
+  switch(side_obj) {
+    case "Red"    : {
+      byte_value = 0;
+      break;
+    }
+    case "Blue"   : {
+      byte_value = 1;
+      break;
+    }
+    case "Neutral": {
+      byte_value = 2;
+      break;
+    }
+    default       : {
+      byte_value = 2;
+      break;
+    }      
+  }
+  return new Uint8Array([byte_value]);
+}
+
 function serialize_mouse_click(event_obj) {
   if (event_obj.$ != "MouseClick") {
     return new Uint8Array();
@@ -126,9 +149,11 @@ function serialize_set_nick(action_obj) {
   let time = action_obj.time
   let pid = action_obj.pid
   let serialized_string = serialize_string(action_obj.nick);
+  let side = action_obj.side;
   buffer.push(Number($SETNICK));
   buffer.push(...new Uint8Array(new BigUint64Array([BigInt(time)]).buffer).slice(0, 8));
   buffer.push(...new Uint8Array(new BigUint64Array([BigInt(pid)]).buffer).slice(0, 8));
+  buffer.push(serialize_side(side));
   buffer.push(...serialized_string);
   return new Uint8Array(buffer);
 }

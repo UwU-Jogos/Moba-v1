@@ -10,6 +10,9 @@ const client = new UwUChat2Client();
 let canvas;
 let ctx;
 let room = 0;
+let next_team = Math.random() < 0.5 ? "Red" : "Blue";
+console.log(next_team);
+
 const PLAYERS_LIMIT = 1;
 const players_in_the_room = [];
 
@@ -65,6 +68,7 @@ async function start_game(room_id, name) {
 
     if (deserialized.$ == "ActionEvent" && deserialized.action.$ == "SetNick") {
       players_in_the_room.push(deserialized.action.pid);
+      next_team = (next_team === "Red") ? "Blue" : "Red"
       update_lobby(players_in_the_room);
       if (players_in_the_room.length === PLAYERS_LIMIT) {
         show_game_container();
@@ -83,6 +87,7 @@ async function start_game(room_id, name) {
       $: "SetNick",
       time: BigInt(c_time),
       pid: PID,
+      side: next_team,
       nick: {
         $: "Cons",
         head: BigInt(69),

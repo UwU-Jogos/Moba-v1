@@ -30,6 +30,31 @@ function deserialize_float64(buffer, offset = 0) {
   return { value: view.getFloat64(offset, true), bytesRead: 8 };
 }
 
+function deserialize_side(buffer, offset = 0) {
+  let value = buffer[offset];
+  let side_val;
+  switch(value) {
+    case 0: {
+      side_val = "Red"
+      break;
+    }
+    case 1: {
+      side_val = "Blue"
+      break;
+    }
+    case 2: {
+      side_val = "Neutral"
+      break;
+    }
+    default: {
+      side_val = "Neutral"
+      break;
+    }
+    
+  }
+  return { value: side_val, bytesRead: 1 }
+}
+
 function deserialize_key_event(buffer, offset = 0) {
   if (buffer[offset] !== Number($KEYEVENT)) {
     return {value: null, bytesRead: 0};
@@ -169,6 +194,8 @@ function deserialize_set_nick(buffer, offset = 0) {
   offset += 8;
   const pid = BigInt(new DataView(buffer.buffer, offset).getBigUint64(0, true));
   offset += 8;
+  const side = deserialize_side(buffer, offset);
+  offset += 1;
   const nick = deserialize_string(buffer, offset);
   offset += nick.bytesRead;
   return {
@@ -176,6 +203,7 @@ function deserialize_set_nick(buffer, offset = 0) {
       $: "SetNick",
       time: time,
       pid: pid,
+      side: side.value,
       nick: nick.value
     },
     bytesRead: offset

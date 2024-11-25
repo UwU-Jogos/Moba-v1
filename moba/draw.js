@@ -1,6 +1,18 @@
-function draw(ctx, shape, color = "black") { 
+function draw(ctx, shape, color = "black", side = "Neutral") { 
   ctx.beginPath();
-  ctx.fillStyle = color;
+
+  let real_side = (side?.$) ? side.$ : side
+  switch (real_side) {
+    case "Red":
+      ctx.fillStyle = "red";
+      break;
+    case "Blue":
+      ctx.fillStyle = "blue";
+      break;
+    case "Neutral":
+    default:
+      ctx.fillStyle = color;
+  }
 
   switch (shape.$) {
     case "Circle": {
@@ -27,7 +39,7 @@ function draw(ctx, shape, color = "black") {
 function traverseBodies(bodies, callback) {
   for (const [key, body] of bodies.entries()) {
     if (body.$ == "Some") {
-      callback(body.value.hitbox);
+      callback(body.value.hitbox, body.value.side);
     }
   }
 }
@@ -81,8 +93,8 @@ function draw_state(state) {
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const draw_shape_callback = (shape) => {
-    draw(ctx, shape);
+  const draw_shape_callback = (shape, side) => {
+    draw(ctx, shape, "black", side);
   }
 
   const bodies = state.game_map.bodies;
