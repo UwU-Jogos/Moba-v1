@@ -165,6 +165,7 @@ function game_loop(currentTime) {
     
     const pair = compute(mach)($export_game)(time);
     state = pair.fst;
+    //console.log(state);
     mach = pair.snd;
 
     draw_state(state);
