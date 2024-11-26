@@ -1,6 +1,6 @@
 import { serialize } from './serialize.js';
 
-const ARTIFICIAL_DELAY = 300;
+const ARTIFICIAL_DELAY = 150;
 
 function handle_mouse_click(ev, client, PID, room, mach, register, time_action) {
   if ((ev.button === 0 || ev.button === 2) && ev.target instanceof HTMLCanvasElement) {
