@@ -46,7 +46,7 @@ function serialize_click(click_obj) {
 
 function serialize_side(side_obj) {
   let byte_value;
-  switch(side_obj) {
+  switch(side_obj.$) {
     case "Red"    : {
       byte_value = 0;
       break;

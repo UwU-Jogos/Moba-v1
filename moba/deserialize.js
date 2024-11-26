@@ -52,7 +52,7 @@ function deserialize_side(buffer, offset = 0) {
     }
     
   }
-  return { value: side_val, bytesRead: 1 }
+  return { value: {$: side_val}, bytesRead: 1 }
 }
 
 function deserialize_key_event(buffer, offset = 0) {
