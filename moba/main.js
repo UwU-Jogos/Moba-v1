@@ -10,8 +10,8 @@ const client = new UwUChat2Client();
 let canvas;
 let ctx;
 let room = 0;
-let next_team = Math.random() < 0.5 ? "Red" : "Blue";
-console.log(next_team);
+//let next_team = Math.random() < 0.5 ? "Red" : "Blue";
+//let next_team = "Red"
 
 const PLAYERS_LIMIT = 1;
 const players_in_the_room = [];
@@ -20,6 +20,9 @@ const TPS = BigInt(50);
 
 const PID = BigInt(Math.floor(Math.random() * (2 ** 4)));
 console.log("PID is:", PID);
+
+let next_team = ((Number(PID) % 2) == 0) ? "Red" : "Blue";
+console.log(next_team);
 
 let state;
 let mach = $UG$SM$new_mach(null)(null)(TPS)($UG$SIPD$Event$eq)
@@ -87,7 +90,7 @@ async function start_game(room_id, name) {
       $: "SetNick",
       time: BigInt(c_time),
       pid: PID,
-      side: next_team,
+      side: {$: next_team},
       nick: {
         $: "Cons",
         head: BigInt(69),
