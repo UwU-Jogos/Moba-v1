@@ -10,7 +10,7 @@ function handle_mouse_click(ev, client, PID, room, mach, register, time_action) 
     const y = Number((ev.clientY - ev.target.offsetTop).toFixed(2));
     const event = {
       $: "MouseClick",
-      time: time,
+      time: BigInt(time),
       pid: PID,
       click: click,
       x: x,
@@ -27,12 +27,12 @@ const key_state = {};
 function handle_key_event(ev, client, PID, room, mach, register, time_action) {
   const time = client.time() + ARTIFICIAL_DELAY;
   const down = ev.type === 'keydown'
-  const key_char = ev.key.charCodeAt(0).toUpperCase()
+  const key_char = BigInt(ev.key.charCodeAt(0).toUpperCase())
   if (key_state[key_char] !== down) {
     key_state[key_char] = down;
     let event = {
       $: "KeyEvent",
-      time: time,
+      time: BigInt(time),
       pid: PID,
       key: { $: "Cons", head: keyChar, tail: {$: "Nil"}},
       pressed: down == true ? {$: "True"} : {$: "False"}
@@ -57,12 +57,12 @@ function handle_key_mouse_event(ev, client, PID, room, mach, register, time_acti
   const time = client.time() + ARTIFICIAL_DELAY;
   const down = ev.type === 'keydown'
 
-  const key_char = ev.key.toUpperCase().charCodeAt(0)
+  const key_char = BigInt(ev.key.toUpperCase().charCodeAt(0))
     if (key_state[key_char] !== down) {
     key_state[key_char] = down;
     let event = {
       $: "KeyMouse",
-      time: time,
+      time: BigInt(time),
       pid: PID,
       key: { $: "Cons", head: key_char, tail: {$: "Nil"}},
       pressed: down == true ? {$: "True"} : {$: "False"},
