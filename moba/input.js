@@ -17,8 +17,9 @@ function handle_mouse_click(ev, client, PID, room, mach, register, time_action) 
       y: y
     }
     client.send(room, serialize(event));
-    const timed_action = time_action(BigInt(time))(event);
-    return register(mach)(timed_action);
+    //const timed_action = time_action(BigInt(time))(event);
+    //return register(mach)(timed_action);
+    return mach;
   }
   return mach;
 }
@@ -38,8 +39,9 @@ function handle_key_event(ev, client, PID, room, mach, register, time_action) {
       pressed: down == true ? {$: "True"} : {$: "False"}
     }
     client.send(room, serialize(event));
-    const timed_action = time_action(BigInt(time))(event);
-    return register(mach)(timed_action);
+    //const timed_action = time_action(BigInt(time))(event);
+    //return register(mach)(timed_action);
+    return mach;
   }
   return mach;
 }
@@ -70,8 +72,9 @@ function handle_key_mouse_event(ev, client, PID, room, mach, register, time_acti
       y: Number(mouseY.toFixed(2))
     }
     client.send(room, serialize(event));
-    const timed_action = time_action(BigInt(time))(event);
-    return register(mach)(timed_action);
+    //const timed_action = time_action(BigInt(time))(event);
+    //return register(mach)(timed_action);
+    return mach;
   }
   return mach;
 }
